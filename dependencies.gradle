@@ -1,0 +1,23 @@
+project.ext {
+    ioCucumberVersion = '4.2.0'
+    ioRestAssuredVersion = '3.2.0'
+}
+
+dependencies {
+    implementation('org.springframework.boot:spring-boot-starter-data-jpa')
+    implementation('org.springframework.boot:spring-boot-starter-security')
+    implementation('org.springframework.boot:spring-boot-starter-web')
+    implementation('org.flywaydb:flyway-core')
+    implementation('io.jsonwebtoken:jjwt:0.9.1')
+
+    runtime('org.mariadb.jdbc:mariadb-java-client')
+
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
+    testImplementation('org.springframework.security:spring-security-test')
+    testImplementation('org.mockito:mockito-core')
+
+    integrationTestCompile("io.rest-assured:rest-assured:$ioRestAssuredVersion")
+    integrationTestCompile("io.cucumber:cucumber-java:$ioCucumberVersion")
+    integrationTestCompile("io.cucumber:cucumber-junit:$ioCucumberVersion")
+    integrationTestCompile("io.cucumber:cucumber-spring:$ioCucumberVersion")
+}

@@ -1,0 +1,56 @@
+// IntegrationTest.................
+
+ext {
+    generatedSourcesDir = 'build/generated/source/apt/integrationTest'
+}
+
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integration-test/java')
+            srcDir file(generatedSourcesDir)
+        }
+        resources.srcDir file('src/integration-test/resources')
+    }
+}
+
+//Ensure that the integrationTestCompile/integrationTestRuntime configuration contains the dependencies that are required to compile/run our unit tests.
+configurations {
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
+tasks.withType(JavaCompile) {
+    if (file(generatedSourcesDir).exists()) {
+        FileCollection collection = files { file(generatedSourcesDir).listFiles() }
+        collection.each { delete it }
+    }
+}
+
+task integrationTest(type: Test) {
+    testClassesDirs = sourceSets.integrationTest.output
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
+    // Gradle skips tasks whose input and output are up to date.
+    // To ensure that your integration tests are run every time,
+    // tell Gradle that the outputs of the integrationTest task should always be considered out of date.
+    outputs.upToDateWhen { false }
+}
+
+// Ensure that our integration tests are run before the check task and that the check task fails the build if there are failing integration tests.
+// Ensure that our unit tests are run before our integration tests. This guarantees that our unit tests are run even if our integration tests fails.
+check.dependsOn integrationTest
+integrationTest.mustRunAfter test
+
+// Ensure that the HTML reports of unit and integration tests are created to different report
+// build/reports/integration-test directory contains the HTML report that contains the test results of our integration tests.
+tasks.withType(Test) {
+    reports.html.destination(file("${reporting.baseDir}/${name}"))
+}
+
+integrationTest {
+    testLogging.showStandardStreams = true
+    systemProperties = System.properties
+}

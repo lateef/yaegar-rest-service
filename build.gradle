@@ -1,0 +1,38 @@
+buildscript {
+    ext {
+        springBootVersion = '2.1.1.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+apply from: 'test.gradle'
+apply from: 'dependencies.gradle'
+
+group = 'com.yaegar'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+bootJar {
+    archiveName = 'yaegar-rest-service.jar'
+}
+
+bootRun {
+    //Usage: ./gradlew clean bootRun -Pargs=--server.port=6666,--app.db.host=127.0.0.1
+    if (project.hasProperty('args')) {
+        args project.args.split(',')
+    }
+}
