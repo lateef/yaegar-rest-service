@@ -8,33 +8,37 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
-@Table(name = "Phone")
+@Table(name = "phone")
 public class Phone extends AbstractEntity implements Serializable {
     private static final long serialVersionUID = -7901958678943948605L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "PhoneID")
-    private Long phoneId;
+    @Column(name = "id")
+    private Long id;
 
     @NotEmpty
-    @Column(name = "Code", length = 3, nullable = false)
+    @Column(name = "code", length = 3, nullable = false)
     private String code;
 
     @NotEmpty
-    @Column(name = "Number", unique = true, length = 15, nullable = false)
+    @Column(name = "number", unique = true, length = 15, nullable = false)
     private String number;
 
+    @NotEmpty
+    @Column(name = "primary", nullable = false)
+    private boolean primary;
+
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "CountryID", referencedColumnName = "CountryID")
+    @JoinColumn(name = "country_id", referencedColumnName = "id")
     private Country country;
 
-    public Long getPhoneId() {
-        return phoneId;
+    public Long getId() {
+        return id;
     }
 
-    public void setPhoneId(Long phoneId) {
-        this.phoneId = phoneId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getCode() {
@@ -51,6 +55,14 @@ public class Phone extends AbstractEntity implements Serializable {
 
     public void setNumber(String number) {
         this.number = number;
+    }
+
+    public boolean isPrimary() {
+        return primary;
+    }
+
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
     }
 
     public Country getCountry() {
@@ -79,7 +91,7 @@ public class Phone extends AbstractEntity implements Serializable {
     @Override
     public String toString() {
         return "Phone{" +
-                "phoneId=" + phoneId +
+                "id=" + id +
                 ", code='" + code + '\'' +
                 ", number='" + number + '\'' +
                 '}';

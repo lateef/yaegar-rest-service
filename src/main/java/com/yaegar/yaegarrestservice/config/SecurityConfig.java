@@ -31,6 +31,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private JwtAuthenticationEntryPoint unauthorizedHandler;
 
     @Autowired
+    private JwtAuthenticationProvider jwtAuthenticationProvider;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -61,13 +64,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public JwtAuthenticationProvider jwtAuthenticationProvider() {
-        return new JwtAuthenticationProvider();
-    }
-
-    @Bean
     public AuthenticationManager jwtAuthenticationManager() {
-        return new ProviderManager(Arrays.asList(jwtAuthenticationProvider()));
+        return new ProviderManager(Arrays.asList(jwtAuthenticationProvider));
     }
 
     @Bean

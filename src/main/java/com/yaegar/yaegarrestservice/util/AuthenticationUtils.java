@@ -43,7 +43,7 @@ public class AuthenticationUtils {
         User user = userOptional.get();
 
         JwtUserDto jwtUserDto = new JwtUserDto();
-        jwtUserDto.setId(user.getUserId());
+        jwtUserDto.setId(user.getId());
         jwtUserDto.setUsername(user.getPhoneNumber());
         String roles = grantedAuthorities
                 .stream()
@@ -58,7 +58,7 @@ public class AuthenticationUtils {
 
         String token = JwtTokenGenerator.generateToken(jwtUserDto, "!r4g34Y!");
 
-        return new JwtAuthenticatedUser(user.getUserId(), user.getPhoneNumber(), user.getFirstName(),
+        return new JwtAuthenticatedUser(user.getId(), user.getPhoneNumber(), user.getFirstName(),
                 token, grantedAuthorities);
     }
 

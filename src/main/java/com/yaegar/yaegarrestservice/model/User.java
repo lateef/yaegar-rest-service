@@ -20,61 +20,61 @@ public class User extends AbstractEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "UserID")
-    private Long userId;
+    @Column(name = "id")
+    private Long id;
 
     @Length(max = 32)
-    @Column(name = "FirstName", length = 32)
+    @Column(name = "first_name", length = 32)
     private String firstName;
 
     @NotEmpty
-    @Column(name = "PhoneNumber", unique = true, length = 15, nullable = false)
+    @Column(name = "phone_number", unique = true, length = 15, nullable = false)
     private String phoneNumber;
 
     @NotEmpty
     @Length(min = 6, max = 128)
-    @Column(name = "Password", nullable = false, length = 128)
+    @Column(name = "password", nullable = false, length = 128)
     private String password;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "PhoneUserID", referencedColumnName = "UserID")
+    @JoinColumn(name = "phone_user_id", referencedColumnName = "id")
     private Set<Phone> phones;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "CountryID", referencedColumnName = "CountryID")
+    @JoinColumn(name = "country_id", referencedColumnName = "id")
     private Country country;
 
-    @Column(name = "DeletionDateTime")
+    @Column(name = "deleted_datetime")
     private LocalDateTime deletionDateTime;
 
-    @Column(name = "AccountNonExpired")
+    @Column(name = "account_non_expired")
     private boolean accountNonExpired;
 
-    @Column(name = "AccountNonLocked")
+    @Column(name = "account_non_locked")
     private boolean accountNonLocked;
 
-    @Column(name = "CredentialsNonExpired")
+    @Column(name = "credentials_non_expired")
     private boolean credentialsNonExpired;
 
-    @Column(name = "Enabled")
+    @Column(name = "enabled")
     private boolean enabled;
 
-    @Column(name = "FailedLoginAttempts")
+    @Column(name = "failed_login_attempts")
     private int failedLoginAttempts;
 
     @AssertTrue
-    @Column(name = "AcceptedTerms")
+    @Column(name = "accepted_terms")
     private boolean acceptedTerms;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     private Set<Role> roles;
 
-    public Long getUserId() {
-        return userId;
+    public Long getId() {
+        return id;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getFirstName() {

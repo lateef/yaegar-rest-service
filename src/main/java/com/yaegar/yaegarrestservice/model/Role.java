@@ -9,16 +9,16 @@ import java.util.Objects;
  * @author Lateef Adeniji-Adele
  */
 @Entity
-@Table(name = "Role")
+@Table(name = "role")
 public class Role implements GrantedAuthority {
     private static final long serialVersionUID = -4638993974570292412L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "RoleID")
-    private long roleId;
+    @Column(name = "id")
+    private long id;
 
-    @Column(name = "Authority", nullable = false, length = 32, unique = true)
+    @Column(name = "authority", nullable = false, length = 32, unique = true)
     private String authority;
 
     public static final String AUTHORITY_USER = "ROLE_USER";
@@ -27,8 +27,8 @@ public class Role implements GrantedAuthority {
         return serialVersionUID;
     }
 
-    public long getRoleId() {
-        return roleId;
+    public long getId() {
+        return id;
     }
 
     public String getAuthority() {
@@ -55,7 +55,7 @@ public class Role implements GrantedAuthority {
     @Override
     public String toString() {
         return "Role{" +
-                "roleId=" + roleId +
+                "id=" + id +
                 ", authority='" + authority + '\'' +
                 '}';
     }

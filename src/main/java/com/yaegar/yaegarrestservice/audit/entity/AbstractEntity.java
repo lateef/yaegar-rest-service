@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(
-        value = {"createdBy", "updatedBy", "createdDateTime", "updatedDateTime"}
+        value = {"createdBy", "updatedBy", "createdDatetime", "updatedDatetime"}
 )
 public abstract class AbstractEntity {
     @NotEmpty
@@ -25,22 +25,20 @@ public abstract class AbstractEntity {
     private String uuid;
 
     @CreatedBy
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REFRESH)
-    @JoinColumn(name = "CreatedByUserID", referencedColumnName = "UserID")
-    private User createdBy;
+    @Column(name = "created_by")
+    private Long createdBy;
 
     @LastModifiedBy
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REFRESH)
-    @JoinColumn(name = "UpdatedByUserID", referencedColumnName = "UserID")
-    private User updatedBy;
+    @Column(name = "updated_by")
+    private Long updatedBy;
 
     @CreatedDate
-    @Column(name = "CreationDateTime")
-    private LocalDateTime createdDateTime;
+    @Column(name = "created_datetime")
+    private LocalDateTime createdDatetime;
 
     @LastModifiedDate
-    @Column(name = "UpdatedDateTime")
-    private LocalDateTime updatedDateTime;
+    @Column(name = "updated_datetime")
+    private LocalDateTime updatedDatetime;
 
     public String getUuid() {
         return uuid;
@@ -50,35 +48,35 @@ public abstract class AbstractEntity {
         this.uuid = uuid;
     }
 
-    public User getCreatedBy() {
+    public Long getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(User createdBy) {
+    public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
     }
 
-    public User getUpdatedBy() {
+    public Long getUpdatedBy() {
         return updatedBy;
     }
 
-    public void setUpdatedBy(User updatedBy) {
+    public void setUpdatedBy(Long updatedBy) {
         this.updatedBy = updatedBy;
     }
 
-    public LocalDateTime getCreatedDateTime() {
-        return createdDateTime;
+    public LocalDateTime getCreatedDatetime() {
+        return createdDatetime;
     }
 
-    public void setCreatedDateTime(LocalDateTime createdDateTime) {
-        this.createdDateTime = createdDateTime;
+    public void setCreatedDatetime(LocalDateTime createdDatetime) {
+        this.createdDatetime = createdDatetime;
     }
 
-    public LocalDateTime getUpdatedDateTime() {
-        return updatedDateTime;
+    public LocalDateTime getUpdatedDatetime() {
+        return updatedDatetime;
     }
 
-    public void setUpdatedDateTime(LocalDateTime updatedDateTime) {
-        this.updatedDateTime = updatedDateTime;
+    public void setUpdatedDatetime(LocalDateTime updatedDatetime) {
+        this.updatedDatetime = updatedDatetime;
     }
 }

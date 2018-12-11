@@ -7,25 +7,25 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "Country")
+@Table(name = "country")
 public class Country extends AbstractEntity implements Serializable {
     private static final long serialVersionUID = -120834228529468074L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "CountryID")
-    private Long countryId;
+    @Column(name = "id")
+    private Long id;
 
     @Length(max = 32)
-    @Column(name = "Name", nullable = false, unique = true, length = 32)
+    @Column(name = "name", nullable = false, unique = true, length = 32)
     private String name;
 
-    public Long getCountryId() {
-        return countryId;
+    public Long getId() {
+        return id;
     }
 
-    public void setCountryId(Long countryId) {
-        this.countryId = countryId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
