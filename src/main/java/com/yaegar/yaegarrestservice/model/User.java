@@ -14,6 +14,9 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.yaegar.yaegarrestservice.model.Role.ANONYMOUS_USER;
+import static java.util.Collections.singleton;
+
 @Entity
 public class User extends AbstractEntity implements Serializable {
     private static final long serialVersionUID = 4857310005018510052L;
@@ -28,10 +31,9 @@ public class User extends AbstractEntity implements Serializable {
     private String firstName;
 
     @NotEmpty
-    @Column(name = "phone_number", unique = true, length = 15, nullable = false)
+    @Column(name = "phone_number", unique = true, length = 17, nullable = false)
     private String phoneNumber;
 
-    @NotEmpty
     @Length(min = 6, max = 128)
     @Column(name = "password", nullable = false, length = 128)
     private String password;
@@ -183,11 +185,15 @@ public class User extends AbstractEntity implements Serializable {
 
     public void eraseCredentials() {
         password = null;
+        phones = phones.stream().map(phone -> {
+            phone.setConfirmationCode(null);
+            return phone;
+        }).collect(Collectors.toSet());
     }
 
     public Collection<GrantedAuthority> getAuthorities() {
         if (this.getRoles() == null) {
-            return null;
+            return singleton(new SimpleGrantedAuthority(ANONYMOUS_USER));
         }
         return this.getRoles().stream().map(role -> new SimpleGrantedAuthority(role.getAuthority()))
                 .collect(Collectors.toList());

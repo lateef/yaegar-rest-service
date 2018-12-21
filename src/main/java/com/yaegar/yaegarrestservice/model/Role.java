@@ -21,6 +21,7 @@ public class Role implements GrantedAuthority {
     @Column(name = "authority", nullable = false, length = 32, unique = true)
     private String authority;
 
+    public static final String ANONYMOUS_USER = "ANONYMOUS_USER";
     public static final String AUTHORITY_USER = "ROLE_USER";
 
     public static long getSerialVersionUID() {

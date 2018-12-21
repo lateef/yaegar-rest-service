@@ -1,7 +1,7 @@
 create table if not exists role
 (
-  id        bigint auto_increment primary key,
-  authority varchar(32) not null,
+  id                bigint auto_increment primary key,
+  authority         varchar(32) not null,
   constraint UK_role1
     unique (authority)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -9,10 +9,14 @@ create table if not exists role
 create table if not exists country
 (
   id               bigint auto_increment primary key,
-  created_datetime datetime(6) null,
-  updated_datetime datetime(6) null,
+  created_datetime datetime null,
+  updated_datetime datetime null,
   uuid             varchar(36) not null,
-  name             varchar(32) not null,
+  name             varchar(55) not null,
+  full_name        varchar(55) not null,
+  code             varchar(2) not null,
+  continent_code   varchar(2) not null,
+  iso3             varchar(3) not null,
   created_by       bigint null,
   updated_by       bigint null,
   constraint UK_country1
@@ -24,19 +28,19 @@ create table if not exists country
 create table if not exists user
 (
   id bigint auto_increment primary key,
-  created_datetime datetime(6) null,
-  updated_datetime datetime(6) null,
+  created_datetime datetime null,
+  updated_datetime datetime null,
   uuid varchar(36) not null,
   phone_number varchar(15) not null,
   accepted_terms bit null,
   account_non_expired bit null,
   account_non_locked bit null,
   credentials_non_expired bit null,
-  deleted_datetime datetime(6) null,
+  deleted_datetime datetime null,
   enabled bit null,
   failed_login_attempts int null,
   first_name varchar(32) null,
-  password varchar(128) not null,
+  password varchar(128) null,
   country_id bigint null,
   created_by       bigint null,
   updated_by       bigint null,
@@ -62,8 +66,8 @@ create table if not exists user_roles
 create table if not exists phone
 (
   id bigint auto_increment primary key,
-  created_datetime datetime(6) null,
-  updated_datetime datetime(6) null,
+  created_datetime datetime null,
+  updated_datetime datetime null,
   uuid varchar(36) not null,
   code varchar(3) not null,
   number varchar(15) not null,
@@ -71,7 +75,9 @@ create table if not exists phone
   updated_by       bigint null,
   phone_user_id bigint null,
   country_id bigint null,
-  `primary` bit null,
+  principal bit null,
+  confirmation_code varchar(6) null,
+  confirmed bit not null,
   constraint UK_phone1
     unique (uuid),
   constraint UK_phone2
