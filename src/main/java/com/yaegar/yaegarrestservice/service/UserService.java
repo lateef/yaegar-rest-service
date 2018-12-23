@@ -40,8 +40,7 @@ public class UserService {
                 return singletonMap("Not a valid number", user);
             }
 
-            phone.setCode(phone.getCode().replaceAll("\\+", ""));
-            phone.setNumber(phone.getNumber().replaceAll("\\s+", ""));
+            cleanPhoneNumberAndCode(phone);
             phone.setConfirmationCode(String.format("%06d", new Random().nextInt(1000000)));
             user.setPhoneNumber(phone.getNumber());
 
@@ -74,15 +73,17 @@ public class UserService {
     public Map<String, User> logIn(User user) {
         try {
             Phone phone = getPrincipalPhone(user);
+            cleanPhoneNumberAndCode(phone);
 
-            Optional<User> existingUserOptional = userRepository.findOptionalByPhoneNumber(phone.getNumber().replaceAll("\\s+", ""));
+            Optional<User> existingUserOptional = userRepository.findOptionalByPhoneNumber(phone.getNumber());
 
             if (existingUserOptional.isPresent()) {
                 User existingUser = existingUserOptional.get();
-                phone.setConfirmationCode(String.format("%06d", new Random().nextInt(1000000)));
                 Phone existingPrincipalPhone = getPrincipalPhone(existingUser);
+                existingPrincipalPhone.setConfirmationCode(String.format("%06d", new Random().nextInt(1000000)));
+                existingPrincipalPhone.setConfirmed(false);
 
-                if (existingPrincipalPhone != null && existingPrincipalPhone.equals(phone)) {
+                if (existingPrincipalPhone.equals(phone)) {
                     User user1 = userRepository.save(existingUser);
                     user1.eraseCredentials();
                     return singletonMap("success", user1);
@@ -95,6 +96,11 @@ public class UserService {
         } catch (NullPointerException e) {
             return singletonMap("No phone number supplied", user);
         }
+    }
+
+    private void cleanPhoneNumberAndCode(Phone phone) {
+        phone.setCode(phone.getCode().replaceAll("\\+", ""));
+        phone.setNumber(phone.getNumber().replaceAll("\\s+", ""));
     }
 
     private Phone getPrincipalPhone(User user) {
