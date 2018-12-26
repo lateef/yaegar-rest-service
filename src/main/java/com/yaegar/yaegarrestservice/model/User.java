@@ -47,7 +47,7 @@ public class User extends AbstractEntity implements Serializable {
     private Country country;
 
     @Column(name = "deleted_datetime")
-    private LocalDateTime deletionDateTime;
+    private LocalDateTime deletedDateTime;
 
     @Column(name = "account_non_expired")
     private boolean accountNonExpired;
@@ -119,12 +119,12 @@ public class User extends AbstractEntity implements Serializable {
         this.country = country;
     }
 
-    public LocalDateTime getDeletionDateTime() {
-        return deletionDateTime;
+    public LocalDateTime getDeletedDateTime() {
+        return deletedDateTime;
     }
 
-    public void setDeletionDateTime(LocalDateTime deletionDateTime) {
-        this.deletionDateTime = deletionDateTime;
+    public void setDeletedDateTime(LocalDateTime deletedDateTime) {
+        this.deletedDateTime = deletedDateTime;
     }
 
     public boolean isAccountNonExpired() {

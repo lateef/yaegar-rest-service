@@ -40,7 +40,6 @@ public class UserServiceTest {
 
     private UserService userService;
 
-
     @Before
     public void setUp() {
         userService = new UserService(countryRepository, roleRepository, userRepository);
@@ -149,7 +148,8 @@ public class UserServiceTest {
         Map<String, User> account = userService.createAccount(user);
 
         //then
-        assertThat(account, is(sameBeanAs(expectedAccount)));
+        assertThat(account.get("Phone already registered"),
+                sameBeanAs(expectedAccount.get("Phone already registered")).ignoring("phones.confirmationCode"));
     }
 
     @Test

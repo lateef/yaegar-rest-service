@@ -8,8 +8,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
+import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
@@ -37,7 +37,7 @@ public class CountryRepositoryTest {
         Country actualCountry = countryRepository.findByCode("ZZ").get();
 
         //then
-        assertThat(actualCountry.getCode(), is(expectedCountry.getCode()));
+        assertThat(actualCountry, sameBeanAs(expectedCountry));
     }
 
 }

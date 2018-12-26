@@ -40,9 +40,9 @@ public class UserService {
                 return singletonMap("Not a valid number", user);
             }
 
+            user.setPhoneNumber(phone.getNumber());
             cleanPhoneNumberAndCode(phone);
             phone.setConfirmationCode(String.format("%06d", new Random().nextInt(1000000)));
-            user.setPhoneNumber(phone.getNumber());
 
             Optional<User> existingUser = userRepository.findOptionalByPhoneNumber(phone.getNumber());
             if (existingUser.isPresent()) {
