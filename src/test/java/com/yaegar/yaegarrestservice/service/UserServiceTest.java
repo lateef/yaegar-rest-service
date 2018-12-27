@@ -139,7 +139,7 @@ public class UserServiceTest {
         User expectedUser = new User();
         expectedUser.setPhones(singleton(savedPhone));
         expectedUser.setUuid(uuid);
-        expectedUser.setPhoneNumber(phone.getNumber());
+        expectedUser.setPhoneNumber(savedPhone.getNumber());
 
         Map expectedAccount = singletonMap("Phone already registered", expectedUser);
         when(userRepository.findOptionalByPhoneNumber(savedPhone.getNumber())).thenReturn(Optional.of(expectedUser));
