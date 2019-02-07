@@ -64,11 +64,18 @@ public class AuthenticationUtils {
 
     public static HttpHeaders getAuthenticatedUser(User user) {
         JwtUserDto jwtUserDto = new JwtUserDto();
-        jwtUserDto.setUsername(user.getPhoneNumber());
-        JwtAuthenticatedUser jwtAuthenticatedUser = jwtAuthenticatedUser(jwtUserDto,
-                user.getAuthorities());
-
+        JwtAuthenticatedUser jwtAuthenticatedUser;
         HttpHeaders headers = new HttpHeaders();
+
+        try {
+            jwtUserDto.setUsername(user.getPhoneNumber());
+            jwtAuthenticatedUser = jwtAuthenticatedUser(jwtUserDto, user.getAuthorities());
+        } catch (NullPointerException e) {
+            LOGGER.error("No user found");
+            headers.set("access_token", null);
+            return headers;
+        }
+
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             headers.set("access_token", objectMapper.writeValueAsString(jwtAuthenticatedUser));

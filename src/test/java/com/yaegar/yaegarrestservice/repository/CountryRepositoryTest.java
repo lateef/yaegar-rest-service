@@ -29,7 +29,6 @@ public class CountryRepositoryTest {
         expectedCountry.setCode("ZZ");
         expectedCountry.setIso3("ZZZ");
         expectedCountry.setContinentCode("ZZ");
-        expectedCountry.setUuid("uuiduuiduuiduuiduuiduuiduuiduuiduuid");
         entityManager.persist(expectedCountry);
         entityManager.flush();
 

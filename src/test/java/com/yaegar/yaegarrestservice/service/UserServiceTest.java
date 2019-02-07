@@ -16,7 +16,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
 import static com.yaegar.yaegarrestservice.model.Role.AUTHORITY_USER;
@@ -52,8 +51,7 @@ public class UserServiceTest {
 
         //given
         User expectedUser = new User();
-        expectedUser.setPhones(emptySet());
-        expectedUser.setUuid(UUID.randomUUID().toString());
+        expectedUser.setPhones(emptyList());
 
         //when
         Map<String, User> account = userService.createAccount(expectedUser);
@@ -73,8 +71,7 @@ public class UserServiceTest {
         Phone phone = new Phone(null, null, true, country);
 
         User expectedUser = new User();
-        expectedUser.setPhones(singleton(phone));
-        expectedUser.setUuid(UUID.randomUUID().toString());
+        expectedUser.setPhones(singletonList(phone));
 
         //when
         Map<String, User> account = userService.createAccount(expectedUser);
@@ -91,8 +88,7 @@ public class UserServiceTest {
         Phone phone = new Phone("+44", "80708394", true, country);
 
         User expectedUser = new User();
-        expectedUser.setPhones(singleton(phone));
-        expectedUser.setUuid(UUID.randomUUID().toString());
+        expectedUser.setPhones(singletonList(phone));
 
         Map expectedAccount = singletonMap("Not a valid number", expectedUser);
 
@@ -111,8 +107,7 @@ public class UserServiceTest {
         Phone phone = new Phone("+44", phoneNumber, true, country);
 
         User expectedUser = new User();
-        expectedUser.setPhones(singleton(phone));
-        expectedUser.setUuid(UUID.randomUUID().toString());
+        expectedUser.setPhones(singletonList(phone));
 
         Map expectedAccount = singletonMap("Phone already registered", expectedUser);
         when(userRepository.findOptionalByPhoneNumber(phoneNumber)).thenReturn(Optional.of(expectedUser));
@@ -131,14 +126,11 @@ public class UserServiceTest {
         Phone phone = new Phone("+44", "+44 7780 708394", true, country);
         Phone savedPhone = new Phone("44", "+447780708394", true, country);
 
-        String uuid = UUID.randomUUID().toString();
         User user = new User();
-        user.setPhones(singleton(phone));
-        user.setUuid(uuid);
+        user.setPhones(singletonList(phone));
 
         User expectedUser = new User();
-        expectedUser.setPhones(singleton(savedPhone));
-        expectedUser.setUuid(uuid);
+        expectedUser.setPhones(singletonList(savedPhone));
         expectedUser.setPhoneNumber(savedPhone.getNumber());
 
         Map expectedAccount = singletonMap("Phone already registered", expectedUser);
@@ -160,8 +152,7 @@ public class UserServiceTest {
         Phone phone = new Phone("+44", phoneNumber, true, country);
 
         User expectedUser = new User();
-        expectedUser.setPhones(singleton(phone));
-        expectedUser.setUuid(UUID.randomUUID().toString());
+        expectedUser.setPhones(singletonList(phone));
 
         Map expectedAccount = singletonMap("success", expectedUser);
         when(userRepository.findOptionalByPhoneNumber(phoneNumber)).thenReturn(Optional.empty());

@@ -2,6 +2,7 @@ package com.yaegar.yaegarrestservice.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;

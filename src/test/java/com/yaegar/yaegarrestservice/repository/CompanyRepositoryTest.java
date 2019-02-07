@@ -9,11 +9,11 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Collections;
 import java.util.Set;
-import java.util.UUID;
 
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
@@ -26,16 +26,14 @@ public class CompanyRepositoryTest {
     private CompanyRepository companyRepository;
 
     @Test
-    public void whenFindUuid_thenReturnCompany() {
+    public void whenFindId_thenReturnCompany() {
         //given
         Company expectedCompany = new Company("Yaegar");
-        String uuid = "uuiduuiduuiduuiduuiduuiduuiduuiduuid";
-        expectedCompany.setUuid(uuid);
         entityManager.persist(expectedCompany);
         entityManager.flush();
 
         //when
-        Company actualCompany = companyRepository.findByUuid(uuid).get();
+        Company actualCompany = companyRepository.findById(1L).get();
 
         //then
         assertThat(actualCompany, sameBeanAs(expectedCompany));
@@ -47,20 +45,17 @@ public class CompanyRepositoryTest {
         User employee = new User();
         employee.setPhoneNumber("123456789");
         employee.setAcceptedTerms(true);
-        employee.setUuid(UUID.randomUUID().toString());
         entityManager.persist(employee);
         entityManager.flush();
-        Set<User> employees = Collections.singleton(employee);
+        Set<User> employees = singleton(employee);
 
         Company expectedCompany = new Company("Yaegar");
-        String uuid = "uuiduuiduuiduuiduuiduuiduuiduuiduuid";
-        expectedCompany.setUuid(uuid);
         expectedCompany.setEmployees(employees);
         entityManager.persist(expectedCompany);
         entityManager.flush();
 
         //when
-        Company actualCompany = companyRepository.findByEmployeesIn(Collections.singleton(employee)).stream().findFirst().get();
+        Company actualCompany = companyRepository.findByEmployeesIn(singletonList(employee)).stream().findFirst().get();
 
         //then
         assertThat(actualCompany, sameBeanAs(expectedCompany));

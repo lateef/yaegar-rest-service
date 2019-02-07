@@ -16,14 +16,14 @@ public class ChartOfAccounts extends AbstractEntity implements Serializable {
     private Long id;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "ledger_chart_of_accounts_id", referencedColumnName = "id")
-    private List<Ledger> ledgers;
+    @JoinColumn(name = "account_chart_of_accounts_id", referencedColumnName = "id")
+    private List<Account> accounts;
 
     public ChartOfAccounts() {
     }
 
-    public ChartOfAccounts(List<Ledger> ledgers) {
-        this.ledgers = ledgers;
+    public ChartOfAccounts(List<Account> accounts) {
+        this.accounts = accounts;
     }
 
     public Long getId() {
@@ -34,11 +34,11 @@ public class ChartOfAccounts extends AbstractEntity implements Serializable {
         this.id = id;
     }
 
-    public List<Ledger> getLedgers() {
-        return ledgers;
+    public List<Account> getAccounts() {
+        return accounts;
     }
 
-    public void setLedgers(List<Ledger> ledgers) {
-        this.ledgers = ledgers;
+    public void setAccounts(List<Account> accounts) {
+        this.accounts = accounts;
     }
 }

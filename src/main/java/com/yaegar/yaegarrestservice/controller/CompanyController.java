@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 import static com.yaegar.yaegarrestservice.util.AuthenticationUtils.getAuthenticatedUser;
 
@@ -43,10 +43,10 @@ public class CompanyController {
     }
 
     @RequestMapping(value = "/get-user-companies", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Set<Company>>> getCompanies(ModelMap model, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<Map<String, List<Company>>> getCompanies(ModelMap model, HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         HttpHeaders headers = getAuthenticatedUser(user);
-            Set<Company> companies = companyService.getCompaniesByEmployeesIn(Collections.singleton(user));
-            return ResponseEntity.ok().headers(headers).body(Collections.singletonMap("success", companies));
+        List<Company> companies = companyService.getCompaniesByEmployeesIn(Collections.singletonList(user));
+        return ResponseEntity.ok().headers(headers).body(Collections.singletonMap("success", companies));
     }
 }

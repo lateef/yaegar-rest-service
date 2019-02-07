@@ -11,6 +11,7 @@ import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,7 +41,7 @@ public class User extends AbstractEntity implements Serializable {
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "phone_user_id", referencedColumnName = "id")
-    private Set<Phone> phones;
+    private List<Phone> phones;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "country_id", referencedColumnName = "id")
@@ -103,11 +104,11 @@ public class User extends AbstractEntity implements Serializable {
         this.password = password;
     }
 
-    public Set<Phone> getPhones() {
+    public List<Phone> getPhones() {
         return phones;
     }
 
-    public void setPhones(Set<Phone> phones) {
+    public void setPhones(List<Phone> phones) {
         this.phones = phones;
     }
 
@@ -188,7 +189,7 @@ public class User extends AbstractEntity implements Serializable {
         phones = phones.stream().map(phone -> {
             phone.setConfirmationCode(null);
             return phone;
-        }).collect(Collectors.toSet());
+        }).collect(Collectors.toList());
     }
 
     public Collection<GrantedAuthority> getAuthorities() {

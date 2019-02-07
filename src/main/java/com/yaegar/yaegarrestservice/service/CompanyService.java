@@ -4,9 +4,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yaegar.yaegarrestservice.model.ChartOfAccounts;
 import com.yaegar.yaegarrestservice.model.Company;
-import com.yaegar.yaegarrestservice.model.Ledger;
+import com.yaegar.yaegarrestservice.model.Account;
 import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.repository.CompanyRepository;
+import com.yaegar.yaegarrestservice.repository.AccountRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -14,8 +15,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.lang.ClassLoader.getSystemResourceAsStream;
@@ -25,69 +25,94 @@ public class CompanyService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CompanyService.class);
 
     private CompanyRepository companyRepository;
+    private AccountRepository accountRepository;
 
-    public CompanyService(CompanyRepository companyRepository) {
+    public CompanyService(CompanyRepository companyRepository, AccountRepository accountRepository) {
         this.companyRepository = companyRepository;
+        this.accountRepository = accountRepository;
     }
 
     public Company addCompany(Company company, User user) throws IOException {
-        List<Ledger> companyLedgers = createCompanyLedger(user);
-        ChartOfAccounts chartOfAccounts = new ChartOfAccounts(companyLedgers);
-        chartOfAccounts.setUuid(UUID.randomUUID().toString());
-        company.setChartOfAccounts(chartOfAccounts);
-
+        if (company.getId() != null) {
+            return company;
+        }
+        company.setName(company.getName().trim());
         company.setCreatedBy(user.getId());
         company.setUpdatedBy(user.getId());
         company.setOwners(Collections.singleton(user));
         company.setEmployees(Collections.singleton(user));
-        return companyRepository.save(company);
+        List<Account> primaryCompanyAccounts = createPrimaryCompanyAccount(user);
+        ChartOfAccounts chartOfAccounts = new ChartOfAccounts(primaryCompanyAccounts);
+        company.setChartOfAccounts(chartOfAccounts);
+        Company company1 = companyRepository.save(company);
+
+        List<Account> companyAccounts = createCompanyAccount(
+                primaryCompanyAccounts,
+                company1.getChartOfAccounts().getId(),
+                user
+        );
+        List<Account> companyAccounts2 = accountRepository.saveAll(companyAccounts);
+        primaryCompanyAccounts.addAll(companyAccounts2);
+        chartOfAccounts.setAccounts(primaryCompanyAccounts);
+        return company1;
     }
 
-    public Set<Company> getCompaniesByEmployeesIn(Set<User> employees) {
+    public Optional<Company> findById(Long id) {
+        return companyRepository.findById(id);
+    }
+
+    public List<Company> getCompaniesByEmployeesIn(List<User> employees) {
         return companyRepository.findByEmployeesIn(employees);
     }
 
-    private List<Ledger> readLedgerTemplateFromFile() throws IOException {
-        String ledgerFilepath = "ledgerTemplate.json";
+    public boolean userCanAccessChartOfAccounts(User user, Long chartOfAccountsId) {
+        List<Company> companies = getCompaniesByEmployeesIn(Collections.singletonList(user));
+        return companies.stream()
+                .anyMatch(company -> company.getChartOfAccounts().getId().equals(chartOfAccountsId));
+    }
+
+    private List<Account> readChartOfAccountsTemplateFromFile() throws IOException {
+        String accountFilepath = "chartOfAccountsTemplate.json";
         try {
             return new ObjectMapper().readValue(
-                    getSystemResourceAsStream(ledgerFilepath), new TypeReference<List<Ledger>>() {
+                    getSystemResourceAsStream(accountFilepath), new TypeReference<List<Account>>() {
                     });
         } catch (IOException e) {
-            LOGGER.error("Could not read file path {}", ledgerFilepath, e);
+            LOGGER.error("Could not read file path {}", accountFilepath, e);
             throw new IOException();
         }
     }
 
-    private List<Ledger> createCompanyLedger(User user) throws IOException {
-        List<Ledger> ledgers1 = readLedgerTemplateFromFile();
-        List<Ledger> ledgers2 = readLedgerTemplateFromFile();
+    private List<Account> createPrimaryCompanyAccount(User user) throws IOException {
+        List<Account> companyAccounts = readChartOfAccountsTemplateFromFile();
 
-        List<Ledger> companyLedgers = ledgers1.stream()
-                .map(ledger1 -> {
-                    ledger1.setUuid(UUID.randomUUID().toString());
-                    ledger1.setCreatedBy(user.getId());
-                    ledger1.setUpdatedBy(user.getId());
-                    return ledger1;
+        return companyAccounts.stream()
+                .filter(companyAccount -> (companyAccount.getCode() % 1000000) == 0)
+                .map(companyAccount -> {
+                    companyAccount.setCreatedBy(user.getId());
+                    companyAccount.setUpdatedBy(user.getId());
+                    return companyAccount;
                 })
                 .collect(Collectors.toList());
+    }
 
-        return companyLedgers.stream()
-                .map(companyLedger -> {
-                    if (companyLedger.getParentUuid() != null) {
-                        Ledger ledger = ledgers2.stream()
-                                .filter(ledger2 -> companyLedger.getParentUuid().equals(ledger2.getUuid()))
-                                .findFirst()
-                                .orElseThrow(NullPointerException::new);
+    private List<Account> createCompanyAccount(List<Account> primaryAccounts, Long chartOfAccountsId, User user) throws IOException {
+        List<Account> companyAccounts = readChartOfAccountsTemplateFromFile();
 
-                        Ledger companyLedger2 = companyLedgers.stream()
-                                .filter(ledger3 -> ledger.getName().equals(ledger3.getName()))
-                                .findFirst()
-                                .orElseThrow(NullPointerException::new);
+        return companyAccounts.stream()
+                .filter(companyAccount -> (companyAccount.getCode() % 1000000) != 0)
+                .map(companyAccount -> {
+                    int parentCode = (companyAccount.getCode() / 1000000) * 1000000;
+                    Account primaryAccount = primaryAccounts.stream()
+                            .filter(account -> parentCode == account.getCode())
+                            .findFirst()
+                            .orElseThrow(NullPointerException::new);
 
-                        companyLedger.setParentUuid(companyLedger2.getUuid());
-                    }
-                    return companyLedger;
+                    companyAccount.setCreatedBy(user.getId());
+                    companyAccount.setUpdatedBy(user.getId());
+                    companyAccount.setParentId(primaryAccount.getId());
+                    companyAccount.setAccountChartOfAccountsId(chartOfAccountsId);
+                    return companyAccount;
                 })
                 .collect(Collectors.toList());
     }

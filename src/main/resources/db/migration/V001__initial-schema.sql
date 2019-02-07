@@ -11,7 +11,6 @@ create table country
   id               bigint auto_increment primary key,
   created_datetime datetime null,
   updated_datetime datetime null,
-  uuid             varchar(36) not null,
   name             varchar(55) not null,
   full_name        varchar(55) not null,
   code             varchar(2) not null,
@@ -19,9 +18,7 @@ create table country
   iso3             varchar(3) not null,
   created_by       bigint null,
   updated_by       bigint null,
-  constraint UK_country1
-  unique (uuid),
-  constraint UK_country2
+  constraint UK_country
   unique (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -31,7 +28,6 @@ create table user
   created_datetime datetime null,
   updated_datetime datetime null,
   deleted_datetime datetime null,
-  uuid varchar(36) not null,
   phone_number varchar(15) not null,
   accepted_terms bit null,
   account_non_expired bit null,
@@ -44,9 +40,7 @@ create table user
   country_id bigint null,
   created_by       bigint null,
   updated_by       bigint null,
-  constraint UK_user1
-    unique (uuid),
-  constraint UK_user2
+  constraint UK_user
     unique (phone_number),
   constraint FK_user_country
     foreign key (country_id) references country (id)
@@ -68,7 +62,6 @@ create table phone
   id bigint auto_increment primary key,
   created_datetime datetime null,
   updated_datetime datetime null,
-  uuid varchar(36) not null,
   code varchar(3) not null,
   number varchar(15) not null,
   created_by       bigint null,
@@ -78,9 +71,7 @@ create table phone
   principal bit null,
   confirmation_code varchar(6) null,
   confirmed bit not null,
-  constraint UK_phone1
-    unique (uuid),
-  constraint UK_phone2
+  constraint UK_phone
     unique (number),
   constraint FK_phone_user
     foreign key (phone_user_id) references user (id),
@@ -93,11 +84,8 @@ create table chart_of_accounts
   id bigint auto_increment primary key,
   created_datetime datetime null,
   updated_datetime datetime null,
-  uuid               varchar(36)  not null,
   created_by       bigint null,
-  updated_by       bigint null,
-  constraint UK_chart_of_accounts
-    unique (uuid)
+  updated_by       bigint null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table company
@@ -105,12 +93,11 @@ create table company
   id bigint auto_increment primary key,
   created_datetime datetime null,
   updated_datetime datetime null,
-  uuid varchar(36) not null,
   name             varchar(256) not null,
   chart_of_accounts_id bigint null,
   created_by       bigint null,
   updated_by       bigint null,
-  constraint FK_company
+  constraint FK_company_chart_of_accounts
   foreign key (chart_of_accounts_id) references chart_of_accounts (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -136,24 +123,202 @@ create table company_employees
   foreign key (employees_id) references user (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-create table ledger
+create table account
 (
   id bigint auto_increment primary key,
   created_datetime datetime null,
   updated_datetime datetime null,
   deleted_datetime datetime null,
-  uuid               varchar(36)  not null,
-  code               int          not null,
-  description        varchar(255) null,
-  name               varchar(255) not null,
-  parent_uuid        varchar(36)  null,
-  ledger_chart_of_accounts_id bigint null,
+  code               int not null,
+  name               varchar(150) not null,
+  account_type       varchar(50) null,
+  product_classifier      varchar(50) null,
+  description        varchar(1000) null,
+  parent_id        bigint null,
+  parent          bit null,
+  account_chart_of_accounts_id bigint null,
   created_by       bigint null,
   updated_by       bigint null,
-  constraint UK_ledger_template1
-    unique (uuid),
-  constraint UK_ledger_template2
-    unique (ledger_chart_of_accounts_id, code),
-  constraint UK_ledger_template3
-    unique (ledger_chart_of_accounts_id, name, parent_uuid)
+  constraint UK_account1
+    unique (account_chart_of_accounts_id, code),
+  constraint UK_account2
+    unique (account_chart_of_accounts_id, name, account_type, parent_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table transaction
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  deleted_datetime datetime null,
+  created_by       bigint null,
+  updated_by       bigint null
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table journal_entry
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  deleted_datetime datetime null,
+  transaction_id   bigint null,
+  account_id        bigint null,
+  amount           decimal(19,2) null,
+  transaction_datetime datetime null,
+  entry            int not null,
+  description        varchar(1000) null,
+  transaction_side varchar(255) null,
+  created_by       bigint null,
+  updated_by       bigint null,
+  constraint FK_journal_entry_transaction
+    foreign key (transaction_id) references transaction (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table supplier
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  name varchar(256) not null,
+  company_id  bigint null,
+  company_supplier_id  bigint null,
+  user_supplier_id  bigint null,
+  created_by       bigint null,
+  updated_by       bigint null,
+  constraint UK_supplier
+    unique (name, company_id),
+  constraint FK_supplier_company1
+    foreign key (company_id) references company (id),
+  constraint FK_supplier_company2
+    foreign key (company_supplier_id) references company (id),
+  constraint FK_supplier_company3
+    foreign key (user_supplier_id) references company (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table product
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  name varchar(256) not null,
+  cost_price decimal(19,2) null,
+  sell_price decimal(19,2) null,
+  company_id bigint null,
+  created_by       bigint null,
+  updated_by       bigint null,
+  constraint FK_product_supplier
+    foreign key (company_id) references company (id)
+);
+
+create table product_accounts
+(
+  product_id bigint not null,
+  accounts_id bigint not null,
+  constraint UK_product_accounts
+    unique (accounts_id),
+  constraint FK_product_accounts_product
+    foreign key (product_id) references product (id),
+  constraint FK_product_accounts_account
+    foreign key (accounts_id) references account (id)
+);
+
+create table purchase_order
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  company_id  bigint null,
+  supplier_id  bigint null,
+  total_price decimal(19,2) null,
+  description        varchar(1000) null,
+  purchase_order_state varchar(50) null,
+  order_supply_state varchar(50) null,
+  delivery_datetime datetime null,
+  created_by       bigint null,
+  updated_by       bigint null
+);
+
+create table purchase_order_activity
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  purchase_order_activity_purchase_order_id bigint null,
+  purchase_order_state varchar(50) null,
+  order_supply_state varchar(50) null,
+  amount decimal(19,2) null,
+  description        varchar(1000) null,
+  delivery_datetime datetime null,
+  created_by       bigint null,
+  updated_by       bigint null
+);
+
+create table sales_order
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  company_id  bigint null,
+  customer_id  bigint null,
+  total_price decimal(19,2) null,
+  description        varchar(1000) null,
+  sales_order_state varchar(50) null,
+  order_supply_state varchar(50) null,
+  delivery_datetime datetime null,
+  created_by       bigint null,
+  updated_by       bigint null
+);
+
+create table sales_order_activity
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  sales_order_activity_sales_order_id bigint null,
+  sales_order_state varchar(50) null,
+  order_supply_state varchar(50) null,
+  amount decimal(19,2) null,
+  description        varchar(1000) null,
+  delivery_datetime datetime null,
+  created_by       bigint null,
+  updated_by       bigint null
+);
+
+create table line_item
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  line_item_purchase_order_id bigint null,
+  sales_order_id bigint null,
+  item_type varchar(255) null,
+  quantity float null,
+  sub_total decimal(19,2) null,
+  unit_price decimal(19,2) null,
+  product_id bigint null,
+  created_by       bigint null,
+  updated_by       bigint null,
+  constraint FK_line_item_product
+    foreign key (product_id) references product (id)
+);
+
+create table customer
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  name varchar(256) not null,
+  company_id  bigint null,
+  company_customer_id  bigint null,
+  user_customer_id  bigint null,
+  created_by       bigint null,
+  updated_by       bigint null,
+  constraint UK_customer
+    unique (name, company_id),
+  constraint FK_customer_company1
+    foreign key (company_id) references company (id),
+  constraint FK_customer_company2
+    foreign key (company_customer_id) references company (id),
+  constraint FK_customer_company3
+    foreign key (user_customer_id) references company (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

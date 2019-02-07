@@ -5,9 +5,9 @@ import com.yaegar.yaegarrestservice.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
-import java.util.Set;
+import java.util.List;
 
 public interface CompanyRepository extends JpaRepository<Company, Long> {
-    Optional<Company> findByUuid(String uuid);
-    Set<Company> findByEmployeesIn(Set<User> employees);
+    Optional<Company> findById(Long id);
+    List<Company> findByEmployeesIn(List<User> employees);
 }

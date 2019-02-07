@@ -34,6 +34,9 @@ public class UserService {
     }
 
     public Map<String, User> createAccount(User user) {
+        if (user.getId() != null) {
+            return singletonMap("There has been a problem", user);
+        }
         try {
             Phone phone = getPrincipalPhone(user);
             if (!isValidNumber(phone.getNumber(), phone.getCountry().getCode())) {
@@ -49,14 +52,14 @@ public class UserService {
                 return singletonMap("Phone already registered", user);
             }
 
-            Country country = countryRepository.findByCode(phone.getCountry().getCode()).get();
+            Country country = countryRepository.findByCode(phone.getCountry().getCode())
+            .orElseThrow(NullPointerException::new);
             phone.setCountry(country);
             user.setCountry(country);
             user.setAcceptedTerms(true);
             user.setAccountNonExpired(true);
             user.setAccountNonLocked(true);
             user.setCredentialsNonExpired(true);
-            user.setUuid(UUID.randomUUID().toString());
 
             Set<Role> roleSet = new HashSet<>();
             Optional<Role> role = roleRepository.findByAuthority(AUTHORITY_USER);
@@ -64,7 +67,9 @@ public class UserService {
                 roleSet.add(r);
                 user.setRoles(roleSet);
             });
-            return singletonMap("success", userRepository.save(user));
+            User user1 = userRepository.save(user);
+            user1.eraseCredentials();
+            return singletonMap("success", user1);
         } catch (NullPointerException e) {
             return singletonMap("No phone number supplied", user);
         }
@@ -126,6 +131,8 @@ public class UserService {
                     userRepository.save(existingUser);
                     existingUser.eraseCredentials();
                     return singletonMap("success", existingUser);
+                } else {
+                    return singletonMap("This code is invalid", user);
                 }
             } else {
                 return singletonMap("This number has not been registered, please create a new account", user);
@@ -133,8 +140,6 @@ public class UserService {
         } catch (NullPointerException e) {
             return singletonMap("No phone number supplied", user);
         }
-
-        return null;
     }
 
     private boolean isValidNumber(String numberToParse, String defaultRegion) {

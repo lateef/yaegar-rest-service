@@ -40,25 +40,6 @@ public class UserRepositoryTest {
 
         User expectedUser = new User();
         expectedUser.setPhoneNumber(phoneNumber);
-        expectedUser.setUuid(UUID.randomUUID().toString());
-        entityManager.persist(expectedUser);
-        entityManager.flush();
-
-        //when
-        userRepository.findOptionalByPhoneNumber(phoneNumber);
-    }
-
-    @Test
-    public void whenFindOptionalByPhoneNumber_andNotUuid_thenReturnUser() {
-        //then
-        expectedException.expect(ConstraintViolationException.class);
-
-        //given
-        String phoneNumber = "123456789";
-
-        User expectedUser = new User();
-        expectedUser.setPhoneNumber(phoneNumber);
-        expectedUser.setAcceptedTerms(true);
         entityManager.persist(expectedUser);
         entityManager.flush();
 
@@ -74,7 +55,6 @@ public class UserRepositoryTest {
         User expectedUser = new User();
         expectedUser.setPhoneNumber(phoneNumber);
         expectedUser.setAcceptedTerms(true);
-        expectedUser.setUuid(UUID.randomUUID().toString());
         entityManager.persist(expectedUser);
         entityManager.flush();
 
