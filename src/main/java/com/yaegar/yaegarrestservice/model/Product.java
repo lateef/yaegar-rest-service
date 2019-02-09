@@ -6,7 +6,7 @@ import org.hibernate.validator.constraints.Length;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "product")
@@ -27,7 +27,7 @@ public class Product extends AbstractEntity implements Serializable {
     private Company company;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private List<Account> accounts;
+    private Set<Account> accounts;
 
     @Column(name = "cost_price")
     private BigDecimal costPrice;
@@ -59,11 +59,11 @@ public class Product extends AbstractEntity implements Serializable {
         this.company = company;
     }
 
-    public List<Account> getAccounts() {
+    public Set<Account> getAccounts() {
         return accounts;
     }
 
-    public void setAccounts(List<Account> accounts) {
+    public void setAccounts(Set<Account> accounts) {
         this.accounts = accounts;
     }
 

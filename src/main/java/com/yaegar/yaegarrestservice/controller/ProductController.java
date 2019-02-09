@@ -15,9 +15,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.yaegar.yaegarrestservice.model.enums.ProductClassifier.DISCOUNT;
 import static com.yaegar.yaegarrestservice.model.enums.ProductClassifier.PRODUCT;
@@ -95,7 +93,11 @@ public class ProductController {
         final Account incomeRevenueProductDiscountAccount = accountService.addAccount(salesDiscount.getId(), product.getName(), DISCOUNT, user);
         final Account costOfSalesGoodsProductDiscountAccount = accountService.addAccount(purchasesDiscount.getId(), product.getName(), DISCOUNT, user);
 
-        final List<Account> productAccounts = Arrays.asList(incomeRevenueProductAccount, costOfSalesGoodsProductAccount, incomeRevenueProductDiscountAccount, costOfSalesGoodsProductDiscountAccount);
+        final Set<Account> productAccounts = new HashSet<>(
+                Arrays.asList(incomeRevenueProductAccount, 
+                        costOfSalesGoodsProductAccount,
+                        incomeRevenueProductDiscountAccount,
+                        costOfSalesGoodsProductDiscountAccount));
         return productService.addProduct(product, productAccounts, user);
     }
 }

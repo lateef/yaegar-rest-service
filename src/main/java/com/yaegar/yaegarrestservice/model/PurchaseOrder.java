@@ -8,7 +8,6 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -49,7 +48,7 @@ public class PurchaseOrder extends AbstractEntity implements Serializable {
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "purchase_order_activity_purchase_order_id", referencedColumnName = "id")
-    private List<PurchaseOrderActivity> purchaseOrderActivities;
+    private Set<PurchaseOrderActivity> purchaseOrderActivities;
 
     @Column(name = "delivery_datetime")
     private LocalDateTime deliveryDatetime;
@@ -118,11 +117,11 @@ public class PurchaseOrder extends AbstractEntity implements Serializable {
         this.description = description;
     }
 
-    public List<PurchaseOrderActivity> getPurchaseOrderActivities() {
+    public Set<PurchaseOrderActivity> getPurchaseOrderActivities() {
         return purchaseOrderActivities;
     }
 
-    public void setPurchaseOrderActivities(List<PurchaseOrderActivity> purchaseOrderActivities) {
+    public void setPurchaseOrderActivities(Set<PurchaseOrderActivity> purchaseOrderActivities) {
         this.purchaseOrderActivities = purchaseOrderActivities;
     }
 

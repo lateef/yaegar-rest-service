@@ -19,6 +19,9 @@ public class SalesOrderActivity extends AbstractEntity implements Serializable {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "order_number")
+    private int orderNumber;
+
     @Column(name = "sales_order_activity_sales_order_id")
     private Long salesOrderActivitySalesOrderId;
 
@@ -45,6 +48,14 @@ public class SalesOrderActivity extends AbstractEntity implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public int getOrderNumber() {
+        return orderNumber;
+    }
+
+    public void setOrderNumber(int orderNumber) {
+        this.orderNumber = orderNumber;
     }
 
     public Long getSalesOrderActivitySalesOrderId() {

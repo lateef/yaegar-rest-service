@@ -29,7 +29,7 @@ public class LineItem extends AbstractEntity implements Serializable {
     private BigDecimal unitPrice;
 
     @Column(name = "quantity")
-    private float quantity;
+    private double quantity;
 
     @Column(name = "sub_total")
     private BigDecimal subTotal;
@@ -66,11 +66,11 @@ public class LineItem extends AbstractEntity implements Serializable {
         this.unitPrice = unitPrice;
     }
 
-    public float getQuantity() {
+    public double getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(float quantity) {
+    public void setQuantity(double quantity) {
         this.quantity = quantity;
     }
 
