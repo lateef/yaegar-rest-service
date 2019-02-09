@@ -253,6 +253,7 @@ create table purchase_order
 create table purchase_order_activity
 (
   id bigint auto_increment primary key,
+  order_number      int not null,
   created_datetime datetime null,
   updated_datetime datetime null,
   purchase_order_activity_purchase_order_id bigint null,
@@ -284,6 +285,7 @@ create table sales_order
 create table sales_order_activity
 (
   id bigint auto_increment primary key,
+  order_number      int not null,
   created_datetime datetime null,
   updated_datetime datetime null,
   sales_order_activity_sales_order_id bigint null,
@@ -304,7 +306,7 @@ create table line_item
   line_item_purchase_order_id bigint null,
   sales_order_id bigint null,
   item_type varchar(255) null,
-  quantity float null,
+  quantity double null,
   sub_total decimal(19,2) null,
   unit_price decimal(19,2) null,
   product_id bigint null,
@@ -345,7 +347,7 @@ create table stock
   product_id       bigint null,
   location_id       bigint null,
   cost_price decimal(19,2) null,
-  quantity float null,
+  quantity double null,
   created_by       bigint null,
   updated_by       bigint null,
   constraint UK_stock
@@ -360,7 +362,7 @@ create table stock_transaction
   line_item_id       bigint null,
   from_location_id       bigint null,
   to_location_id       bigint null,
-  quantity          float null,
+  quantity          double null,
   created_by       bigint null,
   updated_by       bigint null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

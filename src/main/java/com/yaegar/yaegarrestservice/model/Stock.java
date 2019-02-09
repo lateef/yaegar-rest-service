@@ -38,7 +38,7 @@ public class Stock extends AbstractEntity implements Serializable {
     private BigDecimal costPrice;
 
     @Column(name = "quantity")
-    private float quantity;
+    private double quantity;
 
     public Long getId() {
         return id;
@@ -88,11 +88,11 @@ public class Stock extends AbstractEntity implements Serializable {
         this.costPrice = costPrice;
     }
 
-    public float getQuantity() {
+    public double getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(float quantity) {
+    public void setQuantity(double quantity) {
         this.quantity = quantity;
     }
 }

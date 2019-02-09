@@ -27,7 +27,7 @@ public class StockTransaction extends AbstractEntity implements Serializable {
     private Location toLocation;
 
     @Column(name = "quantity")
-    private float quantity;
+    private double quantity;
 
     public Long getId() {
         return id;
@@ -61,11 +61,11 @@ public class StockTransaction extends AbstractEntity implements Serializable {
         this.toLocation = toLocation;
     }
 
-    public float getQuantity() {
+    public double getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(float quantity) {
+    public void setQuantity(double quantity) {
         this.quantity = quantity;
     }
 }

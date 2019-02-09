@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class ProductService {
@@ -19,7 +20,7 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public Product addProduct(Product product, List<Account> accounts, User user) {
+    public Product addProduct(Product product, Set<Account> accounts, User user) {
         product.setAccounts(accounts);
         findByNameAndCompanyId(product.getName(), product.getCompany().getId())
                 .ifPresent(e -> {
