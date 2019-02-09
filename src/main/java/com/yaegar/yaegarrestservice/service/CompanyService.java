@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -72,11 +73,10 @@ public class CompanyService {
     }
 
     private List<Account> readChartOfAccountsTemplateFromFile() throws IOException {
-        String accountFilepath = "chartOfAccountsTemplate.json";
+        String accountFilepath = "/chartOfAccountsTemplate.json";
         try {
-            return new ObjectMapper().readValue(
-                    getSystemResourceAsStream(accountFilepath), new TypeReference<List<Account>>() {
-                    });
+            final InputStream resourceAsStream = getClass().getResourceAsStream(accountFilepath);
+            return new ObjectMapper().readValue(resourceAsStream, new TypeReference<List<Account>>() {});
         } catch (IOException e) {
             LOGGER.error("Could not read file path {}", accountFilepath, e);
             throw new IOException();
