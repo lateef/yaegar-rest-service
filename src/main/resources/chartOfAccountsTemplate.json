@@ -1,0 +1,202 @@
+[
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 1000000,
+    "description": "An item purchased and owned that has monetary value",
+    "name": "Assets",
+    "parent":true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 2000000,
+    "description": "A liability is an obligation that arises in the course of doing business to be paid over a period of time",
+    "name": "Liabilities",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 3000000,
+    "description": "Shareholders' funds",
+    "name": "Equity",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 4000000,
+    "description": "Income/Revenue from normal business activity",
+    "name": "Income",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 5000000,
+    "description": "Costs related to sales or services you provide",
+    "name": "Cost Of Sales/Goods",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 6000000,
+    "description": "Expenses incurred in the business",
+    "name": "Expenses",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 1100000,
+    "description": "Fixed Assets",
+    "name": "Fixed Assets",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 1200000,
+    "description": "Current Assets",
+    "name": "Current Assets",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 1210000,
+    "description": "Cash in hand",
+    "name": "Cash",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 1220000,
+    "description": "Cash at bank",
+    "name": "Bank",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 3000001,
+    "description": "Owner's share capital contribution",
+    "name": "Owner's Contribution",
+    "parent": false,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 3000002,
+    "description": "Owner's share capital distribution",
+    "name": "Dividends/Owner's Distribution",
+    "parent": false,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 4100000,
+    "description": "Income from sales",
+    "name": "Sales Income",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 4200000,
+    "description": "Discount on sales",
+    "name": "Sales Discount",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 4300000,
+    "description": "Return on sales",
+    "name": "Sales Return",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 4400000,
+    "description": "Income from other sources",
+    "name": "Other Income",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 5100000,
+    "description": "Cost of purchases",
+    "name": "Purchases",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 5200000,
+    "description": "Discount on purchases",
+    "name": "Purchases Discount",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 5300000,
+    "description": "Return on purchases",
+    "name": "Purchases Return",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  },
+  {
+    "createdDatetime": null,
+    "updatedDatetime": null,
+    "code": 5400000,
+    "description": "Product, commodity or goods",
+    "name": "Stock",
+    "parent": true,
+    "createdBy": null,
+    "updatedBy": null
+  }
+]
