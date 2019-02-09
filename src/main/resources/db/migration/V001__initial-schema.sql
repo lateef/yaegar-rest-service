@@ -123,6 +123,18 @@ create table company_employees
   foreign key (employees_id) references user (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+create table location
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  name             varchar(256) not null,
+  code             varchar(10) null,
+  location_company_id bigint null,
+  created_by       bigint null,
+  updated_by       bigint null
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 create table account
 (
   id bigint auto_increment primary key,
@@ -208,7 +220,7 @@ create table product
   updated_by       bigint null,
   constraint FK_product_supplier
     foreign key (company_id) references company (id)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table product_accounts
 (
@@ -220,7 +232,7 @@ create table product_accounts
     foreign key (product_id) references product (id),
   constraint FK_product_accounts_account
     foreign key (accounts_id) references account (id)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table purchase_order
 (
@@ -236,7 +248,7 @@ create table purchase_order
   delivery_datetime datetime null,
   created_by       bigint null,
   updated_by       bigint null
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table purchase_order_activity
 (
@@ -251,7 +263,7 @@ create table purchase_order_activity
   delivery_datetime datetime null,
   created_by       bigint null,
   updated_by       bigint null
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table sales_order
 (
@@ -267,7 +279,7 @@ create table sales_order
   delivery_datetime datetime null,
   created_by       bigint null,
   updated_by       bigint null
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table sales_order_activity
 (
@@ -282,7 +294,7 @@ create table sales_order_activity
   delivery_datetime datetime null,
   created_by       bigint null,
   updated_by       bigint null
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table line_item
 (
@@ -300,7 +312,7 @@ create table line_item
   updated_by       bigint null,
   constraint FK_line_item_product
     foreign key (product_id) references product (id)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table customer
 (
@@ -321,4 +333,34 @@ create table customer
     foreign key (company_customer_id) references company (id),
   constraint FK_customer_company3
     foreign key (user_customer_id) references company (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table stock
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  name               varchar(150) not null,
+  code             varchar(10) null,
+  product_id       bigint null,
+  location_id       bigint null,
+  cost_price decimal(19,2) null,
+  quantity float null,
+  created_by       bigint null,
+  updated_by       bigint null,
+  constraint UK_stock
+    unique (product_id, location_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table stock_transaction
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  line_item_id       bigint null,
+  from_location_id       bigint null,
+  to_location_id       bigint null,
+  quantity          float null,
+  created_by       bigint null,
+  updated_by       bigint null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -19,6 +19,9 @@ public class SalesOrderActivity extends AbstractEntity implements Serializable {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "sales_order_activity_sales_order_id")
+    private Long salesOrderActivitySalesOrderId;
+
     @Column(name = "sales_order_state")
     @Enumerated(value = EnumType.STRING)
     private SalesOrderState salesOrderState;
@@ -42,6 +45,14 @@ public class SalesOrderActivity extends AbstractEntity implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getSalesOrderActivitySalesOrderId() {
+        return salesOrderActivitySalesOrderId;
+    }
+
+    public void setSalesOrderActivitySalesOrderId(Long salesOrderActivitySalesOrderId) {
+        this.salesOrderActivitySalesOrderId = salesOrderActivitySalesOrderId;
     }
 
     public SalesOrderState getSalesOrderState() {

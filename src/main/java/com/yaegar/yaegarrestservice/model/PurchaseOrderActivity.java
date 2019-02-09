@@ -19,6 +19,9 @@ public class PurchaseOrderActivity extends AbstractEntity implements Serializabl
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "purchase_order_activity_purchase_order_id")
+    private Long purchaseOrderActivityPurchaseOrderId;
+
     @Column(name = "purchase_order_state")
     @Enumerated(value = EnumType.STRING)
     private PurchaseOrderState purchaseOrderState;
@@ -42,6 +45,14 @@ public class PurchaseOrderActivity extends AbstractEntity implements Serializabl
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getPurchaseOrderActivityPurchaseOrderId() {
+        return purchaseOrderActivityPurchaseOrderId;
+    }
+
+    public void setPurchaseOrderActivityPurchaseOrderId(Long purchaseOrderActivityPurchaseOrderId) {
+        this.purchaseOrderActivityPurchaseOrderId = purchaseOrderActivityPurchaseOrderId;
     }
 
     public PurchaseOrderState getPurchaseOrderState() {

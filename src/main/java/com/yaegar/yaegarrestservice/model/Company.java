@@ -7,6 +7,7 @@ import org.hibernate.validator.constraints.Length;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -33,6 +34,11 @@ public class Company extends AbstractEntity implements Serializable {
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "chart_of_accounts_id", referencedColumnName = "id")
     private ChartOfAccounts chartOfAccounts;
+
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @JoinColumn(name = "location_company_id", referencedColumnName = "id")
+    private List<Location> locations;
 
     public Company() {
     }
@@ -79,5 +85,13 @@ public class Company extends AbstractEntity implements Serializable {
 
     public void setChartOfAccounts(ChartOfAccounts chartOfAccounts) {
         this.chartOfAccounts = chartOfAccounts;
+    }
+
+    public List<Location> getLocations() {
+        return locations;
+    }
+
+    public void setLocations(List<Location> locations) {
+        this.locations = locations;
     }
 }

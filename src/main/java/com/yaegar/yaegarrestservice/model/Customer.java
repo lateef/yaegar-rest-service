@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "Customer",
+@Table(name = "customer",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "company_id"})})
 public class Customer extends AbstractEntity implements Serializable {
     private static final long serialVersionUID = 9108589308270906156L;
