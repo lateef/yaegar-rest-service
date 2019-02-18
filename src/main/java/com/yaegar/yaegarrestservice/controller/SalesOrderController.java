@@ -69,4 +69,34 @@ public class SalesOrderController {
         List<SalesOrder> salesOrders = salesOrderService.getSalesOrders(companyId);
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", salesOrders));
     }
+
+    @RequestMapping(value = "/add-sales-order-activity", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, SalesOrder>> addSalesOrderActivity(@RequestBody final SalesOrderActivity salesOrderActivity,
+                                                                               ModelMap model,
+                                                                               HttpServletRequest httpServletRequest) {
+        final User user = (User) model.get("user");
+        HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
+
+        SalesOrder salesOrder = salesOrderService
+                .getSalesOrder(salesOrderActivity.getSalesOrderActivitySalesOrderId())
+                .orElseThrow(NullPointerException::new);
+
+        SalesOrder salesOrder1 = salesOrderService.addSalesOrderActivity(salesOrder, salesOrderActivity, user);
+        return ResponseEntity.ok().headers(headers).body(singletonMap("success", salesOrder1));
+    }
+
+    @RequestMapping(value = "/add-sales-order-supply-activity", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, SalesOrder>> addSalesOrderSupplyActivity(@RequestBody final SalesOrderActivity salesOrderActivity,
+                                                                                     ModelMap model,
+                                                                                     HttpServletRequest httpServletRequest) {
+        final User user = (User) model.get("user");
+        HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
+
+        SalesOrder salesOrder = salesOrderService
+                .getSalesOrder(salesOrderActivity.getSalesOrderActivitySalesOrderId())
+                .orElseThrow(NullPointerException::new);
+
+        SalesOrder salesOrder1 = salesOrderService.addSalesOrderSupplyActivity(salesOrder, salesOrderActivity, user);
+        return ResponseEntity.ok().headers(headers).body(singletonMap("success", salesOrder1));
+    }
 }

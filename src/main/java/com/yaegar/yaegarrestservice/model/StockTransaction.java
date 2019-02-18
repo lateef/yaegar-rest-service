@@ -15,8 +15,16 @@ public class StockTransaction extends AbstractEntity implements Serializable {
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "line_item_id", referencedColumnName = "id")
-    private LineItem  lineItem;
+    @JoinColumn(name = "purchase_order_id", referencedColumnName = "id")
+    private PurchaseOrder  purchaseOrder;
+
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "sales_order_id", referencedColumnName = "id")
+    private SalesOrder  salesOrder;
+
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    private Product product;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "from_location_id", referencedColumnName = "id")
@@ -37,12 +45,28 @@ public class StockTransaction extends AbstractEntity implements Serializable {
         this.id = id;
     }
 
-    public LineItem getLineItem() {
-        return lineItem;
+    public PurchaseOrder getPurchaseOrder() {
+        return purchaseOrder;
     }
 
-    public void setLineItem(LineItem lineItem) {
-        this.lineItem = lineItem;
+    public void setPurchaseOrder(PurchaseOrder purchaseOrder) {
+        this.purchaseOrder = purchaseOrder;
+    }
+
+    public SalesOrder getSalesOrder() {
+        return salesOrder;
+    }
+
+    public void setSalesOrder(SalesOrder salesOrder) {
+        this.salesOrder = salesOrder;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public Location getFromLocation() {

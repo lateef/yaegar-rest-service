@@ -5,7 +5,6 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 @Entity
 @Table(name = "stock",
@@ -17,10 +16,6 @@ public class Stock extends AbstractEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-
-    @Length(max = 256)
-    @Column(name = "name", nullable = false, length = 256)
-    private String name;
 
     @Length(max = 10)
     @Column(name = "code", nullable = false, length = 10)
@@ -34,9 +29,6 @@ public class Stock extends AbstractEntity implements Serializable {
     @JoinColumn(name = "location_id", referencedColumnName = "id")
     private Location location;
 
-    @Column(name = "cost_price")
-    private BigDecimal costPrice;
-
     @Column(name = "quantity")
     private double quantity;
 
@@ -46,14 +38,6 @@ public class Stock extends AbstractEntity implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getCode() {
@@ -78,14 +62,6 @@ public class Stock extends AbstractEntity implements Serializable {
 
     public void setLocation(Location location) {
         this.location = location;
-    }
-
-    public BigDecimal getCostPrice() {
-        return costPrice;
-    }
-
-    public void setCostPrice(BigDecimal costPrice) {
-        this.costPrice = costPrice;
     }
 
     public double getQuantity() {
