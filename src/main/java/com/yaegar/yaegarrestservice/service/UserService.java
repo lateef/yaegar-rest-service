@@ -12,9 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.yaegar.yaegarrestservice.model.Role.AUTHORITY_USER;
+import static java.time.Duration.between;
 import static java.util.Collections.singletonMap;
 
 @Service
@@ -44,7 +47,7 @@ public class UserService {
             }
 
             cleanPhoneNumberAndCode(phone);
-            phone.setConfirmationCode(String.format("%06d", new Random().nextInt(1000000)));
+            setPhoneConfirmationCode(phone);
             user.setPhoneNumber(phone.getNumber());
 
             Optional<User> existingUser = userRepository.findOptionalByPhoneNumber(phone.getNumber());
@@ -85,7 +88,10 @@ public class UserService {
             if (existingUserOptional.isPresent()) {
                 User existingUser = existingUserOptional.get();
                 Phone existingPrincipalPhone = getPrincipalPhone(existingUser);
-                existingPrincipalPhone.setConfirmationCode(String.format("%06d", new Random().nextInt(1000000)));
+                final Duration duration = between(LocalDateTime.now(), existingPrincipalPhone.getUpdatedDatetime());
+                if (existingPrincipalPhone.getConfirmationCode() == null || duration.toMinutes() > 5L) {
+                    setPhoneConfirmationCode(existingPrincipalPhone);
+                }
                 existingPrincipalPhone.setConfirmed(false);
 
                 if (existingPrincipalPhone.equals(phone)) {
@@ -101,6 +107,10 @@ public class UserService {
         } catch (NullPointerException e) {
             return singletonMap("No phone number supplied", user);
         }
+    }
+
+    private void setPhoneConfirmationCode(Phone phone) {
+        phone.setConfirmationCode(String.format("%06d", new Random().nextInt(1000000)));
     }
 
     private void cleanPhoneNumberAndCode(Phone phone) {
