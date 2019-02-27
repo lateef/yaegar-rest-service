@@ -7,6 +7,7 @@ import com.yaegar.yaegarrestservice.model.enums.ProductClassifier;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -52,6 +53,21 @@ public class Account extends AbstractEntity implements Serializable {
 
     @Column(name = "deleted_datetime")
     private LocalDateTime deletedDateTime;
+
+    @Column(name = "day_total")
+    private BigDecimal dayTotal;
+
+    @Column(name = "week_to_date_total")
+    private BigDecimal weekToDateTotal;
+
+    @Column(name = "month_to_date_total")
+    private BigDecimal monthToDateTotal;
+
+    @Column(name = "year_to_date_total")
+    private BigDecimal yearToDateTotal;
+
+    @Column(name = "last_one_year_total")
+    private BigDecimal lastOneYearTotal;
 
     public Long getId() {
         return id;
@@ -131,5 +147,45 @@ public class Account extends AbstractEntity implements Serializable {
 
     public void setDeletedDateTime(LocalDateTime deletedDateTime) {
         this.deletedDateTime = deletedDateTime;
+    }
+
+    public BigDecimal getDayTotal() {
+        return dayTotal;
+    }
+
+    public void setDayTotal(BigDecimal dayTotal) {
+        this.dayTotal = dayTotal;
+    }
+
+    public BigDecimal getWeekToDateTotal() {
+        return weekToDateTotal;
+    }
+
+    public void setWeekToDateTotal(BigDecimal weekToDateTotal) {
+        this.weekToDateTotal = weekToDateTotal;
+    }
+
+    public BigDecimal getMonthToDateTotal() {
+        return monthToDateTotal;
+    }
+
+    public void setMonthToDateTotal(BigDecimal monthToDateTotal) {
+        this.monthToDateTotal = monthToDateTotal;
+    }
+
+    public BigDecimal getYearToDateTotal() {
+        return yearToDateTotal;
+    }
+
+    public void setYearToDateTotal(BigDecimal yearToDateTotal) {
+        this.yearToDateTotal = yearToDateTotal;
+    }
+
+    public BigDecimal getLastOneYearTotal() {
+        return lastOneYearTotal;
+    }
+
+    public void setLastOneYearTotal(BigDecimal lastOneYearTotal) {
+        this.lastOneYearTotal = lastOneYearTotal;
     }
 }

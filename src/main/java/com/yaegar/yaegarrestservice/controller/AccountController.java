@@ -45,4 +45,13 @@ public class AccountController {
         }
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", accounts));
     }
+
+    @RequestMapping(value = "/get-account", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, Account>> getAccount(@RequestParam final Long accountId, ModelMap model, HttpServletRequest httpServletRequest) {
+        final User user = (User) model.get("user");
+        HttpHeaders headers = getAuthenticatedUser(user);
+        final Account account = accountService.findById(accountId)
+                .orElseThrow(NullPointerException::new);//this should be able to return segregated data
+        return ResponseEntity.ok().headers(headers).body(singletonMap("success", account));
+    }
 }

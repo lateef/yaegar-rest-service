@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
 import java.util.Map;
 
 import static com.yaegar.yaegarrestservice.util.AuthenticationUtils.getAuthenticatedUser;
+import static java.util.Collections.singletonMap;
 
 @RestController
 public class UserController {
@@ -48,7 +48,7 @@ public class UserController {
     public ResponseEntity<Map<String, User>> getLoggedInUser(ModelMap model,  HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         final HttpHeaders headers = getAuthenticatedUser(user);
-        return ResponseEntity.ok().headers(headers).body(Collections.singletonMap("success", user));
+        return ResponseEntity.ok().headers(headers).body(singletonMap("success", user));
     }
 
     @RequestMapping(value = "/do-nothing", method = RequestMethod.GET)
