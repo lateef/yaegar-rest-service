@@ -7,13 +7,14 @@ services:
     image: yaegar-rest-service:latest
     ports:
       - "8888:8080"
-    links:
-      - mariadb
     depends_on:
       - mariadb
+    environment:
+      - app.db.host=mariadb103
 
   mariadb:
     image: "mariadb:10.3"
+    container_name: "mariadb103"
     restart: always
     expose:
       - "3306"
