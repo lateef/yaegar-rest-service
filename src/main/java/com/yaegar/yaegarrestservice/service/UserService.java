@@ -88,7 +88,7 @@ public class UserService {
             if (existingUserOptional.isPresent()) {
                 User existingUser = existingUserOptional.get();
                 Phone existingPrincipalPhone = getPrincipalPhone(existingUser);
-                final Duration duration = between(LocalDateTime.now(), existingPrincipalPhone.getUpdatedDatetime());
+                final Duration duration = between(existingPrincipalPhone.getUpdatedDatetime(), LocalDateTime.now());
                 if (existingPrincipalPhone.getConfirmationCode() == null || duration.toMinutes() > 5L) {
                     setPhoneConfirmationCode(existingPrincipalPhone);
                 }
