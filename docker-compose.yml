@@ -16,8 +16,6 @@ services:
     image: "mariadb:10.3"
     container_name: "mariadb103"
     restart: always
-    expose:
-      - "3306"
     ports:
     - "3306:3306"
     environment:
