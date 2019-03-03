@@ -10,7 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAYMENT;
 
 @Service
 public class PurchaseOrderService {
@@ -45,11 +48,12 @@ public class PurchaseOrderService {
         return purchaseOrderRepository.findAllByCompanyId(companyId);
     }
 
-    public PurchaseOrder addPurchaseOrderActivity(PurchaseOrder purchaseOrder,
-                                                  PurchaseOrderActivity purchaseOrderActivity,
+    public PurchaseOrder savePayments(PurchaseOrder purchaseOrder,
+                                                  Set<Payment> payments,
                                                   User updatedBy) {
-        purchaseOrder.setPurchaseOrderState(purchaseOrderActivity.getPurchaseOrderState());
-        purchaseOrder.getPurchaseOrderActivities().add(purchaseOrderActivity);
+        //TODO confirm payment was paid before setting PAYMENT and update user on only updated payments
+        purchaseOrder.setPayments(payments);
+        purchaseOrder.setPurchaseOrderState(PAYMENT);
         return purchaseOrderRepository.save(purchaseOrder);
     }
 
@@ -107,7 +111,7 @@ public class PurchaseOrderService {
                 break;
         }
         purchaseOrder.setOrderSupplyState(orderSupplyState);
-        purchaseOrder.getPurchaseOrderActivities().add(purchaseOrderActivity);
+//        purchaseOrder.getPurchaseOrderActivities().add(purchaseOrderActivity);
         return purchaseOrderRepository.save(purchaseOrder);
     }
 }
