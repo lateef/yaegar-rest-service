@@ -35,6 +35,9 @@ public class SalesOrder extends AbstractEntity implements Serializable {
     @Column(name = "total_price")
     private BigDecimal totalPrice;
 
+    @Column(name = "received_amount")
+    private BigDecimal receivedAmount;
+
     @Column(name = "description", length = 1000)
     private String description;
 
@@ -91,6 +94,14 @@ public class SalesOrder extends AbstractEntity implements Serializable {
 
     public void setTotalPrice(BigDecimal totalPrice) {
         this.totalPrice = totalPrice;
+    }
+
+    public BigDecimal getReceivedAmount() {
+        return receivedAmount;
+    }
+
+    public void setReceivedAmount(BigDecimal receivedAmount) {
+        this.receivedAmount = receivedAmount;
     }
 
     public String getDescription() {

@@ -5,8 +5,7 @@ public enum PurchaseOrderState {
     SENT("SENT"),
     ACCEPTED("ACCEPTED"),
     INVOICE_ISSUED("INVOICE ISSUED"),
-    PART_PAYMENT("PART PAYMENT"),
-    FULL_PAYMENT("FULL PAYMENT");
+    PAYMENT("PAYMENT");
 
     private final String purchaseOrderState;
 
