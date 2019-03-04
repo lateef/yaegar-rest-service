@@ -3,6 +3,8 @@ package com.yaegar.yaegarrestservice.model;
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
 import com.yaegar.yaegarrestservice.model.enums.OrderSupplyState;
 import com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -10,8 +12,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "purchase_order")
+@Table
 public class PurchaseOrder extends AbstractEntity implements Serializable {
     private static final long serialVersionUID = -5218638929994847147L;
 
@@ -52,85 +56,5 @@ public class PurchaseOrder extends AbstractEntity implements Serializable {
 
     @Column(name = "delivery_datetime")
     private LocalDateTime deliveryDatetime;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Company getCompany() {
-        return company;
-    }
-
-    public void setCompany(Company company) {
-        this.company = company;
-    }
-
-    public Supplier getSupplier() {
-        return supplier;
-    }
-
-    public void setSupplier(Supplier supplier) {
-        this.supplier = supplier;
-    }
-
-    public Set<LineItem> getLineItems() {
-        return lineItems;
-    }
-
-    public void setLineItems(Set<LineItem> lineItems) {
-        this.lineItems = lineItems;
-    }
-
-    public BigDecimal getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(BigDecimal totalPrice) {
-        this.totalPrice = totalPrice;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public PurchaseOrderState getPurchaseOrderState() {
-        return purchaseOrderState;
-    }
-
-    public void setPurchaseOrderState(PurchaseOrderState purchaseOrderState) {
-        this.purchaseOrderState = purchaseOrderState;
-    }
-
-    public OrderSupplyState getOrderSupplyState() {
-        return orderSupplyState;
-    }
-
-    public void setOrderSupplyState(OrderSupplyState orderSupplyState) {
-        this.orderSupplyState = orderSupplyState;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Set<PurchaseOrderActivity> getPurchaseOrderActivities() {
-        return purchaseOrderActivities;
-    }
-
-    public void setPurchaseOrderActivities(Set<PurchaseOrderActivity> purchaseOrderActivities) {
-        this.purchaseOrderActivities = purchaseOrderActivities;
-    }
-
-    public LocalDateTime getDeliveryDatetime() {
-        return deliveryDatetime;
-    }
-
-    public void setDeliveryDatetime(LocalDateTime deliveryDatetime) {
-        this.deliveryDatetime = deliveryDatetime;
-    }
 }
 

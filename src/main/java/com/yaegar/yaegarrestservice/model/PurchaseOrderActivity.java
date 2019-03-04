@@ -3,14 +3,18 @@ package com.yaegar.yaegarrestservice.model;
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
 import com.yaegar.yaegarrestservice.model.enums.OrderSupplyState;
 import com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "purchase_order_activity")
+@Table
 public class PurchaseOrderActivity extends AbstractEntity implements Serializable {
     private static final long serialVersionUID = 7720535667661027391L;
 
@@ -41,68 +45,4 @@ public class PurchaseOrderActivity extends AbstractEntity implements Serializabl
 
     @Column(name = "delivery_datetime")
     private LocalDateTime deliveryDatetime;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public int getOrderNumber() {
-        return orderNumber;
-    }
-
-    public void setOrderNumber(int orderNumber) {
-        this.orderNumber = orderNumber;
-    }
-
-    public Long getPurchaseOrderActivityPurchaseOrderId() {
-        return purchaseOrderActivityPurchaseOrderId;
-    }
-
-    public void setPurchaseOrderActivityPurchaseOrderId(Long purchaseOrderActivityPurchaseOrderId) {
-        this.purchaseOrderActivityPurchaseOrderId = purchaseOrderActivityPurchaseOrderId;
-    }
-
-    public PurchaseOrderState getPurchaseOrderState() {
-        return purchaseOrderState;
-    }
-
-    public void setPurchaseOrderState(PurchaseOrderState purchaseOrderState) {
-        this.purchaseOrderState = purchaseOrderState;
-    }
-
-    public OrderSupplyState getOrderSupplyState() {
-        return orderSupplyState;
-    }
-
-    public void setOrderSupplyState(OrderSupplyState orderSupplyState) {
-        this.orderSupplyState = orderSupplyState;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public LocalDateTime getDeliveryDatetime() {
-        return deliveryDatetime;
-    }
-
-    public void setDeliveryDatetime(LocalDateTime deliveryDatetime) {
-        this.deliveryDatetime = deliveryDatetime;
-    }
 }

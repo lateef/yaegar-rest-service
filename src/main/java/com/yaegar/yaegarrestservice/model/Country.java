@@ -2,14 +2,20 @@ package com.yaegar.yaegarrestservice.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "country")
+@Table
 public class Country extends AbstractEntity implements Serializable {
     private static final long serialVersionUID = -120834228529468074L;
 
@@ -38,60 +44,9 @@ public class Country extends AbstractEntity implements Serializable {
     @Column(name = "continent_code", nullable = false, unique = true, length = 2)
     private String continentCode;
 
-    public Country() {
-    }
-
     public Country(@Length(max = 32) String name, @NotEmpty String code, @NotEmpty String continentCode) {
         this.name = name;
         this.code = code;
-        this.continentCode = continentCode;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getIso3() {
-        return iso3;
-    }
-
-    public void setIso3(String iso3) {
-        this.iso3 = iso3;
-    }
-
-    public String getContinentCode() {
-        return continentCode;
-    }
-
-    public void setContinentCode(String continentCode) {
         this.continentCode = continentCode;
     }
 }

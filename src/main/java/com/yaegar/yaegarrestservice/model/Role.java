@@ -1,15 +1,18 @@
 package com.yaegar.yaegarrestservice.model;
 
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 
-import javax.persistence.*;
-import java.util.Objects;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
-/**
- * @author Lateef Adeniji-Adele
- */
+@Data
 @Entity
-@Table(name = "role")
+@Table
 public class Role implements GrantedAuthority {
     private static final long serialVersionUID = -4638993974570292412L;
 
@@ -23,41 +26,4 @@ public class Role implements GrantedAuthority {
 
     public static final String ANONYMOUS_USER = "ANONYMOUS_USER";
     public static final String AUTHORITY_USER = "ROLE_USER";
-
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public String getAuthority() {
-        return authority;
-    }
-
-    public void setAuthority(String authority) {
-        this.authority = authority;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Role role = (Role) o;
-        return authority.equals(role.authority);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(authority);
-    }
-
-    @Override
-    public String toString() {
-        return "Role{" +
-                "id=" + id +
-                ", authority='" + authority + '\'' +
-                '}';
-    }
 }
