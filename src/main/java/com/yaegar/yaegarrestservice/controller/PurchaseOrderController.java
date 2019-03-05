@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static java.util.Collections.singletonMap;
 
@@ -72,32 +71,32 @@ public class PurchaseOrderController {
     }
 
     @RequestMapping(value = "/save-payments", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, PurchaseOrder>> addPayments(@RequestBody Set<Payment> payments,
+    public ResponseEntity<Map<String, PurchaseOrder>> addPayments(@RequestBody PurchaseOrder purchaseOrder,
                                                                   ModelMap model,
                                                                                HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
 
-        PurchaseOrder purchaseOrder = purchaseOrderService
-                .getPurchaseOrder(payments.stream().findFirst().orElse(new Payment()).getPaymentTypeId())
+        PurchaseOrder savedPurchaseOrder = purchaseOrderService
+                .getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        PurchaseOrder purchaseOrder1 = purchaseOrderService.savePayments(purchaseOrder, payments, user);
+        PurchaseOrder purchaseOrder1 = purchaseOrderService.savePayments(savedPurchaseOrder, purchaseOrder.getPayments(), user);
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", purchaseOrder1));
     }
 
     @RequestMapping(value = "/add-purchase-order-supply-activity", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, PurchaseOrder>> addPurchaseOrderSupplyActivity(@RequestBody final PurchaseOrderActivity purchaseOrderActivity,
+    public ResponseEntity<Map<String, PurchaseOrder>> addPurchaseOrderSupplyActivity(@RequestBody final PurchaseOrderEvent purchaseOrderEvent,
                                                                                ModelMap model,
                                                                                HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
 
         PurchaseOrder purchaseOrder = purchaseOrderService
-                .getPurchaseOrder(purchaseOrderActivity.getPurchaseOrderActivityPurchaseOrderId())
+                .getPurchaseOrder(purchaseOrderEvent.getPurchaseOrderEventId())
                 .orElseThrow(NullPointerException::new);
 
-        PurchaseOrder purchaseOrder1 = purchaseOrderService.addPurchaseOrderSupplyActivity(purchaseOrder, purchaseOrderActivity, user);
+        PurchaseOrder purchaseOrder1 = purchaseOrderService.addPurchaseOrderSupplyActivity(purchaseOrder, purchaseOrderEvent, user);
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", purchaseOrder1));
     }
 }

@@ -47,6 +47,7 @@ public class CompanyRepositoryTest {
         employee.setAcceptedTerms(true);
         entityManager.persist(employee);
         entityManager.flush();
+
         Set<User> employees = singleton(employee);
 
         Company expectedCompany = new Company("Yaegar");

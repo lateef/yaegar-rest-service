@@ -1,7 +1,6 @@
 package com.yaegar.yaegarrestservice.model;
 
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
-import com.yaegar.yaegarrestservice.model.enums.OrderSupplyState;
 import com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -43,17 +42,16 @@ public class PurchaseOrder extends AbstractEntity implements Serializable {
     @JoinColumn(name = "payment_type_id", referencedColumnName = "id")
     private Set<Payment> payments;
 
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "purchase_order_event_id", referencedColumnName = "id")
+    private Set<PurchaseOrderEvent> purchaseOrderEvents;
+
     @Column(name = "description", length = 1000)
     private String description;
 
     @Column(name = "purchase_order_state", length = 50)
     @Enumerated(value = EnumType.STRING)
     private PurchaseOrderState purchaseOrderState;
-
-    //TODO move this to invoice object
-    @Column(name = "order_supply_state", length = 50)
-    @Enumerated(value = EnumType.STRING)
-    private OrderSupplyState orderSupplyState;
 
     @Column(name = "delivery_datetime")
     private LocalDateTime deliveryDatetime;

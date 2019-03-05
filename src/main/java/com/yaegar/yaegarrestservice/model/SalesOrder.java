@@ -1,7 +1,6 @@
 package com.yaegar.yaegarrestservice.model;
 
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
-import com.yaegar.yaegarrestservice.model.enums.OrderSupplyState;
 import com.yaegar.yaegarrestservice.model.enums.SalesOrderState;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -49,13 +48,9 @@ public class SalesOrder extends AbstractEntity implements Serializable {
     @Enumerated(value = EnumType.STRING)
     private SalesOrderState salesOrderState;
 
-    @Column(name = "order_supply_state", length = 50)
-    @Enumerated(value = EnumType.STRING)
-    private OrderSupplyState orderSupplyState;
-
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "sales_order_activity_sales_order_id", referencedColumnName = "id")
-    private Set<SalesOrderActivity> salesOrderActivities;
+    @JoinColumn(name = "sales_order_event_id", referencedColumnName = "id")
+    private Set<SalesOrderEvent> salesOrderActivities;
 
     @Column(name = "delivery_datetime")
     private LocalDateTime deliveryDatetime;
