@@ -23,6 +23,9 @@ public class SalesOrder extends AbstractEntity implements Serializable {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "number")
+    private Long number;
+
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "company_id", referencedColumnName = "id")
     private Company company;
