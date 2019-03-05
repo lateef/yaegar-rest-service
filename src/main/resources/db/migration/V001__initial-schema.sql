@@ -239,6 +239,20 @@ create table product_accounts
     foreign key (accounts_id) references account (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+create table payment
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  account_id  bigint null,
+  amount decimal(19,2) null,
+  payment_type varchar(50) null,
+  payment_type_id  bigint null,
+  description        varchar(1000) null,
+  created_by       bigint null,
+  updated_by       bigint null
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 create table purchase_order
 (
   id bigint auto_increment primary key,
@@ -247,6 +261,7 @@ create table purchase_order
   company_id  bigint null,
   supplier_id  bigint null,
   total_price decimal(19,2) null,
+  paid_amount      decimal(19,2) null,
   description        varchar(1000) null,
   purchase_order_state varchar(50) null,
   order_supply_state varchar(50) null,
@@ -279,6 +294,7 @@ create table sales_order
   company_id  bigint null,
   customer_id  bigint null,
   total_price decimal(19,2) null,
+  received_amount    decimal(19,2) null,
   description        varchar(1000) null,
   sales_order_state varchar(50) null,
   order_supply_state varchar(50) null,

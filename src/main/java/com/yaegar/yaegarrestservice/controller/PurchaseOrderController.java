@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static java.util.Collections.singletonMap;
 
@@ -70,18 +71,18 @@ public class PurchaseOrderController {
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", purchaseOrders));
     }
 
-    @RequestMapping(value = "/add-purchase-order-activity", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, PurchaseOrder>> addPurchaseOrderActivity(@RequestBody final PurchaseOrderActivity purchaseOrderActivity,
-                                                                               ModelMap model,
+    @RequestMapping(value = "/save-payments", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, PurchaseOrder>> addPayments(@RequestBody Set<Payment> payments,
+                                                                  ModelMap model,
                                                                                HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
 
         PurchaseOrder purchaseOrder = purchaseOrderService
-                .getPurchaseOrder(purchaseOrderActivity.getPurchaseOrderActivityPurchaseOrderId())
+                .getPurchaseOrder(payments.stream().findFirst().orElse(new Payment()).getPaymentTypeId())
                 .orElseThrow(NullPointerException::new);
 
-        PurchaseOrder purchaseOrder1 = purchaseOrderService.addPurchaseOrderActivity(purchaseOrder, purchaseOrderActivity, user);
+        PurchaseOrder purchaseOrder1 = purchaseOrderService.savePayments(purchaseOrder, payments, user);
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", purchaseOrder1));
     }
 

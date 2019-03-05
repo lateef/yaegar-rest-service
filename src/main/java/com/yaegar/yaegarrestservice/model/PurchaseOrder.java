@@ -39,6 +39,10 @@ public class PurchaseOrder extends AbstractEntity implements Serializable {
     @Column(name = "total_price")
     private BigDecimal totalPrice;
 
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "payment_type_id", referencedColumnName = "id")
+    private Set<Payment> payments;
+
     @Column(name = "description", length = 1000)
     private String description;
 
@@ -46,15 +50,14 @@ public class PurchaseOrder extends AbstractEntity implements Serializable {
     @Enumerated(value = EnumType.STRING)
     private PurchaseOrderState purchaseOrderState;
 
+    //TODO move this to invoice object
     @Column(name = "order_supply_state", length = 50)
     @Enumerated(value = EnumType.STRING)
     private OrderSupplyState orderSupplyState;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "purchase_order_activity_purchase_order_id", referencedColumnName = "id")
-    private Set<PurchaseOrderActivity> purchaseOrderActivities;
-
     @Column(name = "delivery_datetime")
     private LocalDateTime deliveryDatetime;
+
+    //TODO Payment terms
 }
 
