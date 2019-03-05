@@ -2,15 +2,31 @@ package com.yaegar.yaegarrestservice.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
-import org.hibernate.validator.constraints.Length;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 import java.util.Objects;
 
+@ToString
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
-@Table(name = "phone")
+@Table
 public class Phone extends AbstractEntity implements Serializable {
     private static final long serialVersionUID = -7901958678943948605L;
 
@@ -41,69 +57,10 @@ public class Phone extends AbstractEntity implements Serializable {
     @JoinColumn(name = "country_id", referencedColumnName = "id")
     private Country country;
 
-    public Phone() {
-    }
-
-    public Phone(@NotEmpty String code, @NotEmpty String number, @NotEmpty boolean principal, Country country) {
+    public Phone(@NotEmpty String code, @NotEmpty String number, boolean principal, Country country) {
         this.code = code;
         this.number = number;
         this.principal = principal;
-        this.country = country;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getNumber() {
-        return number;
-    }
-
-    public void setNumber(String number) {
-        this.number = number;
-    }
-
-    public boolean isPrincipal() {
-        return principal;
-    }
-
-    public void setPrincipal(boolean principal) {
-        this.principal = principal;
-    }
-
-    public String getConfirmationCode() {
-        return confirmationCode;
-    }
-
-    public void setConfirmationCode(String confirmationCode) {
-        this.confirmationCode = confirmationCode;
-    }
-
-    public boolean isConfirmed() {
-        return confirmed;
-    }
-
-    public void setConfirmed(boolean confirmed) {
-        this.confirmed = confirmed;
-    }
-
-    public Country getCountry() {
-        return country;
-    }
-
-    public void setCountry(Country country) {
         this.country = country;
     }
 
@@ -118,16 +75,6 @@ public class Phone extends AbstractEntity implements Serializable {
 
     @Override
     public int hashCode() {
-
         return Objects.hash(code, number);
-    }
-
-    @Override
-    public String toString() {
-        return "Phone{" +
-                "id=" + id +
-                ", code='" + code + '\'' +
-                ", number='" + number + '\'' +
-                '}';
     }
 }

@@ -2,7 +2,7 @@ package com.yaegar.yaegarrestservice.service;
 
 import com.yaegar.yaegarrestservice.model.*;
 import com.yaegar.yaegarrestservice.model.SalesOrder;
-import com.yaegar.yaegarrestservice.model.enums.OrderSupplyState;
+import com.yaegar.yaegarrestservice.model.enums.SalesOrderState;
 import com.yaegar.yaegarrestservice.repository.SalesOrderRepository;
 import com.yaegar.yaegarrestservice.repository.StockRepository;
 import com.yaegar.yaegarrestservice.repository.StockTransactionRepository;
@@ -47,24 +47,20 @@ public class SalesOrderService {
     }
 
     public SalesOrder addSalesOrderActivity(SalesOrder salesOrder,
-                                            SalesOrderActivity salesOrderActivity,
+                                            SalesOrderEvent salesOrderEvent,
                                             User updatedBy) {
-        salesOrder.setSalesOrderState(salesOrderActivity.getSalesOrderState());
-        salesOrder.getSalesOrderActivities().add(salesOrderActivity);
+        salesOrder.setSalesOrderState(salesOrderEvent.getSalesOrderState());
+        salesOrder.getSalesOrderActivities().add(salesOrderEvent);
         return salesOrderRepository.save(salesOrder);
     }
 
     @Transactional
     public SalesOrder addSalesOrderSupplyActivity(SalesOrder salesOrder,
-                                                  SalesOrderActivity salesOrderActivity,
+                                                  SalesOrderEvent salesOrderEvent,
                                                   User updatedBy) {
-        final OrderSupplyState orderSupplyState = salesOrderActivity.getOrderSupplyState();
-        switch (orderSupplyState) {
-            case NO_SUPPLY:
-                break;
-            case PART_SUPPLY:
-                break;
-            case FULL_SUPPLY:
+        final SalesOrderState salesOrderState = salesOrderEvent.getSalesOrderState();
+        switch (salesOrderState) {
+            case GOODS_DELIVERED:
                 final List<StockTransaction> stockTransactions = salesOrder.getLineItems()
                         .stream()
                         .map(lineItem -> {
@@ -101,8 +97,8 @@ public class SalesOrderService {
             default:
                 break;
         }
-        salesOrder.setOrderSupplyState(orderSupplyState);
-        salesOrder.getSalesOrderActivities().add(salesOrderActivity);
+        salesOrder.setSalesOrderState(salesOrderState);
+        salesOrder.getSalesOrderActivities().add(salesOrderEvent);
         return salesOrderRepository.save(salesOrder);
     }
 }

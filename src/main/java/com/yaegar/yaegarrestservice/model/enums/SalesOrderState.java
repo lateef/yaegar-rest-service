@@ -2,11 +2,14 @@ package com.yaegar.yaegarrestservice.model.enums;
 
 public enum SalesOrderState {
     RAISED("RAISED"),
+    APPROVED("APPROVED"),
+    FLAGGED("FLAGGED"),
     SENT("SENT"),
-    ACCEPTED("ACCEPTED"),
     INVOICE_ISSUED("INVOICE ISSUED"),
-    PART_PAYMENT("PART PAYMENT"),
-    FULL_PAYMENT("FULL PAYMENT");
+    CUSTOMER_ACCEPTED("CUSTOMER ACCEPTED"),
+    CUSTOMER_FLAGGED("CUSTOMER FLAGGED"),
+    PAID("PAID"),
+    GOODS_DELIVERED("GOODS DELIVERED");
 
     private final String salesOrderState;
 

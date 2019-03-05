@@ -244,13 +244,15 @@ create table payment
   id bigint auto_increment primary key,
   created_datetime datetime null,
   updated_datetime datetime null,
-  account_id  bigint null,
+  transaction_id  bigint null,
   amount decimal(19,2) null,
   payment_type varchar(50) null,
   payment_type_id  bigint null,
   description        varchar(1000) null,
   created_by       bigint null,
-  updated_by       bigint null
+  updated_by       bigint null,
+  constraint FK_payment_transaction
+    foreign key (transaction_id) references transaction (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table purchase_order
@@ -258,30 +260,30 @@ create table purchase_order
   id bigint auto_increment primary key,
   created_datetime datetime null,
   updated_datetime datetime null,
+  number       bigint null,
   company_id  bigint null,
   supplier_id  bigint null,
   total_price decimal(19,2) null,
   paid_amount      decimal(19,2) null,
   description        varchar(1000) null,
   purchase_order_state varchar(50) null,
-  order_supply_state varchar(50) null,
   delivery_datetime datetime null,
   created_by       bigint null,
-  updated_by       bigint null
+  updated_by       bigint null,
+  constraint FK_purchase_order_company
+    foreign key (company_id) references company (id),
+  constraint FK_purchase_order_supplier
+    foreign key (supplier_id) references supplier (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-create table purchase_order_activity
+create table purchase_order_event
 (
   id bigint auto_increment primary key,
-  order_number      int not null,
   created_datetime datetime null,
   updated_datetime datetime null,
-  purchase_order_activity_purchase_order_id bigint null,
+  purchase_order_event_id bigint null,
   purchase_order_state varchar(50) null,
-  order_supply_state varchar(50) null,
-  amount decimal(19,2) null,
   description        varchar(1000) null,
-  delivery_datetime datetime null,
   created_by       bigint null,
   updated_by       bigint null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -291,6 +293,7 @@ create table sales_order
   id bigint auto_increment primary key,
   created_datetime datetime null,
   updated_datetime datetime null,
+  number       bigint null,
   company_id  bigint null,
   customer_id  bigint null,
   total_price decimal(19,2) null,
@@ -303,18 +306,14 @@ create table sales_order
   updated_by       bigint null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-create table sales_order_activity
+create table sales_order_event
 (
   id bigint auto_increment primary key,
-  order_number      int not null,
   created_datetime datetime null,
   updated_datetime datetime null,
-  sales_order_activity_sales_order_id bigint null,
+  sales_order_event_id bigint null,
   sales_order_state varchar(50) null,
-  order_supply_state varchar(50) null,
-  amount decimal(19,2) null,
   description        varchar(1000) null,
-  delivery_datetime datetime null,
   created_by       bigint null,
   updated_by       bigint null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
