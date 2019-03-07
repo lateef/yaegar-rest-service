@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
-import static com.yaegar.yaegarrestservice.model.enums.ProductClassifier.DISCOUNT;
-import static com.yaegar.yaegarrestservice.model.enums.ProductClassifier.PRODUCT;
+import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.PRODUCT_DISCOUNT;
+import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.PRODUCT;
 import static java.util.Collections.singletonMap;
 
 @RestController
@@ -50,7 +50,7 @@ public class ProductController {
     public ResponseEntity<Map<String, List<Product>>> getProducts(@PathVariable Long parentId, ModelMap model, HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
-        List<Account> productAccounts = accountService.findByParentIdAndProductClassifier(parentId, PRODUCT);
+        List<Account> productAccounts = accountService.findByParentIdAndAccountCategory(parentId, PRODUCT);
         List<Product> products = productService.findByAccountsIn(productAccounts);
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", products));
     }
@@ -90,8 +90,8 @@ public class ProductController {
 
         final Account incomeRevenueProductAccount = accountService.addAccount(salesIncome.getId(), product.getName(), PRODUCT, user);
         final Account costOfSalesGoodsProductAccount = accountService.addAccount(purchases.getId(), product.getName(), PRODUCT, user);
-        final Account incomeRevenueProductDiscountAccount = accountService.addAccount(salesDiscount.getId(), product.getName(), DISCOUNT, user);
-        final Account costOfSalesGoodsProductDiscountAccount = accountService.addAccount(purchasesDiscount.getId(), product.getName(), DISCOUNT, user);
+        final Account incomeRevenueProductDiscountAccount = accountService.addAccount(salesDiscount.getId(), product.getName(), PRODUCT_DISCOUNT, user);
+        final Account costOfSalesGoodsProductDiscountAccount = accountService.addAccount(purchasesDiscount.getId(), product.getName(), PRODUCT_DISCOUNT, user);
 
         final Set<Account> productAccounts = new HashSet<>(
                 Arrays.asList(incomeRevenueProductAccount, 

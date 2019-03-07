@@ -2,7 +2,7 @@ package com.yaegar.yaegarrestservice.model;
 
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
 import com.yaegar.yaegarrestservice.model.enums.AccountType;
-import com.yaegar.yaegarrestservice.model.enums.ProductClassifier;
+import com.yaegar.yaegarrestservice.model.enums.AccountCategory;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -39,9 +39,9 @@ public class Account extends AbstractEntity implements Serializable {
     @Enumerated(value = EnumType.STRING)
     private AccountType accountType;
 
-    @Column(name = "product_classifier")
+    @Column(name = "account_category")
     @Enumerated(value = EnumType.STRING)
-    private ProductClassifier productClassifier;
+    private AccountCategory accountCategory;
 
     @Column(name = "account_chart_of_accounts_id", nullable = false)
     private Long accountChartOfAccountsId;

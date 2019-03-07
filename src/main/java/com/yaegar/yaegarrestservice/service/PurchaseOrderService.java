@@ -1,5 +1,6 @@
 package com.yaegar.yaegarrestservice.service;
 
+import com.yaegar.yaegarrestservice.model.Invoice;
 import com.yaegar.yaegarrestservice.model.Payment;
 import com.yaegar.yaegarrestservice.model.PurchaseOrder;
 import com.yaegar.yaegarrestservice.model.PurchaseOrderEvent;
@@ -18,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.GOODS_RECEIVED;
 import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID;
 
 @Service
@@ -57,6 +59,13 @@ public class PurchaseOrderService {
         //TODO confirm payment was paid before setting PAYMENT and update user on only updated payments
         purchaseOrder.setPayments(payments);
         purchaseOrder.setPurchaseOrderState(PAID);
+        return purchaseOrderRepository.save(purchaseOrder);
+    }
+
+    public PurchaseOrder saveInvoicess(PurchaseOrder purchaseOrder, Set<Invoice> invoices, User updatedBy) {
+        //TODO confirm payment was paid before setting PAYMENT and update user on only updated payments
+        purchaseOrder.setInvoices(invoices);
+        purchaseOrder.setPurchaseOrderState(GOODS_RECEIVED);
         return purchaseOrderRepository.save(purchaseOrder);
     }
 

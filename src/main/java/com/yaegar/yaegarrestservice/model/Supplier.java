@@ -11,8 +11,8 @@ import java.io.Serializable;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "Supplier",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"Name", "company_id"})})
+@Table(name = "supplier",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "principal_company_id"})})
 public class Supplier extends AbstractEntity implements Serializable {
     private static final long serialVersionUID = 4695495638941520513L;
 
@@ -26,14 +26,14 @@ public class Supplier extends AbstractEntity implements Serializable {
     private String name;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "company_id", referencedColumnName = "id")
-    private Company company;
+    @JoinColumn(name = "principal_company_id", referencedColumnName = "id")
+    private Company principalCompany;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "company_supplier_id", referencedColumnName = "id")
-    private Company companySupplier;
+    @JoinColumn(name = "supplier_company_id", referencedColumnName = "id")
+    private Company supplierCompany;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_supplier_id", referencedColumnName = "id")
-    private Company userSupplier;
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "b2b_account_id", referencedColumnName = "id")
+    private B2bAccount b2BAccount;
 }

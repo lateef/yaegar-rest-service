@@ -3,7 +3,7 @@ package com.yaegar.yaegarrestservice.service;
 import com.yaegar.yaegarrestservice.model.Account;
 import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.model.enums.AccountType;
-import com.yaegar.yaegarrestservice.model.enums.ProductClassifier;
+import com.yaegar.yaegarrestservice.model.enums.AccountCategory;
 import com.yaegar.yaegarrestservice.repository.AccountRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +34,8 @@ public class AccountService {
         return accountRepository.findByParentIdAndAccountType(parentId, accountType);
     }
 
-    public List<Account> findByParentIdAndProductClassifier(Long parentId, ProductClassifier productClassifier) {
-        return accountRepository.findByParentIdAndProductClassifier(parentId, productClassifier);
+    public List<Account> findByParentIdAndAccountCategory(Long parentId, AccountCategory accountCategory) {
+        return accountRepository.findByParentIdAndAccountCategory(parentId, accountCategory);
     }
 
     public List<Account> findByAccountChartOfAccountsId(Long accountChartOfAccountsId) {
@@ -43,10 +43,10 @@ public class AccountService {
     }
 
     public Account addAccount(Account account, User createdBy) {
-        return addAccount(account.getParentId(), account.getName(), account.getProductClassifier(), createdBy);
+        return addAccount(account.getParentId(), account.getName(), account.getAccountCategory(), createdBy);
     }
 
-    public Account addAccount(Long parentAccountId, String name, ProductClassifier productClassifier, User createdBy) {
+    public Account addAccount(Long parentAccountId, String name, AccountCategory accountCategory, User createdBy) {
         Account parentAccount = findById(parentAccountId)
                 .orElseThrow(NullPointerException::new);
         Account account = new Account();
@@ -54,7 +54,7 @@ public class AccountService {
         account.setName(name.trim());
         account.setDescription(name.trim());
         account.setAccountChartOfAccountsId(parentAccount.getAccountChartOfAccountsId());
-        account.setProductClassifier(productClassifier);
+        account.setAccountCategory(accountCategory);
         account.setCreatedBy(createdBy.getId());
         account.setUpdatedBy(createdBy.getId());
         final Integer maxCode = findByParentId(parentAccount.getId())
