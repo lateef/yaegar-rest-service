@@ -1,10 +1,14 @@
 package com.yaegar.yaegarrestservice.model;
 
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 @Entity
 public class StockTransaction extends AbstractEntity implements Serializable {
     private static final long serialVersionUID = -7576476879020788149L;
@@ -36,60 +40,4 @@ public class StockTransaction extends AbstractEntity implements Serializable {
 
     @Column(name = "quantity")
     private double quantity;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public PurchaseOrder getPurchaseOrder() {
-        return purchaseOrder;
-    }
-
-    public void setPurchaseOrder(PurchaseOrder purchaseOrder) {
-        this.purchaseOrder = purchaseOrder;
-    }
-
-    public SalesOrder getSalesOrder() {
-        return salesOrder;
-    }
-
-    public void setSalesOrder(SalesOrder salesOrder) {
-        this.salesOrder = salesOrder;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
-
-    public Location getFromLocation() {
-        return fromLocation;
-    }
-
-    public void setFromLocation(Location fromLocation) {
-        this.fromLocation = fromLocation;
-    }
-
-    public Location getToLocation() {
-        return toLocation;
-    }
-
-    public void setToLocation(Location toLocation) {
-        this.toLocation = toLocation;
-    }
-
-    public double getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(double quantity) {
-        this.quantity = quantity;
-    }
 }

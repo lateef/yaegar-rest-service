@@ -1,6 +1,7 @@
 package com.yaegar.yaegarrestservice.audit.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 @JsonIgnoreProperties(
         value = {"createdBy", "updatedBy", "createdDatetime", "updatedDatetime"}
 )
+@Data
 public abstract class AbstractEntity {
    @CreatedBy
     @Column(name = "created_by")
@@ -33,36 +35,4 @@ public abstract class AbstractEntity {
     @LastModifiedDate
     @Column(name = "updated_datetime")
     private LocalDateTime updatedDatetime;
-
-    public Long getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Long createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Long getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(Long updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public LocalDateTime getCreatedDatetime() {
-        return createdDatetime;
-    }
-
-    public void setCreatedDatetime(LocalDateTime createdDatetime) {
-        this.createdDatetime = createdDatetime;
-    }
-
-    public LocalDateTime getUpdatedDatetime() {
-        return updatedDatetime;
-    }
-
-    public void setUpdatedDatetime(LocalDateTime updatedDatetime) {
-        this.updatedDatetime = updatedDatetime;
-    }
 }

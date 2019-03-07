@@ -1,7 +1,12 @@
 package com.yaegar.yaegarrestservice.service;
 
-import com.yaegar.yaegarrestservice.model.*;
-import com.yaegar.yaegarrestservice.model.enums.OrderSupplyState;
+import com.yaegar.yaegarrestservice.model.Payment;
+import com.yaegar.yaegarrestservice.model.PurchaseOrder;
+import com.yaegar.yaegarrestservice.model.PurchaseOrderEvent;
+import com.yaegar.yaegarrestservice.model.Stock;
+import com.yaegar.yaegarrestservice.model.StockTransaction;
+import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState;
 import com.yaegar.yaegarrestservice.repository.PurchaseOrderRepository;
 import com.yaegar.yaegarrestservice.repository.StockRepository;
 import com.yaegar.yaegarrestservice.repository.StockTransactionRepository;
@@ -13,7 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAYMENT;
+import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID;
 
 @Service
 public class PurchaseOrderService {
@@ -48,26 +53,20 @@ public class PurchaseOrderService {
         return purchaseOrderRepository.findAllByCompanyId(companyId);
     }
 
-    public PurchaseOrder savePayments(PurchaseOrder purchaseOrder,
-                                                  Set<Payment> payments,
-                                                  User updatedBy) {
+    public PurchaseOrder savePayments(PurchaseOrder purchaseOrder, Set<Payment> payments, User updatedBy) {
         //TODO confirm payment was paid before setting PAYMENT and update user on only updated payments
         purchaseOrder.setPayments(payments);
-        purchaseOrder.setPurchaseOrderState(PAYMENT);
+        purchaseOrder.setPurchaseOrderState(PAID);
         return purchaseOrderRepository.save(purchaseOrder);
     }
 
     @Transactional
     public PurchaseOrder addPurchaseOrderSupplyActivity(PurchaseOrder purchaseOrder,
-                                                        PurchaseOrderActivity purchaseOrderActivity,
+                                                        PurchaseOrderEvent purchaseOrderEvent,
                                                         User updatedBy) {
-        final OrderSupplyState orderSupplyState = purchaseOrderActivity.getOrderSupplyState();
-        switch (orderSupplyState) {
-            case NO_SUPPLY:
-                break;
-            case PART_SUPPLY:
-                break;
-            case FULL_SUPPLY:
+        final PurchaseOrderState purchaseOrderState = purchaseOrderEvent.getPurchaseOrderState();
+        switch (purchaseOrderState) {
+            case GOODS_RECEIVED:
                 final List<StockTransaction> stockTransactions = purchaseOrder.getLineItems()
                         .stream()
                         .map(lineItem -> {
@@ -110,8 +109,8 @@ public class PurchaseOrderService {
             default:
                 break;
         }
-        purchaseOrder.setOrderSupplyState(orderSupplyState);
-//        purchaseOrder.getPurchaseOrderActivities().add(purchaseOrderActivity);
+        purchaseOrder.setPurchaseOrderState(purchaseOrderState);
+//        purchaseOrder.getPurchaseOrderActivities().add(purchaseOrderEvent);
         return purchaseOrderRepository.save(purchaseOrder);
     }
 }
