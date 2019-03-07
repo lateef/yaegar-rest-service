@@ -70,7 +70,7 @@ public class PurchaseOrderController {
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", purchaseOrders));
     }
 
-    @RequestMapping(value = "/save-payments", method = RequestMethod.POST)
+    @RequestMapping(value = "/save-purchase-order-payments", method = RequestMethod.POST)
     public ResponseEntity<Map<String, PurchaseOrder>> addPayments(@RequestBody PurchaseOrder purchaseOrder,
                                                                   ModelMap model,
                                                                                HttpServletRequest httpServletRequest) {

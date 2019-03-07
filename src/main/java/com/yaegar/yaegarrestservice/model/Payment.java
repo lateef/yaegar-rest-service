@@ -7,7 +7,6 @@ import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -24,9 +23,6 @@ public class Payment extends AbstractEntity implements Serializable {
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "transaction_id", referencedColumnName = "id", nullable = false)
     private Transaction transaction;
-
-    @Column(name = "amount", nullable = false)
-    private BigDecimal amount;
 
     @Column(name = "payment_type", nullable = false)
     @Enumerated(value = EnumType.STRING)

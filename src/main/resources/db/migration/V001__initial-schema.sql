@@ -245,7 +245,6 @@ create table payment
   created_datetime datetime null,
   updated_datetime datetime null,
   transaction_id  bigint null,
-  amount decimal(19,2) null,
   payment_type varchar(50) null,
   payment_type_id  bigint null,
   description        varchar(1000) null,
