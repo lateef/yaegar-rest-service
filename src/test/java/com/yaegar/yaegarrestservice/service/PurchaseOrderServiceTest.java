@@ -14,7 +14,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.HashSet;
-import java.util.Set;
 
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
 import static org.hamcrest.Matchers.is;
@@ -54,19 +53,19 @@ public class PurchaseOrderServiceTest {
     @Test
     public void saveTransactions() {
         //given
-        Set<Transaction> transactions = new HashSet<>();
+        Transaction transaction = new Transaction();
         PurchaseOrder purchaseOrder = new PurchaseOrder();
-        purchaseOrder.setTransactions(transactions);
+        purchaseOrder.setTransaction(transaction);
         purchaseOrder.setLineItems(new HashSet<>());
         PurchaseOrder expectedPurchaseOrder = new PurchaseOrder();
-        expectedPurchaseOrder.setTransactions(transactions);
+        expectedPurchaseOrder.setTransaction(transaction);
         expectedPurchaseOrder.setLineItems(new HashSet<>());
         User createdBy = new User();
 
         when(purchaseOrderRepository.save(purchaseOrder)).thenReturn(expectedPurchaseOrder);
 
         //when
-        final PurchaseOrder actualPurchaseOrder = purchaseOrderService.saveTransactions(purchaseOrder, transactions, createdBy);
+        final PurchaseOrder actualPurchaseOrder = purchaseOrderService.saveTransaction(purchaseOrder, transaction, createdBy);
 
         //then
         assertThat(actualPurchaseOrder, is(sameBeanAs(expectedPurchaseOrder)));

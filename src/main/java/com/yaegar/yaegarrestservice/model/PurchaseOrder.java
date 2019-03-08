@@ -41,9 +41,9 @@ public class PurchaseOrder extends AbstractEntity implements Serializable {
     @Column(name = "total_price")
     private BigDecimal totalPrice;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "transaction_purchase_order_id", referencedColumnName = "id")
-    private Set<Transaction> transactions;
+    @OneToOne
+    @JoinColumn(name = "transaction_id", referencedColumnName = "id")
+    private Transaction transaction;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "invoice_purchase_order_id", referencedColumnName = "id")

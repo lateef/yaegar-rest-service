@@ -9,6 +9,7 @@ import com.yaegar.yaegarrestservice.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,7 +23,7 @@ public class TransactionService {
     }
 
     public Transaction addTransaction(Transaction transaction, User createdBy) {
-        final List<JournalEntry> journalEntries = transaction.getJournalEntries()
+        final Set<JournalEntry> journalEntries = transaction.getJournalEntries()
                 .stream()
                 .map(journalEntry -> {
                     Account account = accountRepository
@@ -33,7 +34,7 @@ public class TransactionService {
                     journalEntry.setUpdatedBy(createdBy.getId());
                     return journalEntry;
                 })
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
         transaction.setCreatedBy(createdBy.getId());
         transaction.setUpdatedBy(createdBy.getId());
         transaction.setJournalEntries(journalEntries);

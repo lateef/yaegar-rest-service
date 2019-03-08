@@ -1,7 +1,8 @@
 package com.yaegar.yaegarrestservice.service;
 
+import com.yaegar.yaegarrestservice.model.Account;
 import com.yaegar.yaegarrestservice.model.Invoice;
-import com.yaegar.yaegarrestservice.model.LineItem;
+import com.yaegar.yaegarrestservice.model.JournalEntry;
 import com.yaegar.yaegarrestservice.model.PurchaseOrder;
 import com.yaegar.yaegarrestservice.model.PurchaseOrderEvent;
 import com.yaegar.yaegarrestservice.model.Stock;
@@ -16,13 +17,18 @@ import com.yaegar.yaegarrestservice.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.PRODUCT;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.EXPENSES;
 import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.GOODS_RECEIVED;
 import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID;
+import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.DEBIT;
 
 @Service
 public class PurchaseOrderService {
@@ -59,31 +65,39 @@ public class PurchaseOrderService {
         return purchaseOrderRepository.findAllByCompanyId(companyId);
     }
 
-    public PurchaseOrder saveTransactions(PurchaseOrder purchaseOrder, Set<Transaction> transactions, User updatedBy) {
-        transactions = transactions.stream()
-                .map(transaction -> {
-                    transaction.setTransactionTypeId(purchaseOrder.getId());
+    public PurchaseOrder saveTransaction(PurchaseOrder purchaseOrder, Transaction transaction, User updatedBy) {
+        transaction.setTransactionTypeId(purchaseOrder.getId());
 
-                    if (transaction.getId() != null) {
-                        final Transaction transaction1 = transactionRepository.findById(transaction.getId())
-                                .orElseThrow(NullPointerException::new);
-                        transaction.setCreatedDatetime(transaction1.getCreatedDatetime());
-                        transaction.setUpdatedBy(updatedBy.getId());
-                    } else {
-                        transaction.setCreatedBy(updatedBy.getId());
-                        transaction.setUpdatedBy(updatedBy.getId());
-                    }
-                    return transactionRepository.save(transaction);
-                }).collect(Collectors.toSet());
+        if (transaction.getId() != null) {
+            final Transaction transaction1 = transactionRepository.findById(transaction.getId())
+                    .orElseThrow(NullPointerException::new);
+            transaction.setCreatedDatetime(transaction1.getCreatedDatetime());
+            transaction.setUpdatedBy(updatedBy.getId());
+        } else {
+            transaction.setCreatedBy(updatedBy.getId());
+            transaction.setUpdatedBy(updatedBy.getId());
+        }
+        final Transaction transaction1 = transactionRepository.save(transaction);
 
+        final int[] i = {2};
         purchaseOrder.getLineItems()
-                .stream()
-                .map(LineItem::getProduct)
-                .forEach(product -> {
-
+                .forEach(lineItem -> {
+                    final Account account1 = lineItem.getProduct().getAccounts()
+                            .stream()
+                            .filter(account -> account.getAccountType().equals(EXPENSES) && account.getAccountCategory().equals(PRODUCT))
+                            .findFirst()
+                            .orElseThrow(NullPointerException::new);
+                    JournalEntry journalEntry = new JournalEntry();
+                    journalEntry.setAccount(account1);
+                    journalEntry.setAmount(lineItem.getUnitPrice().multiply(BigDecimal.valueOf(lineItem.getQuantity())));
+                    journalEntry.setEntry(i[0]);
+                    journalEntry.setTransactionDatetime(LocalDateTime.now());
+                    journalEntry.setTransactionId(transaction1.getId());
+                    journalEntry.setTransactionSide(DEBIT);
+                    i[0]++;
                 });
 
-        purchaseOrder.setTransactions(transactions);
+        purchaseOrder.setTransaction(transaction1);
         purchaseOrder.setPurchaseOrderState(PAID);
         return purchaseOrderRepository.save(purchaseOrder);
     }

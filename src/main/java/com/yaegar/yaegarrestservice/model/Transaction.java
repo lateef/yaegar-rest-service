@@ -5,9 +5,19 @@ import com.yaegar.yaegarrestservice.model.enums.TransactionType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import java.io.Serializable;
-import java.util.List;
+import java.util.Set;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -22,7 +32,7 @@ public class Transaction extends AbstractEntity implements Serializable {
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "transaction_id", referencedColumnName = "id")
-    private List<JournalEntry> journalEntries;
+    private Set<JournalEntry> journalEntries;
 
     @Column(name = "transaction_type")
     @Enumerated(value = EnumType.STRING)
