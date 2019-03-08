@@ -8,6 +8,7 @@ import com.yaegar.yaegarrestservice.model.Stock;
 import com.yaegar.yaegarrestservice.model.StockTransaction;
 import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState;
+import com.yaegar.yaegarrestservice.repository.PaymentRepository;
 import com.yaegar.yaegarrestservice.repository.PurchaseOrderRepository;
 import com.yaegar.yaegarrestservice.repository.StockRepository;
 import com.yaegar.yaegarrestservice.repository.StockTransactionRepository;
@@ -24,14 +25,15 @@ import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID;
 
 @Service
 public class PurchaseOrderService {
-
+    private PaymentRepository paymentRepository;
     private PurchaseOrderRepository purchaseOrderRepository;
     private StockRepository stockRepository;
     private StockTransactionRepository stockTransactionRepository;
 
-    public PurchaseOrderService(PurchaseOrderRepository purchaseOrderRepository,
+    public PurchaseOrderService(PaymentRepository paymentRepository, PurchaseOrderRepository purchaseOrderRepository,
                                 StockRepository stockRepository,
                                 StockTransactionRepository stockTransactionRepository) {
+        this.paymentRepository = paymentRepository;
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.stockRepository = stockRepository;
         this.stockTransactionRepository = stockTransactionRepository;
@@ -57,6 +59,19 @@ public class PurchaseOrderService {
 
     public PurchaseOrder savePayments(PurchaseOrder purchaseOrder, Set<Payment> payments, User updatedBy) {
         //TODO confirm payment was paid before setting PAYMENT and update user on only updated payments
+        payments = payments.stream()
+                .map(payment -> {
+                    if (payment.getId() != null) {
+                        final Payment payment1 = paymentRepository.findById(payment.getId())
+                                .orElseThrow(NullPointerException::new);
+                        payment.setCreatedDatetime(payment1.getCreatedDatetime());
+                        payment.setUpdatedBy(updatedBy.getId());
+                    } else {
+                        payment.setCreatedBy(updatedBy.getId());
+                        payment.setUpdatedBy(updatedBy.getId());
+                    }
+                        return payment;
+                }).collect(Collectors.toSet());
         purchaseOrder.setPayments(payments);
         purchaseOrder.setPurchaseOrderState(PAID);
         return purchaseOrderRepository.save(purchaseOrder);

@@ -24,7 +24,7 @@ public class JournalEntry extends AbstractEntity implements Serializable {
     @Column(name = "transaction_id", nullable = false)
     private Long transactionId;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinColumn(name = "account_id", referencedColumnName = "id")
     private Account account;
 

@@ -3,6 +3,7 @@ package com.yaegar.yaegarrestservice.service;
 import com.yaegar.yaegarrestservice.model.Payment;
 import com.yaegar.yaegarrestservice.model.PurchaseOrder;
 import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.repository.PaymentRepository;
 import com.yaegar.yaegarrestservice.repository.PurchaseOrderRepository;
 import com.yaegar.yaegarrestservice.repository.StockRepository;
 import com.yaegar.yaegarrestservice.repository.StockTransactionRepository;
@@ -23,6 +24,8 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 public class PurchaseOrderServiceTest {
     @MockBean
+    private PaymentRepository paymentRepository;
+    @MockBean
     private PurchaseOrderRepository purchaseOrderRepository;
     @MockBean
     private StockRepository stockRepository;
@@ -33,7 +36,7 @@ public class PurchaseOrderServiceTest {
 
     @Before
     public void setup() {
-        purchaseOrderService = new PurchaseOrderService(purchaseOrderRepository, stockRepository, stockTransactionRepository);
+        purchaseOrderService = new PurchaseOrderService(paymentRepository, purchaseOrderRepository, stockRepository, stockTransactionRepository);
     }
 
     @Test
