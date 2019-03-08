@@ -31,13 +31,13 @@ public class SupplierController {
     public ResponseEntity<Map<String,Supplier>> addSupplier(@RequestBody final Supplier supplier, ModelMap model, HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
-        Company company = companyService.findById(supplier.getCompany().getId())
+        Company company = companyService.findById(supplier.getPrincipalCompany().getId())
                 .orElseThrow(NullPointerException::new);
-        supplier.setCompany(company);
-        if (supplier.getCompanySupplier() != null) {
-            Company suppliedFromCompany = companyService.findById(supplier.getCompanySupplier().getId())
+        supplier.setPrincipalCompany(company);
+        if (supplier.getSupplierCompany() != null) {
+            Company supplierCompany = companyService.findById(supplier.getSupplierCompany().getId())
                     .orElse(null);
-            supplier.setCompanySupplier(suppliedFromCompany);
+            supplier.setSupplierCompany(supplierCompany);
         }
         supplier.setCreatedBy(user.getId());
         supplier.setUpdatedBy(user.getId());
@@ -49,7 +49,7 @@ public class SupplierController {
     public ResponseEntity<Map<String, List<Supplier>>> getSuppliers(@PathVariable Long companyId, ModelMap model, HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
-        List<Supplier> suppliers = supplierService.getSuppliersByCompanyId(companyId);
+        List<Supplier> suppliers = supplierService.getSuppliersByPrincipalCompanyId(companyId);
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", suppliers));
     }
 }

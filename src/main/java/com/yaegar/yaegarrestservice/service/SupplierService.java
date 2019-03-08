@@ -28,7 +28,7 @@ public class SupplierService {
         return supplierRepository.save(supplier);
     }
 
-    public List<Supplier> getSuppliersByCompanyId(Long companyId) {
-        return supplierRepository.findByCompanyId(companyId);
+    public List<Supplier> getSuppliersByPrincipalCompanyId(Long principalCompanyId) {
+        return supplierRepository.findByPrincipalCompanyId(principalCompanyId);
     }
 }

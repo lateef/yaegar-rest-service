@@ -1,6 +1,11 @@
 package com.yaegar.yaegarrestservice.controller;
 
-import com.yaegar.yaegarrestservice.model.*;
+import com.yaegar.yaegarrestservice.model.Company;
+import com.yaegar.yaegarrestservice.model.Product;
+import com.yaegar.yaegarrestservice.model.PurchaseOrder;
+import com.yaegar.yaegarrestservice.model.PurchaseOrderEvent;
+import com.yaegar.yaegarrestservice.model.Supplier;
+import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.service.CompanyService;
 import com.yaegar.yaegarrestservice.service.ProductService;
 import com.yaegar.yaegarrestservice.service.PurchaseOrderService;
@@ -11,7 +16,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -71,9 +80,9 @@ public class PurchaseOrderController {
     }
 
     @RequestMapping(value = "/save-purchase-order-payments", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, PurchaseOrder>> addPayments(@RequestBody PurchaseOrder purchaseOrder,
+    public ResponseEntity<Map<String, PurchaseOrder>> savePayments(@RequestBody PurchaseOrder purchaseOrder,
                                                                   ModelMap model,
-                                                                               HttpServletRequest httpServletRequest) {
+                                                                  HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
 
@@ -82,6 +91,21 @@ public class PurchaseOrderController {
                 .orElseThrow(NullPointerException::new);
 
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePayments(savedPurchaseOrder, purchaseOrder.getPayments(), user);
+        return ResponseEntity.ok().headers(headers).body(singletonMap("success", purchaseOrder1));
+    }
+
+    @RequestMapping(value = "/save-purchase-order-invoices", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, PurchaseOrder>> saveInvoices(@RequestBody PurchaseOrder purchaseOrder,
+                                                                  ModelMap model,
+                                                                  HttpServletRequest httpServletRequest) {
+        final User user = (User) model.get("user");
+        HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
+
+        PurchaseOrder savedPurchaseOrder = purchaseOrderService
+                .getPurchaseOrder(purchaseOrder.getId())
+                .orElseThrow(NullPointerException::new);
+
+        PurchaseOrder purchaseOrder1 = purchaseOrderService.saveInvoicess(savedPurchaseOrder, purchaseOrder.getInvoices(), user);
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", purchaseOrder1));
     }
 

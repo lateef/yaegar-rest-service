@@ -2,7 +2,7 @@ package com.yaegar.yaegarrestservice.repository;
 
 import com.yaegar.yaegarrestservice.model.Account;
 import com.yaegar.yaegarrestservice.model.enums.AccountType;
-import com.yaegar.yaegarrestservice.model.enums.ProductClassifier;
+import com.yaegar.yaegarrestservice.model.enums.AccountCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -15,7 +15,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     List<Account> findByParentIdAndAccountType(Long parentId, AccountType accountType);
 
-    List<Account> findByParentIdAndProductClassifier(Long parentId, ProductClassifier productClassifier);
+    List<Account> findByParentIdAndAccountCategory(Long parentId, AccountCategory accountCategory);
 
     List<Account> findByAccountChartOfAccountsIdAndParentFalse(Long accountChartOfAccountsId);
 
