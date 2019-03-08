@@ -163,6 +163,8 @@ create table account
   last_one_year_total         decimal(19,2) null,
   parent_id        bigint null,
   parent          bit null,
+  enable          bit null,
+  can_delete          bit null,
   account_chart_of_accounts_id bigint null,
   created_by       bigint null,
   updated_by       bigint null,
@@ -176,6 +178,9 @@ create table transaction
 (
   id bigint auto_increment primary key,
   created_datetime datetime null,
+  transaction_type varchar(50) null,
+  transaction_type_id bigint null,
+  transaction_purchase_order_id bigint null,
   updated_datetime datetime null,
   deleted_datetime datetime null,
   created_by       bigint null,
@@ -247,21 +252,6 @@ create table product_accounts
     foreign key (product_id) references product (id),
   constraint FK_product_accounts_account
     foreign key (accounts_id) references account (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-create table payment
-(
-  id bigint auto_increment primary key,
-  created_datetime datetime null,
-  updated_datetime datetime null,
-  transaction_id  bigint null,
-  payment_type varchar(50) null,
-  payment_type_id  bigint null,
-  description        varchar(1000) null,
-  created_by       bigint null,
-  updated_by       bigint null,
-  constraint FK_payment_transaction
-    foreign key (transaction_id) references transaction (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table purchase_order

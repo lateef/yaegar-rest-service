@@ -52,6 +52,12 @@ public class Account extends AbstractEntity implements Serializable {
     @Column(name = "parent")
     private boolean parent;
 
+    @Column(name = "enable")
+    private boolean enable;
+
+    @Column(name = "can_delete")
+    private boolean canDelete;
+
     @Column(name = "description", length = 1000)
     private String description;
 

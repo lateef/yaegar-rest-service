@@ -79,8 +79,8 @@ public class PurchaseOrderController {
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", purchaseOrders));
     }
 
-    @RequestMapping(value = "/save-purchase-order-payments", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, PurchaseOrder>> savePayments(@RequestBody PurchaseOrder purchaseOrder,
+    @RequestMapping(value = "/save-purchase-order-transactions", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, PurchaseOrder>> saveTransactions(@RequestBody PurchaseOrder purchaseOrder,
                                                                   ModelMap model,
                                                                   HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
@@ -90,7 +90,7 @@ public class PurchaseOrderController {
                 .getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        PurchaseOrder purchaseOrder1 = purchaseOrderService.savePayments(savedPurchaseOrder, purchaseOrder.getPayments(), user);
+        PurchaseOrder purchaseOrder1 = purchaseOrderService.saveTransactions(savedPurchaseOrder, purchaseOrder.getTransactions(), user);
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", purchaseOrder1));
     }
 
@@ -105,7 +105,7 @@ public class PurchaseOrderController {
                 .getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        PurchaseOrder purchaseOrder1 = purchaseOrderService.saveInvoicess(savedPurchaseOrder, purchaseOrder.getInvoices(), user);
+        PurchaseOrder purchaseOrder1 = purchaseOrderService.saveInvoices(savedPurchaseOrder, purchaseOrder.getInvoices(), user);
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", purchaseOrder1));
     }
 

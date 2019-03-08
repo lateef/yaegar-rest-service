@@ -1,12 +1,12 @@
 package com.yaegar.yaegarrestservice.service;
 
-import com.yaegar.yaegarrestservice.model.Payment;
 import com.yaegar.yaegarrestservice.model.PurchaseOrder;
+import com.yaegar.yaegarrestservice.model.Transaction;
 import com.yaegar.yaegarrestservice.model.User;
-import com.yaegar.yaegarrestservice.repository.PaymentRepository;
 import com.yaegar.yaegarrestservice.repository.PurchaseOrderRepository;
 import com.yaegar.yaegarrestservice.repository.StockRepository;
 import com.yaegar.yaegarrestservice.repository.StockTransactionRepository;
+import com.yaegar.yaegarrestservice.repository.TransactionRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,25 +18,25 @@ import java.util.Set;
 
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 public class PurchaseOrderServiceTest {
-    @MockBean
-    private PaymentRepository paymentRepository;
     @MockBean
     private PurchaseOrderRepository purchaseOrderRepository;
     @MockBean
     private StockRepository stockRepository;
     @MockBean
     private StockTransactionRepository stockTransactionRepository;
+    @MockBean
+    private TransactionRepository transactionRepository;
 
     private PurchaseOrderService purchaseOrderService;
 
     @Before
     public void setup() {
-        purchaseOrderService = new PurchaseOrderService(paymentRepository, purchaseOrderRepository, stockRepository, stockTransactionRepository);
+        purchaseOrderService = new PurchaseOrderService(purchaseOrderRepository, stockRepository, stockTransactionRepository, transactionRepository);
     }
 
     @Test
@@ -52,17 +52,21 @@ public class PurchaseOrderServiceTest {
     }
 
     @Test
-    public void savePayments() {
+    public void saveTransactions() {
         //given
+        Set<Transaction> transactions = new HashSet<>();
         PurchaseOrder purchaseOrder = new PurchaseOrder();
+        purchaseOrder.setTransactions(transactions);
+        purchaseOrder.setLineItems(new HashSet<>());
         PurchaseOrder expectedPurchaseOrder = new PurchaseOrder();
-        Set<Payment> payments = new HashSet<>();
+        expectedPurchaseOrder.setTransactions(transactions);
+        expectedPurchaseOrder.setLineItems(new HashSet<>());
         User createdBy = new User();
 
         when(purchaseOrderRepository.save(purchaseOrder)).thenReturn(expectedPurchaseOrder);
 
         //when
-        final PurchaseOrder actualPurchaseOrder = purchaseOrderService.savePayments(purchaseOrder, payments, createdBy);
+        final PurchaseOrder actualPurchaseOrder = purchaseOrderService.saveTransactions(purchaseOrder, transactions, createdBy);
 
         //then
         assertThat(actualPurchaseOrder, is(sameBeanAs(expectedPurchaseOrder)));

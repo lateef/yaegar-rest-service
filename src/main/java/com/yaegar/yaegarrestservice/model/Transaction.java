@@ -1,6 +1,7 @@
 package com.yaegar.yaegarrestservice.model;
 
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
+import com.yaegar.yaegarrestservice.model.enums.TransactionType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -22,4 +23,11 @@ public class Transaction extends AbstractEntity implements Serializable {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "transaction_id", referencedColumnName = "id")
     private List<JournalEntry> journalEntries;
+
+    @Column(name = "transaction_type")
+    @Enumerated(value = EnumType.STRING)
+    private TransactionType transactionType;
+
+    @Column(name = "transaction_type_id")
+    private Long transactionTypeId;
 }
