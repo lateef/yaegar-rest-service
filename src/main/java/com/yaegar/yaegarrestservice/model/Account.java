@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Table(name = "account",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"account_chart_of_accounts_id", "code"}),
-                @UniqueConstraint(columnNames = {"account_chart_of_accounts_id", "name", "account_type", "parent_id"})
+                @UniqueConstraint(columnNames = {"account_chart_of_accounts_id", "name", "account_type", "account_category"})
         })
 @Data
 @EqualsAndHashCode(callSuper = true)

@@ -1,53 +1,40 @@
 package com.yaegar.yaegarrestservice.service;
 
-import com.yaegar.yaegarrestservice.model.Account;
-import com.yaegar.yaegarrestservice.model.Invoice;
-import com.yaegar.yaegarrestservice.model.JournalEntry;
-import com.yaegar.yaegarrestservice.model.PurchaseOrder;
-import com.yaegar.yaegarrestservice.model.PurchaseOrderEvent;
-import com.yaegar.yaegarrestservice.model.Stock;
-import com.yaegar.yaegarrestservice.model.StockTransaction;
-import com.yaegar.yaegarrestservice.model.Transaction;
-import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.model.*;
 import com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState;
 import com.yaegar.yaegarrestservice.repository.PurchaseOrderRepository;
 import com.yaegar.yaegarrestservice.repository.StockRepository;
 import com.yaegar.yaegarrestservice.repository.StockTransactionRepository;
-import com.yaegar.yaegarrestservice.repository.TransactionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.PRODUCT;
-import static com.yaegar.yaegarrestservice.model.enums.AccountType.EXPENSES;
 import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.GOODS_RECEIVED;
-import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID;
-import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.DEBIT;
 
 @Service
 public class PurchaseOrderService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PurchaseOrderService.class);
+
     private PurchaseOrderRepository purchaseOrderRepository;
     private StockRepository stockRepository;
     private StockTransactionRepository stockTransactionRepository;
-    private TransactionRepository transactionRepository;
 
     public PurchaseOrderService(PurchaseOrderRepository purchaseOrderRepository,
                                 StockRepository stockRepository,
-                                StockTransactionRepository stockTransactionRepository,
-                                TransactionRepository transactionRepository) {
+                                StockTransactionRepository stockTransactionRepository
+    ) {
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.stockRepository = stockRepository;
         this.stockTransactionRepository = stockTransactionRepository;
-        this.transactionRepository = transactionRepository;
     }
 
-    public PurchaseOrder addPurchaseOrder(PurchaseOrder purchaseOrder, User createdBy) {
+    public PurchaseOrder savePurchaseOrder(PurchaseOrder purchaseOrder, User createdBy) {
         purchaseOrder.getLineItems().forEach(lineItem -> {
             lineItem.setCreatedBy(createdBy.getId());
             lineItem.setUpdatedBy(createdBy.getId());
@@ -63,43 +50,6 @@ public class PurchaseOrderService {
 
     public List<PurchaseOrder> getPurchaseOrders(Long companyId) {
         return purchaseOrderRepository.findAllByCompanyId(companyId);
-    }
-
-    public PurchaseOrder saveTransaction(PurchaseOrder purchaseOrder, Transaction transaction, User updatedBy) {
-        transaction.setTransactionTypeId(purchaseOrder.getId());
-
-        if (transaction.getId() != null) {
-            final Transaction transaction1 = transactionRepository.findById(transaction.getId())
-                    .orElseThrow(NullPointerException::new);
-            transaction.setCreatedDatetime(transaction1.getCreatedDatetime());
-            transaction.setUpdatedBy(updatedBy.getId());
-        } else {
-            transaction.setCreatedBy(updatedBy.getId());
-            transaction.setUpdatedBy(updatedBy.getId());
-        }
-        final Transaction transaction1 = transactionRepository.save(transaction);
-
-        final int[] i = {2};
-        purchaseOrder.getLineItems()
-                .forEach(lineItem -> {
-                    final Account account1 = lineItem.getProduct().getAccounts()
-                            .stream()
-                            .filter(account -> account.getAccountType().equals(EXPENSES) && account.getAccountCategory().equals(PRODUCT))
-                            .findFirst()
-                            .orElseThrow(NullPointerException::new);
-                    JournalEntry journalEntry = new JournalEntry();
-                    journalEntry.setAccount(account1);
-                    journalEntry.setAmount(lineItem.getUnitPrice().multiply(BigDecimal.valueOf(lineItem.getQuantity())));
-                    journalEntry.setEntry(i[0]);
-                    journalEntry.setTransactionDatetime(LocalDateTime.now());
-                    journalEntry.setTransactionId(transaction1.getId());
-                    journalEntry.setTransactionSide(DEBIT);
-                    i[0]++;
-                });
-
-        purchaseOrder.setTransaction(transaction1);
-        purchaseOrder.setPurchaseOrderState(PAID);
-        return purchaseOrderRepository.save(purchaseOrder);
     }
 
     public PurchaseOrder saveInvoices(PurchaseOrder purchaseOrder, Set<Invoice> invoices, User updatedBy) {

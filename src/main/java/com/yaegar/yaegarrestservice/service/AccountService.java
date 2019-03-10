@@ -26,6 +26,13 @@ public class AccountService {
         return accountRepository.findById(id);
     }
 
+    public Optional<Account> findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+            Long id, String name, AccountType accountType, AccountCategory accountCategory
+    ) {
+        return accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+                id, name, accountType, accountCategory);
+    }
+
     public List<Account> findByParentId(Long parentId) {
         return accountRepository.findByParentId(parentId);
     }
@@ -58,6 +65,7 @@ public class AccountService {
         account.setAccountCategory(accountCategory);
         account.setCreatedBy(createdBy.getId());
         account.setUpdatedBy(createdBy.getId());
+        account.setEnable(true);
         final Integer maxCode = findByParentId(parentAccount.getId())
                 .stream()
                 .map(Account::getCode)
