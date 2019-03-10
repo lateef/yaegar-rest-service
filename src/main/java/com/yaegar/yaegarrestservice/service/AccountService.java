@@ -26,6 +26,13 @@ public class AccountService {
         return accountRepository.findById(id);
     }
 
+    public Optional<Account> findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+            Long id, String name, AccountType accountType, AccountCategory accountCategory
+    ) {
+        return accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+                id, name, accountType, accountCategory);
+    }
+
     public List<Account> findByParentId(Long parentId) {
         return accountRepository.findByParentId(parentId);
     }
@@ -43,10 +50,10 @@ public class AccountService {
     }
 
     public Account addAccount(Account account, User createdBy) {
-        return addAccount(account.getParentId(), account.getName(), account.getAccountCategory(), createdBy);
+        return addAccount(account.getParentId(), account.getName(), account.getAccountType(), account.getAccountCategory(), createdBy);
     }
 
-    public Account addAccount(Long parentAccountId, String name, AccountCategory accountCategory, User createdBy) {
+    public Account addAccount(Long parentAccountId, String name, AccountType accountType, AccountCategory accountCategory, User createdBy) {
         Account parentAccount = findById(parentAccountId)
                 .orElseThrow(NullPointerException::new);
         Account account = new Account();
@@ -54,9 +61,11 @@ public class AccountService {
         account.setName(name.trim());
         account.setDescription(name.trim());
         account.setAccountChartOfAccountsId(parentAccount.getAccountChartOfAccountsId());
+        account.setAccountType(accountType);
         account.setAccountCategory(accountCategory);
         account.setCreatedBy(createdBy.getId());
         account.setUpdatedBy(createdBy.getId());
+        account.setEnable(true);
         final Integer maxCode = findByParentId(parentAccount.getId())
                 .stream()
                 .map(Account::getCode)

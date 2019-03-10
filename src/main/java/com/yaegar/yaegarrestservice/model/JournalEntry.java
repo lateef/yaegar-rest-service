@@ -21,11 +21,11 @@ public class JournalEntry extends AbstractEntity implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "transaction_id", nullable = false)
+    @Column(name = "transaction_id")
     private Long transactionId;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
-    @JoinColumn(name = "account_id", referencedColumnName = "id")
+    @JoinColumn(name = "account_id", referencedColumnName = "id", nullable = false)
     private Account account;
 
     @Column(name = "transaction_side", nullable = false)
@@ -40,6 +40,9 @@ public class JournalEntry extends AbstractEntity implements Serializable {
 
     @Column(name = "transaction_datetime")
     private LocalDateTime transactionDatetime;
+
+    @Column(name = "short_description", length = 16, nullable = false)
+    private String shortDescription;
 
     @Column(name = "description", length = 1000)
     private String description;

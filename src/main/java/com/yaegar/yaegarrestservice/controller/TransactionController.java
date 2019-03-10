@@ -27,7 +27,7 @@ public class TransactionController {
     public ResponseEntity<Map<String, Transaction>> addTransaction(@RequestBody final Transaction transaction, ModelMap model, HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         HttpHeaders headers = getAuthenticatedUser(user);
-        Transaction transaction1 = transactionService.addTransaction(transaction, user);
+        Transaction transaction1 = transactionService.saveTransaction(transaction, user);
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", transaction1));
     }
 

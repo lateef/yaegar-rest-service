@@ -1,7 +1,7 @@
 package com.yaegar.yaegarrestservice.repository;
 
-import com.yaegar.yaegarrestservice.model.Payment;
 import com.yaegar.yaegarrestservice.model.PurchaseOrder;
+import com.yaegar.yaegarrestservice.model.Transaction;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,11 +9,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
-import static com.yaegar.yaegarrestservice.model.enums.PaymentType.PURCHASE_ORDER;
+import static com.yaegar.yaegarrestservice.model.enums.TransactionType.PURCHASE_ORDER;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
@@ -28,16 +25,13 @@ public class PurchaseOrderRepositoryTest {
     @Test
     public void whenSave_thenReturnPurchaseOrder() {
         //given
-        final Payment payment = new Payment();
-        payment.setPaymentType(PURCHASE_ORDER);
-        entityManager.persist(payment);
+        final Transaction transaction = new Transaction();
+        transaction.setTransactionType(PURCHASE_ORDER);
+        entityManager.persist(transaction);
         entityManager.flush();
 
-        Set<Payment> payments = new HashSet<>();
-        payments.add(payment);
-
         PurchaseOrder expectedPurchaseOrder = new PurchaseOrder();
-        expectedPurchaseOrder.setPayments(payments);
+        expectedPurchaseOrder.setTransaction(transaction);
         entityManager.persist(expectedPurchaseOrder);
         entityManager.flush();
 

@@ -1,50 +1,47 @@
 package com.yaegar.yaegarrestservice.controller;
 
-import com.yaegar.yaegarrestservice.model.Company;
-import com.yaegar.yaegarrestservice.model.Product;
-import com.yaegar.yaegarrestservice.model.PurchaseOrder;
-import com.yaegar.yaegarrestservice.model.PurchaseOrderEvent;
-import com.yaegar.yaegarrestservice.model.Supplier;
-import com.yaegar.yaegarrestservice.model.User;
-import com.yaegar.yaegarrestservice.service.CompanyService;
-import com.yaegar.yaegarrestservice.service.ProductService;
-import com.yaegar.yaegarrestservice.service.PurchaseOrderService;
-import com.yaegar.yaegarrestservice.service.SupplierService;
+import com.yaegar.yaegarrestservice.model.*;
+import com.yaegar.yaegarrestservice.service.*;
 import com.yaegar.yaegarrestservice.util.AuthenticationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 
+import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PREPAYMENT;
 import static java.util.Collections.singletonMap;
 
 @RestController
 public class PurchaseOrderController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PurchaseOrderController.class);
 
-    private CompanyService companyService;
-    private ProductService productService;
-    private PurchaseOrderService purchaseOrderService;
-    private SupplierService supplierService;
+    final private CompanyService companyService;
+    final private ProductService productService;
+    final private PurchaseOrderService purchaseOrderService;
+    final private SupplierService supplierService;
+    final private TransactionService transactionService;
 
-    public PurchaseOrderController(CompanyService companyService, ProductService productService, PurchaseOrderService purchaseOrderService, SupplierService supplierService) {
+    public PurchaseOrderController(
+            CompanyService companyService,
+            ProductService productService,
+            PurchaseOrderService purchaseOrderService,
+            SupplierService supplierService,
+            TransactionService transactionService
+    ) {
         this.companyService = companyService;
         this.productService = productService;
         this.purchaseOrderService = purchaseOrderService;
         this.supplierService = supplierService;
+        this.transactionService = transactionService;
     }
 
-    @RequestMapping(value = {"/add-purchase-order", "/update-purchase-order"}, method = RequestMethod.POST)
+    @RequestMapping(value = {"/add-purchase-order", "/save-purchase-order"}, method = RequestMethod.POST)
     public ResponseEntity<Map<String, PurchaseOrder>> addPurchaseOrder(@RequestBody final PurchaseOrder purchaseOrder, ModelMap model, HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
@@ -67,7 +64,7 @@ public class PurchaseOrderController {
             lineItem.setProduct(product);
         });
 
-        PurchaseOrder purchaseOrder1 = purchaseOrderService.addPurchaseOrder(purchaseOrder, user);
+        PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(purchaseOrder, user);
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", purchaseOrder1));
     }
 
@@ -79,10 +76,10 @@ public class PurchaseOrderController {
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", purchaseOrders));
     }
 
-    @RequestMapping(value = "/save-purchase-order-payments", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, PurchaseOrder>> savePayments(@RequestBody PurchaseOrder purchaseOrder,
-                                                                  ModelMap model,
-                                                                  HttpServletRequest httpServletRequest) {
+    @RequestMapping(value = "/save-purchase-order-transaction", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, PurchaseOrder>> saveTransaction(@RequestBody PurchaseOrder purchaseOrder,
+                                                                      ModelMap model,
+                                                                      HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
 
@@ -90,14 +87,24 @@ public class PurchaseOrderController {
                 .getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        PurchaseOrder purchaseOrder1 = purchaseOrderService.savePayments(savedPurchaseOrder, purchaseOrder.getPayments(), user);
+        final Transaction transaction = transactionService.computeTransaction(
+                purchaseOrder.getTransaction(),
+                purchaseOrder.getCompany().getChartOfAccounts().getId(),
+                purchaseOrder.getPurchaseOrderState(),
+                savedPurchaseOrder.getId(),
+                user
+        );
+        final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
+        savedPurchaseOrder.setPurchaseOrderState(PREPAYMENT);
+        savedPurchaseOrder.setTransaction(transaction1);
+        PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", purchaseOrder1));
     }
 
     @RequestMapping(value = "/save-purchase-order-invoices", method = RequestMethod.POST)
     public ResponseEntity<Map<String, PurchaseOrder>> saveInvoices(@RequestBody PurchaseOrder purchaseOrder,
-                                                                  ModelMap model,
-                                                                  HttpServletRequest httpServletRequest) {
+                                                                   ModelMap model,
+                                                                   HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
 
@@ -105,14 +112,14 @@ public class PurchaseOrderController {
                 .getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        PurchaseOrder purchaseOrder1 = purchaseOrderService.saveInvoicess(savedPurchaseOrder, purchaseOrder.getInvoices(), user);
+        PurchaseOrder purchaseOrder1 = purchaseOrderService.saveInvoices(savedPurchaseOrder, purchaseOrder.getInvoices(), user);
         return ResponseEntity.ok().headers(headers).body(singletonMap("success", purchaseOrder1));
     }
 
     @RequestMapping(value = "/add-purchase-order-supply-activity", method = RequestMethod.POST)
     public ResponseEntity<Map<String, PurchaseOrder>> addPurchaseOrderSupplyActivity(@RequestBody final PurchaseOrderEvent purchaseOrderEvent,
-                                                                               ModelMap model,
-                                                                               HttpServletRequest httpServletRequest) {
+                                                                                     ModelMap model,
+                                                                                     HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
 

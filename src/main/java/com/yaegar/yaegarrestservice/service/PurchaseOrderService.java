@@ -1,17 +1,12 @@
 package com.yaegar.yaegarrestservice.service;
 
-import com.yaegar.yaegarrestservice.model.Invoice;
-import com.yaegar.yaegarrestservice.model.Payment;
-import com.yaegar.yaegarrestservice.model.PurchaseOrder;
-import com.yaegar.yaegarrestservice.model.PurchaseOrderEvent;
-import com.yaegar.yaegarrestservice.model.Stock;
-import com.yaegar.yaegarrestservice.model.StockTransaction;
-import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.model.*;
 import com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState;
-import com.yaegar.yaegarrestservice.repository.PaymentRepository;
 import com.yaegar.yaegarrestservice.repository.PurchaseOrderRepository;
 import com.yaegar.yaegarrestservice.repository.StockRepository;
 import com.yaegar.yaegarrestservice.repository.StockTransactionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,25 +16,25 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.GOODS_RECEIVED;
-import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID;
 
 @Service
 public class PurchaseOrderService {
-    private PaymentRepository paymentRepository;
+    private static final Logger LOGGER = LoggerFactory.getLogger(PurchaseOrderService.class);
+
     private PurchaseOrderRepository purchaseOrderRepository;
     private StockRepository stockRepository;
     private StockTransactionRepository stockTransactionRepository;
 
-    public PurchaseOrderService(PaymentRepository paymentRepository, PurchaseOrderRepository purchaseOrderRepository,
+    public PurchaseOrderService(PurchaseOrderRepository purchaseOrderRepository,
                                 StockRepository stockRepository,
-                                StockTransactionRepository stockTransactionRepository) {
-        this.paymentRepository = paymentRepository;
+                                StockTransactionRepository stockTransactionRepository
+    ) {
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.stockRepository = stockRepository;
         this.stockTransactionRepository = stockTransactionRepository;
     }
 
-    public PurchaseOrder addPurchaseOrder(PurchaseOrder purchaseOrder, User createdBy) {
+    public PurchaseOrder savePurchaseOrder(PurchaseOrder purchaseOrder, User createdBy) {
         purchaseOrder.getLineItems().forEach(lineItem -> {
             lineItem.setCreatedBy(createdBy.getId());
             lineItem.setUpdatedBy(createdBy.getId());
@@ -57,27 +52,7 @@ public class PurchaseOrderService {
         return purchaseOrderRepository.findAllByCompanyId(companyId);
     }
 
-    public PurchaseOrder savePayments(PurchaseOrder purchaseOrder, Set<Payment> payments, User updatedBy) {
-        //TODO confirm payment was paid before setting PAYMENT and update user on only updated payments
-        payments = payments.stream()
-                .map(payment -> {
-                    if (payment.getId() != null) {
-                        final Payment payment1 = paymentRepository.findById(payment.getId())
-                                .orElseThrow(NullPointerException::new);
-                        payment.setCreatedDatetime(payment1.getCreatedDatetime());
-                        payment.setUpdatedBy(updatedBy.getId());
-                    } else {
-                        payment.setCreatedBy(updatedBy.getId());
-                        payment.setUpdatedBy(updatedBy.getId());
-                    }
-                        return payment;
-                }).collect(Collectors.toSet());
-        purchaseOrder.setPayments(payments);
-        purchaseOrder.setPurchaseOrderState(PAID);
-        return purchaseOrderRepository.save(purchaseOrder);
-    }
-
-    public PurchaseOrder saveInvoicess(PurchaseOrder purchaseOrder, Set<Invoice> invoices, User updatedBy) {
+    public PurchaseOrder saveInvoices(PurchaseOrder purchaseOrder, Set<Invoice> invoices, User updatedBy) {
         //TODO confirm payment was paid before setting PAYMENT and update user on only updated payments
         purchaseOrder.setInvoices(invoices);
         purchaseOrder.setPurchaseOrderState(GOODS_RECEIVED);

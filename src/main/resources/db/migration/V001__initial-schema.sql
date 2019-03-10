@@ -29,12 +29,12 @@ create table user
   updated_datetime datetime null,
   deleted_datetime datetime null,
   phone_number varchar(15) not null,
-  accepted_terms bit null,
-  account_non_expired bit null,
-  account_non_locked bit null,
-  credentials_non_expired bit null,
-  enabled bit null,
-  failed_login_attempts int null,
+  accepted_terms bit not null,
+  account_non_expired bit not null,
+  account_non_locked bit not null,
+  credentials_non_expired bit not null,
+  enabled bit not null,
+  failed_login_attempts int not null,
   first_name varchar(32) null,
   password varchar(128) null,
   country_id bigint null,
@@ -163,6 +163,8 @@ create table account
   last_one_year_total         decimal(19,2) null,
   parent_id        bigint null,
   parent          bit null,
+  enable          bit null,
+  can_delete          bit null,
   account_chart_of_accounts_id bigint null,
   created_by       bigint null,
   updated_by       bigint null,
@@ -176,6 +178,8 @@ create table transaction
 (
   id bigint auto_increment primary key,
   created_datetime datetime null,
+  transaction_type varchar(50) null,
+  transaction_type_id bigint null,
   updated_datetime datetime null,
   deleted_datetime datetime null,
   created_by       bigint null,
@@ -189,10 +193,11 @@ create table journal_entry
   updated_datetime datetime null,
   deleted_datetime datetime null,
   transaction_id   bigint null,
-  account_id        bigint null,
+  account_id        bigint not null,
   amount           decimal(19,2) null,
   transaction_datetime datetime null,
   entry            int not null,
+  short_description  varchar(16) not null,
   description        varchar(1000) null,
   transaction_side varchar(255) null,
   created_by       bigint null,
@@ -249,21 +254,6 @@ create table product_accounts
     foreign key (accounts_id) references account (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-create table payment
-(
-  id bigint auto_increment primary key,
-  created_datetime datetime null,
-  updated_datetime datetime null,
-  transaction_id  bigint null,
-  payment_type varchar(50) null,
-  payment_type_id  bigint null,
-  description        varchar(1000) null,
-  created_by       bigint null,
-  updated_by       bigint null,
-  constraint FK_payment_transaction
-    foreign key (transaction_id) references transaction (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 create table purchase_order
 (
   id bigint auto_increment primary key,
@@ -272,6 +262,7 @@ create table purchase_order
   number       bigint null,
   company_id  bigint null,
   supplier_id  bigint null,
+  transaction_id bigint null,
   total_price decimal(19,2) null,
   paid_amount      decimal(19,2) null,
   description        varchar(1000) null,
@@ -281,7 +272,9 @@ create table purchase_order
   constraint FK_purchase_order_company
     foreign key (company_id) references company (id),
   constraint FK_purchase_order_supplier
-    foreign key (supplier_id) references supplier (id)
+    foreign key (supplier_id) references supplier (id),
+  constraint FK_purchase_order_transaction
+    foreign key (transaction_id) references transaction (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table invoice

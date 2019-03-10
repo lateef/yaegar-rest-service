@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AccountRepository extends JpaRepository<Account, Long> {
-    Optional<Account> findById(Long id);
+    Optional<Account> findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+            Long id, String name, AccountType accountType, AccountCategory accountCategory
+    );
 
     List<Account> findByParentId(Long parentId);
 
