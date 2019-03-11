@@ -1,7 +1,10 @@
 package com.yaegar.yaegarrestservice.service;
 
-import com.yaegar.yaegarrestservice.model.*;
-import com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState;
+import com.yaegar.yaegarrestservice.model.Account;
+import com.yaegar.yaegarrestservice.model.Invoice;
+import com.yaegar.yaegarrestservice.model.JournalEntry;
+import com.yaegar.yaegarrestservice.model.Transaction;
+import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.model.enums.TransactionSide;
 import com.yaegar.yaegarrestservice.repository.AccountRepository;
 import com.yaegar.yaegarrestservice.repository.TransactionRepository;
@@ -15,7 +18,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PREPAYMENT;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.PREPAYMENT;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.PURCHASES;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.CREDIT;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.DEBIT;
 import static java.math.BigDecimal.ZERO;
@@ -32,47 +36,86 @@ public class TransactionService {
         this.transactionRepository = transactionRepository;
     }
 
-    public Transaction computePurchaseOrderTransaction(
+    public Transaction computePaymentInAdvanceTransaction(Transaction transaction, Long chartOfAccountsId, Long transactionTypeId, User updatedBy) {
+        transaction.setTransactionTypeId(transactionTypeId);
+
+        final Account account = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+                chartOfAccountsId, PREPAYMENT.name(), null, null
+        ).orElseThrow(NullPointerException::new);
+
+        final BigDecimal totalPrepayment = transaction.getJournalEntries()
+                .stream()
+                .filter(journalEntry -> journalEntry.getTransactionSide().equals(CREDIT))
+                .map(JournalEntry::getAmount)
+                .reduce(ZERO, BigDecimal::add);
+
+        final Integer maxEntry = transaction.getJournalEntries()
+                .stream()
+                .map(JournalEntry::getEntry)
+                .max(Integer::compareTo)
+                .orElseThrow(NullPointerException::new);
+
+        if (!totalPrepayment.equals(ZERO)) {
+            JournalEntry prepaymentJournalEntry = new JournalEntry();
+            prepaymentJournalEntry.setTransactionSide(DEBIT);
+            prepaymentJournalEntry.setAmount(totalPrepayment);
+            prepaymentJournalEntry.setAccount(account);
+            prepaymentJournalEntry.setEntry(maxEntry + 1);
+            prepaymentJournalEntry.setTransactionDatetime(LocalDateTime.now());
+            prepaymentJournalEntry.setCreatedBy(updatedBy.getId());
+            prepaymentJournalEntry.setUpdatedBy(updatedBy.getId());
+
+            transaction.getJournalEntries().add(prepaymentJournalEntry);
+        } else {
+            LOGGER.warn("Prepayment cannot be zero {}", transaction);
+        }
+        return transaction;
+    }
+
+    public Transaction computeInvoicesTransaction(
             Transaction transaction,
+            List<Invoice> invoices,
             Long chartOfAccountsId,
-            PurchaseOrderState purchaseOrderState,
             Long transactionTypeId,
             User updatedBy
     ) {
         transaction.setTransactionTypeId(transactionTypeId);
 
-        if (purchaseOrderState.equals(PREPAYMENT)) {
-            final Account account = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                    chartOfAccountsId, PREPAYMENT.name(), null, null
-            ).orElseThrow(NullPointerException::new);
+        final Account account = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+                chartOfAccountsId, PURCHASES.name(), null, null
+        ).orElseThrow(NullPointerException::new);
 
-            final BigDecimal totalPrepayment = transaction.getJournalEntries()
-                    .stream()
-                    .filter(journalEntry -> journalEntry.getTransactionSide().equals(CREDIT))
-                    .map(JournalEntry::getAmount)
-                    .reduce(ZERO, BigDecimal::add);
-
-            final Integer maxEntry = transaction.getJournalEntries()
-                    .stream()
-                    .map(JournalEntry::getEntry)
-                    .max(Integer::compareTo)
-                    .orElseThrow(NullPointerException::new);
-
-            if (!totalPrepayment.equals(ZERO)) {
-                JournalEntry prepaymentJournalEntry = new JournalEntry();
-                prepaymentJournalEntry.setTransactionSide(DEBIT);
-                prepaymentJournalEntry.setAmount(totalPrepayment);
-                prepaymentJournalEntry.setAccount(account);
-                prepaymentJournalEntry.setEntry(maxEntry + 1);
-                prepaymentJournalEntry.setTransactionDatetime(LocalDateTime.now());
-                prepaymentJournalEntry.setCreatedBy(updatedBy.getId());
-                prepaymentJournalEntry.setUpdatedBy(updatedBy.getId());
-
-                transaction.getJournalEntries().add(prepaymentJournalEntry);
-            } else {
-                LOGGER.warn("Prepayment cannot be zero {}", transaction);
-            }
-        }
+        invoices.forEach(invoice -> {
+            invoice.getLineItems()
+                    .forEach(lineItem -> {
+                        //            final BigDecimal totalPrepayment = transaction.getJournalEntries()
+//                    .stream()
+//                    .filter(journalEntry -> journalEntry.getTransactionSide().equals(CREDIT))
+//                    .map(JournalEntry::getAmount)
+//                    .reduce(ZERO, BigDecimal::add);
+//
+//            final Integer maxEntry = transaction.getJournalEntries()
+//                    .stream()
+//                    .map(JournalEntry::getEntry)
+//                    .max(Integer::compareTo)
+//                    .orElseThrow(NullPointerException::new);
+//
+//            if (!totalPrepayment.equals(ZERO)) {
+//                JournalEntry prepaymentJournalEntry = new JournalEntry();
+//                prepaymentJournalEntry.setTransactionSide(DEBIT);
+//                prepaymentJournalEntry.setAmount(totalPrepayment);
+//                prepaymentJournalEntry.setAccount(account);
+//                prepaymentJournalEntry.setEntry(maxEntry + 1);
+//                prepaymentJournalEntry.setTransactionDatetime(LocalDateTime.now());
+//                prepaymentJournalEntry.setCreatedBy(updatedBy.getId());
+//                prepaymentJournalEntry.setUpdatedBy(updatedBy.getId());
+//
+//                transaction.getJournalEntries().add(prepaymentJournalEntry);
+//            } else {
+//                LOGGER.warn("Prepayment cannot be zero {}", transaction);
+//            }
+                    });
+        });
         return transaction;
     }
 

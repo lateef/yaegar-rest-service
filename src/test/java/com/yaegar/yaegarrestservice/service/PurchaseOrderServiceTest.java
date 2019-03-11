@@ -2,9 +2,6 @@ package com.yaegar.yaegarrestservice.service;
 
 import com.yaegar.yaegarrestservice.repository.ProductRepository;
 import com.yaegar.yaegarrestservice.repository.PurchaseOrderRepository;
-import com.yaegar.yaegarrestservice.repository.StockRepository;
-import com.yaegar.yaegarrestservice.repository.StockTransactionRepository;
-import com.yaegar.yaegarrestservice.repository.SupplierRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,12 +14,6 @@ public class PurchaseOrderServiceTest {
     private ProductRepository productRepository;
     @MockBean
     private PurchaseOrderRepository purchaseOrderRepository;
-    @MockBean
-    private StockRepository stockRepository;
-    @MockBean
-    private StockTransactionRepository stockTransactionRepository;
-    @MockBean
-    private SupplierRepository supplierRepository;
 
     private PurchaseOrderService purchaseOrderService;
 
@@ -30,9 +21,7 @@ public class PurchaseOrderServiceTest {
     public void setup() {
         purchaseOrderService = new PurchaseOrderService(
                 productRepository,
-                purchaseOrderRepository,
-                stockRepository,
-                stockTransactionRepository
+                purchaseOrderRepository
         );
     }
 

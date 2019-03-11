@@ -1,11 +1,13 @@
 package com.yaegar.yaegarrestservice.model.enums;
 
 public enum AccountType {
-    ASSETS("ASSETS"),
-    LIABILITIES("LIABILITIES"),
-    EQUITY("EQUITY"),
-    INCOME_REVENUE("INCOME/REVENUE"),
-    EXPENSES("EXPENSES");
+    ASSETS("Assets"),
+    LIABILITIES("Liabilities"),
+    EQUITY("Equity"),
+    INCOME_REVENUE("Income/Revenue"),
+    EXPENSES("Expenses"),
+    PREPAYMENT("Prepayment"),
+    PURCHASES("Purchases");
 
     private final String type;
 

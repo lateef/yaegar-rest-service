@@ -3,7 +3,6 @@ package com.yaegar.yaegarrestservice.controller;
 import com.yaegar.yaegarrestservice.model.Invoice;
 import com.yaegar.yaegarrestservice.model.LineItem;
 import com.yaegar.yaegarrestservice.model.PurchaseOrder;
-import com.yaegar.yaegarrestservice.model.PurchaseOrderEvent;
 import com.yaegar.yaegarrestservice.model.Supplier;
 import com.yaegar.yaegarrestservice.model.Transaction;
 import com.yaegar.yaegarrestservice.model.User;
@@ -15,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,8 +31,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.GOODS_RECEIVED;
-import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PREPAYMENT;
 import static java.util.Collections.singletonMap;
 
 @RestController
@@ -93,21 +91,20 @@ public class PurchaseOrderController {
                 .getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        final Transaction transaction = transactionService.computePurchaseOrderTransaction(
+        final Transaction transaction = transactionService.computePaymentInAdvanceTransaction(
                 purchaseOrder.getTransaction(),
                 purchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts().getId(),
-                purchaseOrder.getPurchaseOrderState(),
                 savedPurchaseOrder.getId(),
                 user
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        savedPurchaseOrder.setPurchaseOrderState(PREPAYMENT);
         savedPurchaseOrder.setTransaction(transaction1);
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrder1));
     }
 
+    @Transactional
     @RequestMapping(value = "/save-purchase-order-invoices", method = RequestMethod.POST)
     public ResponseEntity<Map<String, PurchaseOrder>> saveInvoices(@RequestBody PurchaseOrder purchaseOrder,
                                                                    ModelMap model,
@@ -134,23 +131,21 @@ public class PurchaseOrderController {
         final List<Invoice> invoices1 = invoiceService.saveAll(invoices);
 
         savedPurchaseOrder.setInvoices(new HashSet<>(invoices1));
-        savedPurchaseOrder.setPurchaseOrderState(GOODS_RECEIVED);
+
+        final Transaction transaction = transactionService.computeInvoicesTransaction(
+                purchaseOrder.getTransaction(),
+                invoiceService.sortInvoicesByDate(savedPurchaseOrder.getInvoices()),
+                purchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts().getId(),
+                savedPurchaseOrder.getId(),
+                user
+        );
+
+        final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
+        savedPurchaseOrder.setTransaction(transaction1);
+
+        invoiceService.computeInventory(user);
 
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
-        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrder1));
-    }
-
-    @RequestMapping(value = "/add-purchase-order-supply-activity", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, PurchaseOrder>> addPurchaseOrderSupplyActivity(@RequestBody final PurchaseOrderEvent purchaseOrderEvent,
-                                                                                     ModelMap model,
-                                                                                     HttpServletRequest httpServletRequest) {
-        final User user = (User) model.get("user");
-
-        PurchaseOrder purchaseOrder = purchaseOrderService
-                .getPurchaseOrder(purchaseOrderEvent.getPurchaseOrderEventId())
-                .orElseThrow(NullPointerException::new);
-
-        PurchaseOrder purchaseOrder1 = purchaseOrderService.addPurchaseOrderSupplyActivity(purchaseOrder, purchaseOrderEvent, user);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrder1));
     }
 }
