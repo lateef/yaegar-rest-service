@@ -16,10 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Map;
 import java.util.List;
-
-import static com.yaegar.yaegarrestservice.util.AuthenticationUtils.getAuthenticatedUser;
+import java.util.Map;
 
 @RestController
 public class CompanyController {
@@ -36,17 +34,14 @@ public class CompanyController {
             @RequestBody final Company company, ModelMap model, HttpServletRequest httpServletRequest)
             throws IOException {
         final User user = (User) model.get("user");
-        final HttpHeaders headers = getAuthenticatedUser(user);
-
         Company company1 = companyService.addCompany(company, user);
-        return ResponseEntity.ok().headers(headers).body(Collections.singletonMap("success", company1));
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(Collections.singletonMap("success", company1));
     }
 
     @RequestMapping(value = "/get-user-companies", method = RequestMethod.GET)
     public ResponseEntity<Map<String, List<Company>>> getCompanies(ModelMap model, HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
-        HttpHeaders headers = getAuthenticatedUser(user);
         List<Company> companies = companyService.getCompaniesByEmployeesIn(Collections.singletonList(user));
-        return ResponseEntity.ok().headers(headers).body(Collections.singletonMap("success", companies));
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(Collections.singletonMap("success", companies));
     }
 }

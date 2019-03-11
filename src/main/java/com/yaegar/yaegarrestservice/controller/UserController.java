@@ -47,8 +47,7 @@ public class UserController {
     @RequestMapping(value = "/get-logged-in-user", method = RequestMethod.POST)
     public ResponseEntity<Map<String, User>> getLoggedInUser(ModelMap model,  HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
-        final HttpHeaders headers = getAuthenticatedUser(user);
-        return ResponseEntity.ok().headers(headers).body(singletonMap("success", user));
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", user));
     }
 
     @RequestMapping(value = "/do-nothing", method = RequestMethod.GET)

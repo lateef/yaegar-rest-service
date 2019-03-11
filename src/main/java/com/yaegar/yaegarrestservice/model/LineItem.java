@@ -29,6 +29,9 @@ public class LineItem extends AbstractEntity implements Serializable {
     @Column(name = "id")
     private long id;
 
+    @Column(name = "order")
+    private int order;
+
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "product_id", referencedColumnName = "id")
     private Product product;

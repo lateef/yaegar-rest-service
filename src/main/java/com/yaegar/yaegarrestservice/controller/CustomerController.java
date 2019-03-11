@@ -29,7 +29,6 @@ public class CustomerController {
     @RequestMapping(value = "/add-customer", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Customer>> addCustomer(@RequestBody final Customer customer, ModelMap model, HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
-        HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
         Company company = companyService.findById(customer.getCompany().getId())
                 .orElseThrow(NullPointerException::new);
         customer.setCompany(company);
@@ -41,14 +40,12 @@ public class CustomerController {
         customer.setCreatedBy(user.getId());
         customer.setUpdatedBy(user.getId());
         Customer customer1 = customerService.addCustomer(customer);
-        return ResponseEntity.ok().headers(headers).body(Collections.singletonMap("success", customer1));
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(Collections.singletonMap("success", customer1));
     }
 
     @RequestMapping(value = "/get-customers/{companyId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, List<Customer>>> getCustomers(@PathVariable Long companyId, ModelMap model, HttpServletRequest httpServletRequest) {
-        final User user = (User) model.get("user");
-        HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
         List<Customer> customers = customerService.getCustomersByCompanyId(companyId);
-        return ResponseEntity.ok().headers(headers).body(Collections.singletonMap("success", customers));
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(Collections.singletonMap("success", customers));
     }
 }

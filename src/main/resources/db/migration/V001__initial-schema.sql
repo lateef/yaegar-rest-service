@@ -260,7 +260,6 @@ create table purchase_order
   created_datetime datetime null,
   updated_datetime datetime null,
   number       bigint null,
-  company_id  bigint null,
   supplier_id  bigint null,
   transaction_id bigint null,
   total_price decimal(19,2) null,
@@ -269,8 +268,6 @@ create table purchase_order
   purchase_order_state varchar(50) null,
   created_by       bigint null,
   updated_by       bigint null,
-  constraint FK_purchase_order_company
-    foreign key (company_id) references company (id),
   constraint FK_purchase_order_supplier
     foreign key (supplier_id) references supplier (id),
   constraint FK_purchase_order_transaction
@@ -339,6 +336,7 @@ create table line_item
   id bigint auto_increment primary key,
   created_datetime datetime null,
   updated_datetime datetime null,
+  `order`             int not null,
   line_item_purchase_order_id bigint null,
   line_item_invoice_id bigint null,
   sales_order_id bigint null,

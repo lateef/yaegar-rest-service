@@ -68,15 +68,13 @@ public class SalesOrderController {
         });
 
         SalesOrder salesOrder1 = salesOrderService.addSalesOrder(salesOrder, user);
-        return ResponseEntity.ok().headers(headers).body(singletonMap("success", salesOrder1));
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", salesOrder1));
     }
 
     @RequestMapping(value = "/get-sales-orders", method = RequestMethod.GET)
     public ResponseEntity<Map<String, List<SalesOrder>>> getSalesOrders(@RequestParam final Long companyId, ModelMap model, HttpServletRequest httpServletRequest) {
-        final User user = (User) model.get("user");
-        HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
         List<SalesOrder> salesOrders = salesOrderService.getSalesOrders(companyId);
-        return ResponseEntity.ok().headers(headers).body(singletonMap("success", salesOrders));
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", salesOrders));
     }
 
     @RequestMapping(value = "/add-sales-order-activity", method = RequestMethod.POST)
@@ -84,14 +82,13 @@ public class SalesOrderController {
                                                                                ModelMap model,
                                                                                HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
-        HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
 
         SalesOrder salesOrder = salesOrderService
                 .getSalesOrder(salesOrderEvent.getSalesOrderEventId())
                 .orElseThrow(NullPointerException::new);
 
         SalesOrder salesOrder1 = salesOrderService.addSalesOrderActivity(salesOrder, salesOrderEvent, user);
-        return ResponseEntity.ok().headers(headers).body(singletonMap("success", salesOrder1));
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", salesOrder1));
     }
 
     @RequestMapping(value = "/add-sales-order-supply-activity", method = RequestMethod.POST)
@@ -99,13 +96,12 @@ public class SalesOrderController {
                                                                                      ModelMap model,
                                                                                      HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
-        HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
 
         SalesOrder salesOrder = salesOrderService
                 .getSalesOrder(salesOrderEvent.getSalesOrderEventId())
                 .orElseThrow(NullPointerException::new);
 
         SalesOrder salesOrder1 = salesOrderService.addSalesOrderSupplyActivity(salesOrder, salesOrderEvent, user);
-        return ResponseEntity.ok().headers(headers).body(singletonMap("success", salesOrder1));
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", salesOrder1));
     }
 }

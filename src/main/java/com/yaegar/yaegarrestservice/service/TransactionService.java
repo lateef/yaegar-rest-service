@@ -32,7 +32,7 @@ public class TransactionService {
         this.transactionRepository = transactionRepository;
     }
 
-    public Transaction computeTransaction(
+    public Transaction computePurchaseOrderTransaction(
             Transaction transaction,
             Long chartOfAccountsId,
             PurchaseOrderState purchaseOrderState,

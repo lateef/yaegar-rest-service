@@ -7,14 +7,17 @@ import com.yaegar.yaegarrestservice.service.CompanyService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.yaegar.yaegarrestservice.util.AuthenticationUtils.getAuthenticatedUser;
 import static java.util.Collections.singletonMap;
 
 @RestController
@@ -30,28 +33,24 @@ public class AccountController {
     @RequestMapping(value = "/add-account", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Account>> addAccount(@RequestBody final Account account, ModelMap model, HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
-        HttpHeaders headers = getAuthenticatedUser(user);
         Account account1 = accountService.addAccount(account, user);
-        return ResponseEntity.ok().headers(headers).body(singletonMap("success", account1));
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", account1));
     }
 
     @RequestMapping(value = "/get-leaf-accounts", method = RequestMethod.GET)
     public ResponseEntity<Map<String, List<Account>>> getLeafAccounts(@RequestParam final Long chartOfAccountsId, ModelMap model, HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
-        HttpHeaders headers = getAuthenticatedUser(user);
         List<Account> accounts = new ArrayList<>();
         if (companyService.userCanAccessChartOfAccounts(user, chartOfAccountsId)) {
             accounts = accountService.getLeafAccounts(chartOfAccountsId);
         }
-        return ResponseEntity.ok().headers(headers).body(singletonMap("success", accounts));
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", accounts));
     }
 
     @RequestMapping(value = "/get-account", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Account>> getAccount(@RequestParam final Long accountId, ModelMap model, HttpServletRequest httpServletRequest) {
-        final User user = (User) model.get("user");
-        HttpHeaders headers = getAuthenticatedUser(user);
         final Account account = accountService.findById(accountId)
                 .orElseThrow(NullPointerException::new);//this should be able to return segregated data
-        return ResponseEntity.ok().headers(headers).body(singletonMap("success", account));
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", account));
     }
 }
