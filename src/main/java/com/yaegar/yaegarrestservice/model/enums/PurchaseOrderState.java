@@ -8,8 +8,6 @@ public enum PurchaseOrderState {
     SENT("Sent"),
     SUPPLIER_FLAGGED("Supplier flagged"),
     SUPPLIER_ACCEPTED("Supplier accepted"),
-    INVOICE_RECEIVED("Invoice received"),
-    PAID("Paid"),
     GOODS_RECEIVED("Goods received");
 
     private final String purchaseOrderState;

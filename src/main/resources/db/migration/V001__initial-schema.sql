@@ -336,7 +336,7 @@ create table line_item
   id bigint auto_increment primary key,
   created_datetime datetime null,
   updated_datetime datetime null,
-  `order`             int not null,
+  entry             int not null,
   line_item_purchase_order_id bigint null,
   line_item_invoice_id bigint null,
   sales_order_id bigint null,

@@ -46,16 +46,16 @@ public class RestControllerAdvice {
 
     @Before("controllerService()")
     public void setUserAndHttpHeaders(JoinPoint joinPoint) throws IOException {
-        User user = null;
         HttpServletRequest httpServletRequest = (HttpServletRequest) Arrays.stream(joinPoint.getArgs())
                 .filter(a -> a instanceof HttpServletRequest)
                 .findFirst().orElse(null);
 
-        final ModelMap map = (ModelMap) Arrays.stream(joinPoint.getArgs()).filter(a -> a instanceof ModelMap)
-                .findFirst()
-                .orElseThrow(NullPointerException::new);
-
         if (httpServletRequest != null) {
+            User user = null;
+            final ModelMap map = (ModelMap) Arrays.stream(joinPoint.getArgs()).filter(a -> a instanceof ModelMap)
+                    .findFirst()
+                    .orElseThrow(NullPointerException::new);
+
             String header = httpServletRequest.getHeader(this.tokenHeader);
             if (header != null) {
                 if (header.startsWith("Bearer ")) {
@@ -89,7 +89,7 @@ public class RestControllerAdvice {
                     }
                 }
             }
+            map.put("headers", AuthenticationUtils.getAuthenticatedUser(user));
         }
-        map.put("headers", AuthenticationUtils.getAuthenticatedUser(user));
     }
 }

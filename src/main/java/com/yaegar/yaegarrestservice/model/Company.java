@@ -58,6 +58,8 @@ public class Company extends AbstractEntity implements Serializable {
     @JoinColumn(name = "location_company_id", referencedColumnName = "id")
     private List<Location> locations;
 
+    //TODO products sold by company
+
     public Company(@Length(max = 256) String name) {
         this.name = name;
     }

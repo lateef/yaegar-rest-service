@@ -58,7 +58,7 @@ public class PurchaseOrderService {
         IntStream.range(0, lineItems.size())
                 .forEach(idx -> {
                     final LineItem lineItem = lineItems.get(idx);
-                    lineItem.setOrder(idx + 1);
+                    lineItem.setEntry(idx + 1);
 
                     Product product = productRepository
                             .findById(lineItem
@@ -85,7 +85,7 @@ public class PurchaseOrderService {
 
     public List<LineItem> sortLineItemsIntoOrderedList(Set<LineItem> lineItems) {
         return lineItems.stream()
-                .sorted(Comparator.comparing(LineItem::getOrder))
+                .sorted(Comparator.comparing(LineItem::getEntry))
                 .collect(Collectors.toList());
     }
 }

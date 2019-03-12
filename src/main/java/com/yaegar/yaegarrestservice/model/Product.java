@@ -26,6 +26,7 @@ public class Product extends AbstractEntity implements Serializable {
     @Column(name = "name", nullable = false, length = 256)
     private String name;
 
+    //TODO remove company add sku think about a master product table and product variant table
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "company_id", referencedColumnName = "id")
     private Company company;

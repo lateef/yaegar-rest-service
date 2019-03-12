@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID_IN_ADVANCE;
 import static java.util.Collections.singletonMap;
 
 @RestController
@@ -99,6 +100,7 @@ public class PurchaseOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
+        savedPurchaseOrder.setPurchaseOrderState(PAID_IN_ADVANCE);
         savedPurchaseOrder.setTransaction(transaction1);
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrder1));
