@@ -5,6 +5,7 @@ import com.yaegar.yaegarrestservice.config.jwt.model.JwtAuthenticationToken;
 import com.yaegar.yaegarrestservice.config.jwt.util.JwtTokenValidator;
 import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.repository.UserRepository;
+import com.yaegar.yaegarrestservice.util.AuthenticationUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -44,12 +45,17 @@ public class RestControllerAdvice {
     }
 
     @Before("controllerService()")
-    public void getUser(JoinPoint joinPoint) throws IOException {
+    public void setUserAndHttpHeaders(JoinPoint joinPoint) throws IOException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) Arrays.stream(joinPoint.getArgs())
                 .filter(a -> a instanceof HttpServletRequest)
                 .findFirst().orElse(null);
 
         if (httpServletRequest != null) {
+            User user = null;
+            final ModelMap map = (ModelMap) Arrays.stream(joinPoint.getArgs()).filter(a -> a instanceof ModelMap)
+                    .findFirst()
+                    .orElseThrow(NullPointerException::new);
+
             String header = httpServletRequest.getHeader(this.tokenHeader);
             if (header != null) {
                 if (header.startsWith("Bearer ")) {
@@ -61,10 +67,10 @@ public class RestControllerAdvice {
                         Optional<User> userOptional = userRepository.findOptionalByPhoneNumber(parsedUser.getUsername());
 
                         if (userOptional.isPresent()) {
-                            Arrays.stream(joinPoint.getArgs()).filter(a -> a instanceof ModelMap)
-                                    .findFirst().ifPresent(a -> {
-                                ((ModelMap) a).put("user", userOptional.get());
-                            });
+                            user = userOptional.get();
+
+                            map.put("user", user);
+
                             StringBuilder logger1 = new StringBuilder();
                             StringBuilder logger2 = new StringBuilder();
                             logger2.append(httpServletRequest.getMethod());
@@ -83,6 +89,7 @@ public class RestControllerAdvice {
                     }
                 }
             }
+            map.put("headers", AuthenticationUtils.getAuthenticatedUser(user));
         }
     }
 }

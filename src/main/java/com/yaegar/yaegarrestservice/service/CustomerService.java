@@ -27,7 +27,7 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
-    public List<Customer> getCustomersByCompanyId(Long companyId) {
-        return customerRepository.findByCompanyId(companyId);
+    public List<Customer> getCustomersByPrincipalCompanyId(Long principalCompanyId) {
+        return customerRepository.findByPrincipalCompanyId(principalCompanyId);
     }
 }

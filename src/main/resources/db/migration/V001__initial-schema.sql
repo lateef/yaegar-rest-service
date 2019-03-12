@@ -202,6 +202,8 @@ create table journal_entry
   transaction_side varchar(255) null,
   created_by       bigint null,
   updated_by       bigint null,
+  constraint UK_journal
+    unique (transaction_id, entry),
   constraint FK_journal_entry_transaction
     foreign key (transaction_id) references transaction (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -224,6 +226,27 @@ create table supplier
   constraint FK_supplier_company2
     foreign key (supplier_company_id) references company (id),
   constraint FK_supplier_b2b_account
+    foreign key (b2b_account_id) references b2b_account (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table customer
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  name varchar(256) not null,
+  principal_company_id  bigint null,
+  customer_company_id  bigint null,
+  b2b_account_id       bigint null,
+  created_by       bigint null,
+  updated_by       bigint null,
+  constraint UK_customer
+    unique (name, principal_company_id),
+  constraint FK_principal_company1
+    foreign key (principal_company_id) references company (id),
+  constraint FK_principal_company2
+    foreign key (customer_company_id) references company (id),
+  constraint FK_customer_b2b_account
     foreign key (b2b_account_id) references b2b_account (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -260,7 +283,6 @@ create table purchase_order
   created_datetime datetime null,
   updated_datetime datetime null,
   number       bigint null,
-  company_id  bigint null,
   supplier_id  bigint null,
   transaction_id bigint null,
   total_price decimal(19,2) null,
@@ -269,8 +291,6 @@ create table purchase_order
   purchase_order_state varchar(50) null,
   created_by       bigint null,
   updated_by       bigint null,
-  constraint FK_purchase_order_company
-    foreign key (company_id) references company (id),
   constraint FK_purchase_order_supplier
     foreign key (supplier_id) references supplier (id),
   constraint FK_purchase_order_transaction
@@ -283,7 +303,9 @@ create table invoice
   created_datetime datetime null,
   updated_datetime datetime null,
   number       bigint null,
+  invoice_type   varchar(50) null,
   invoice_purchase_order_id bigint null,
+  invoice_sales_order_id bigint null,
   total_price decimal(19,2) null,
   description        varchar(1000) null,
   payment_due_datetime datetime null,
@@ -312,14 +334,18 @@ create table sales_order
   number       bigint null,
   company_id  bigint null,
   customer_id  bigint null,
+  transaction_id   bigint null,
   total_price decimal(19,2) null,
   received_amount    decimal(19,2) null,
   description        varchar(1000) null,
   sales_order_state varchar(50) null,
-  order_supply_state varchar(50) null,
   delivery_datetime datetime null,
   created_by       bigint null,
-  updated_by       bigint null
+  updated_by       bigint null,
+  constraint FK_sales_order_customer
+    foreign key (customer_id) references customer (id),
+  constraint FK_sales_order_transaction
+    foreign key (transaction_id) references transaction (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table sales_order_event
@@ -339,9 +365,10 @@ create table line_item
   id bigint auto_increment primary key,
   created_datetime datetime null,
   updated_datetime datetime null,
+  entry             int not null,
   line_item_purchase_order_id bigint null,
+  line_item_sales_order_id bigint null,
   line_item_invoice_id bigint null,
-  sales_order_id bigint null,
   quantity double null,
   sub_total decimal(19,2) null,
   unit_price decimal(19,2) null,
@@ -350,27 +377,6 @@ create table line_item
   updated_by       bigint null,
   constraint FK_line_item_product
     foreign key (product_id) references product (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-create table customer
-(
-  id bigint auto_increment primary key,
-  created_datetime datetime null,
-  updated_datetime datetime null,
-  name varchar(256) not null,
-  company_id  bigint null,
-  company_customer_id  bigint null,
-  user_customer_id  bigint null,
-  created_by       bigint null,
-  updated_by       bigint null,
-  constraint UK_customer
-    unique (name, company_id),
-  constraint FK_principal_company1
-    foreign key (company_id) references company (id),
-  constraint FK_principal_company2
-    foreign key (company_customer_id) references company (id),
-  constraint FK_principal_company3
-    foreign key (user_customer_id) references company (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table stock
@@ -393,12 +399,12 @@ create table stock_transaction
   id bigint auto_increment primary key,
   created_datetime datetime null,
   updated_datetime datetime null,
-  purchase_order_id       bigint null,
-  sales_order_id          bigint null,
+  invoice_id       bigint null,
   product_id           bigint null,
-  from_location_id       bigint null,
-  to_location_id       bigint null,
+  location_id       bigint null,
   quantity          double null,
   created_by       bigint null,
-  updated_by       bigint null
+  updated_by       bigint null,
+  constraint FK_stock_transaction_location
+    foreign key (location_id) references location (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

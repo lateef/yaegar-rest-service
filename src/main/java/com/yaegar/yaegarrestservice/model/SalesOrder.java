@@ -5,10 +5,22 @@ import com.yaegar.yaegarrestservice.model.enums.SalesOrderState;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
@@ -27,22 +39,27 @@ public class SalesOrder extends AbstractEntity implements Serializable {
     private Long number;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "company_id", referencedColumnName = "id")
-    private Company company;
-
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "customer_id", referencedColumnName = "id")
     private Customer customer;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "sales_order_id", referencedColumnName = "id")
+    @JoinColumn(name = "line_item_sales_order_id", referencedColumnName = "id")
     private Set<LineItem> lineItems;
 
     @Column(name = "total_price")
     private BigDecimal totalPrice;
 
-    @Column(name = "received_amount")
-    private BigDecimal receivedAmount;
+    @OneToOne
+    @JoinColumn(name = "transaction_id", referencedColumnName = "id")
+    private Transaction transaction;
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "invoice_sales_order_id", referencedColumnName = "id")
+    private Set<Invoice> invoices;
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "sales_order_event_id", referencedColumnName = "id")
+    private Set<SalesOrderEvent> salesOrderEvents;
 
     @Column(name = "description", length = 1000)
     private String description;
@@ -51,11 +68,6 @@ public class SalesOrder extends AbstractEntity implements Serializable {
     @Enumerated(value = EnumType.STRING)
     private SalesOrderState salesOrderState;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "sales_order_event_id", referencedColumnName = "id")
-    private Set<SalesOrderEvent> salesOrderActivities;
-
-    @Column(name = "delivery_datetime")
-    private LocalDateTime deliveryDatetime;
+    //TODO Payment terms
 }
 

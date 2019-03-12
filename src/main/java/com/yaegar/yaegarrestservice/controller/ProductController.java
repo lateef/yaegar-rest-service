@@ -8,7 +8,6 @@ import com.yaegar.yaegarrestservice.service.AccountService;
 import com.yaegar.yaegarrestservice.service.CompanyService;
 import com.yaegar.yaegarrestservice.service.ProductService;
 import com.yaegar.yaegarrestservice.service.SupplierService;
-import com.yaegar.yaegarrestservice.util.AuthenticationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -53,19 +52,15 @@ public class ProductController {
     @RequestMapping(value = "/add-product", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Product>> addProduct(@RequestBody final Product product, ModelMap model, HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
-        HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
-
         Product product1 = addProduct(product, user);
-        return ResponseEntity.ok().headers(headers).body(singletonMap("success", product1));
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", product1));
     }
 
     @RequestMapping(value = "/get-products/{parentId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, List<Product>>> getProducts(@PathVariable Long parentId, ModelMap model, HttpServletRequest httpServletRequest) {
-        final User user = (User) model.get("user");
-        HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
         List<Account> productAccounts = accountService.findByParentIdAndAccountCategory(parentId, PRODUCT);
         List<Product> products = productService.findByAccountsIn(productAccounts);
-        return ResponseEntity.ok().headers(headers).body(singletonMap("success", products));
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", products));
     }
 
     @Transactional

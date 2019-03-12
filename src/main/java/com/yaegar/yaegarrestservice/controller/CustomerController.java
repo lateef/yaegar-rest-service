@@ -5,7 +5,6 @@ import com.yaegar.yaegarrestservice.model.Customer;
 import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.service.CompanyService;
 import com.yaegar.yaegarrestservice.service.CustomerService;
-import com.yaegar.yaegarrestservice.util.AuthenticationUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.ModelMap;
@@ -29,26 +28,23 @@ public class CustomerController {
     @RequestMapping(value = "/add-customer", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Customer>> addCustomer(@RequestBody final Customer customer, ModelMap model, HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
-        HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
-        Company company = companyService.findById(customer.getCompany().getId())
+        Company company = companyService.findById(customer.getPrincipalCompany().getId())
                 .orElseThrow(NullPointerException::new);
-        customer.setCompany(company);
-        if (customer.getCompanyCustomer() != null) {
-            Company companyCustomer = companyService.findById(customer.getCompanyCustomer().getId())
+        customer.setPrincipalCompany(company);
+        if (customer.getCustomerCompany() != null) {
+            Company customerCompany = companyService.findById(customer.getCustomerCompany().getId())
                     .orElse(null);
-            customer.setCompanyCustomer(companyCustomer);
+            customer.setCustomerCompany(customerCompany);
         }
         customer.setCreatedBy(user.getId());
         customer.setUpdatedBy(user.getId());
         Customer customer1 = customerService.addCustomer(customer);
-        return ResponseEntity.ok().headers(headers).body(Collections.singletonMap("success", customer1));
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(Collections.singletonMap("success", customer1));
     }
 
     @RequestMapping(value = "/get-customers/{companyId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, List<Customer>>> getCustomers(@PathVariable Long companyId, ModelMap model, HttpServletRequest httpServletRequest) {
-        final User user = (User) model.get("user");
-        HttpHeaders headers = AuthenticationUtils.getAuthenticatedUser(user);
-        List<Customer> customers = customerService.getCustomersByCompanyId(companyId);
-        return ResponseEntity.ok().headers(headers).body(Collections.singletonMap("success", customers));
+        List<Customer> customers = customerService.getCustomersByPrincipalCompanyId(companyId);
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(Collections.singletonMap("success", customers));
     }
 }
