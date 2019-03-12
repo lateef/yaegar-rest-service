@@ -62,7 +62,7 @@ public class TransactionService {
         final Integer maxEntry = getMaxEntry(transaction);
 
         if (!totalCredit.equals(ZERO)) {
-            JournalEntry prepaymentJournalEntry = createJournalEntry(account, totalCredit, DEBIT, maxEntry + 1);
+            JournalEntry prepaymentJournalEntry = createJournalEntry(account, totalCredit, DEBIT, maxEntry);
 
             transaction.getJournalEntries().add(prepaymentJournalEntry);
         } else {
@@ -98,16 +98,16 @@ public class TransactionService {
                     final List<LineItem> lineItems = purchaseOrderService.sortLineItemsIntoOrderedList(invoices.get(idx).getLineItems());
                     IntStream.range(0, lineItems.size())
                             .forEach(idx1 -> {
-                                entry.getAndSet(entry.get() + 1);
                                 JournalEntry purchasesJournalEntry = createJournalEntry(debitAccount, lineItems.get(idx1).getSubTotal(), DEBIT, entry.get());
+                                entry.getAndSet(entry.get() + 1);
 
                                 transaction.getJournalEntries().add(purchasesJournalEntry);
                             });
                 });
 
         BigDecimal totalDebitPrepayments = getJournalEntriesTotalForAccountAndTransactionSide(transaction.getJournalEntries(), creditAccount, DEBIT);
-        entry.getAndSet(entry.get() + 1);
         JournalEntry prepaymentJournalEntry = createJournalEntry(creditAccount, totalDebitPrepayments, CREDIT, entry.get());
+        entry.getAndSet(entry.get() + 1);
         transaction.getJournalEntries().add(prepaymentJournalEntry);
         return transaction;
     }
@@ -128,7 +128,7 @@ public class TransactionService {
         final Integer maxEntry = getMaxEntry(transaction);
 
         if (!totalDebit.equals(ZERO)) {
-            JournalEntry tradeCreditorsJournalEntry = createJournalEntry(account, totalDebit, CREDIT, maxEntry + 1);
+            JournalEntry tradeCreditorsJournalEntry = createJournalEntry(account, totalDebit, CREDIT, maxEntry);
 
             transaction.getJournalEntries().add(tradeCreditorsJournalEntry);
         } else {
