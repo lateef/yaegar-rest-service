@@ -23,12 +23,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.PREPAYMENT;
@@ -120,6 +116,12 @@ public class PurchaseOrderController {
 
         final Set<Invoice> invoices = purchaseOrder.getInvoices()
                 .stream()
+                .map(invoice -> {
+                    if (Objects.isNull(invoice.getCreatedDatetime())) {
+                        invoice.setCreatedDatetime(LocalDateTime.now());
+                    }
+                    return invoice;
+                })
                 .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(Invoice::getCreatedDatetime))))
                 .stream()
                 .map(invoice -> {
