@@ -19,12 +19,8 @@ public class StockTransaction extends AbstractEntity implements Serializable {
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "purchase_order_id", referencedColumnName = "id")
-    private PurchaseOrder  purchaseOrder;
-
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "sales_order_id", referencedColumnName = "id")
-    private SalesOrder  salesOrder;
+    @JoinColumn(name = "invoice_id", referencedColumnName = "id")
+    private Invoice  invoice;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "product_id", referencedColumnName = "id")

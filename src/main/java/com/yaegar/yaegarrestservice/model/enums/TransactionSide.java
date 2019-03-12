@@ -1,7 +1,7 @@
 package com.yaegar.yaegarrestservice.model.enums;
 
 public enum TransactionSide {
-    DEBIT("DEBIT"), CREDIT("CREDIT");
+    DEBIT("Debit"), CREDIT("Credit");
 
     private final String transactionSide;
 

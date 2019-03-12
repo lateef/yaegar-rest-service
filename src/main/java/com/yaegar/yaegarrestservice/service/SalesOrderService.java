@@ -65,7 +65,7 @@ public class SalesOrderService {
                         .stream()
                         .map(lineItem -> {
                             final StockTransaction stockTransaction = new StockTransaction();
-                            stockTransaction.setSalesOrder(salesOrder);
+//                            stockTransaction.setInvoice(salesOrder.);
                             stockTransaction.setProduct(lineItem.getProduct());
                             stockTransaction.setQuantity(lineItem.getQuantity() * -1);
                             stockTransaction.setFromLocation(null);

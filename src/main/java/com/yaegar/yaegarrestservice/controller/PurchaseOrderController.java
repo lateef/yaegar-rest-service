@@ -93,10 +93,7 @@ public class PurchaseOrderController {
                 .orElseThrow(NullPointerException::new);
 
         final Transaction transaction = transactionService.computePaymentInAdvanceTransaction(
-                purchaseOrder.getTransaction(),
-                purchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts().getId(),
-                savedPurchaseOrder.getId(),
-                user
+                purchaseOrder, savedPurchaseOrder, user
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
@@ -145,7 +142,7 @@ public class PurchaseOrderController {
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
         savedPurchaseOrder.setTransaction(transaction1);
 
-        invoiceService.computeInventory(user);
+        invoiceService.computeInventory(savedPurchaseOrder, user);
 
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrder1));
