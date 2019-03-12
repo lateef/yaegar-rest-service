@@ -31,6 +31,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.PREPAYMENT;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.PURCHASES;
+import static com.yaegar.yaegarrestservice.model.enums.InvoiceType.PURCHASE;
 import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID_IN_ADVANCE;
 import static java.util.Collections.singletonMap;
 
@@ -68,7 +71,7 @@ public class PurchaseOrderController {
         purchaseOrder.setSupplier(supplier);
 
         final List<LineItem> lineItems = purchaseOrderService.sortLineItemsIntoOrderedList(purchaseOrder.getLineItems());
-        final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(lineItems, supplier, user);
+        final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(lineItems, supplier.getPrincipalCompany(), user);
         purchaseOrder.setLineItems(lineItems1);
 
         purchaseOrder.setTotalPrice(purchaseOrderService.sumLineItemsSubTotal(lineItems1));
@@ -82,6 +85,7 @@ public class PurchaseOrderController {
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrders));
     }
 
+    @Transactional
     @RequestMapping(value = "/save-purchase-order-transaction", method = RequestMethod.POST)
     public ResponseEntity<Map<String, PurchaseOrder>> saveTransaction(@RequestBody PurchaseOrder purchaseOrder,
                                                                       ModelMap model,
@@ -92,7 +96,7 @@ public class PurchaseOrderController {
                 .getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        final Transaction transaction = transactionService.computePaymentInAdvanceTransaction(
+        final Transaction transaction = transactionService.computePurchaseOrderPaymentInAdvanceTransaction(
                 purchaseOrder, savedPurchaseOrder, user
         );
 
@@ -120,8 +124,10 @@ public class PurchaseOrderController {
                 .stream()
                 .map(invoice -> {
                     final List<LineItem> lineItems = purchaseOrderService.sortLineItemsIntoOrderedList(invoice.getLineItems());
-                    final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(lineItems, purchaseOrder.getSupplier(), user);
+                    final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(
+                            lineItems, purchaseOrder.getSupplier().getPrincipalCompany(), user);
                     invoice.setLineItems(lineItems1);
+                    invoice.setInvoiceType(PURCHASE);
                     invoice.setTotalPrice(purchaseOrderService.sumLineItemsSubTotal(lineItems1));
                     return invoice;
                 })
@@ -135,6 +141,8 @@ public class PurchaseOrderController {
                 purchaseOrder.getTransaction(),
                 invoiceService.sortInvoicesByDate(savedPurchaseOrder.getInvoices()),
                 purchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts().getId(),
+                PURCHASES,
+                PREPAYMENT,
                 savedPurchaseOrder.getId(),
                 user
         );
@@ -142,7 +150,8 @@ public class PurchaseOrderController {
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
         savedPurchaseOrder.setTransaction(transaction1);
 
-        invoiceService.computeInventory(savedPurchaseOrder, user);
+        //TODO this should factor in delivery note if available
+        invoiceService.computeInventory(savedPurchaseOrder.getInvoices(), user);
 
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrder1));

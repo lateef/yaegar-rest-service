@@ -5,8 +5,10 @@ import com.yaegar.yaegarrestservice.model.Invoice;
 import com.yaegar.yaegarrestservice.model.JournalEntry;
 import com.yaegar.yaegarrestservice.model.LineItem;
 import com.yaegar.yaegarrestservice.model.PurchaseOrder;
+import com.yaegar.yaegarrestservice.model.SalesOrder;
 import com.yaegar.yaegarrestservice.model.Transaction;
 import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.model.enums.AccountType;
 import com.yaegar.yaegarrestservice.model.enums.TransactionSide;
 import com.yaegar.yaegarrestservice.repository.AccountRepository;
 import com.yaegar.yaegarrestservice.repository.TransactionRepository;
@@ -24,7 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.PREPAYMENT;
-import static com.yaegar.yaegarrestservice.model.enums.AccountType.PURCHASES;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.TRADE_DEBTORS;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.CREDIT;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.DEBIT;
 import static java.math.BigDecimal.ZERO;
@@ -44,7 +46,7 @@ public class TransactionService {
         this.purchaseOrderService = purchaseOrderService;
     }
 
-    public Transaction computePaymentInAdvanceTransaction(PurchaseOrder purchaseOrder, PurchaseOrder savedPurchaseOrder, User updatedBy) {
+    public Transaction computePurchaseOrderPaymentInAdvanceTransaction(PurchaseOrder purchaseOrder, PurchaseOrder savedPurchaseOrder, User updatedBy) {
         final Transaction transaction = purchaseOrder.getTransaction();
         transaction.setTransactionTypeId(savedPurchaseOrder.getId());
 
@@ -73,17 +75,19 @@ public class TransactionService {
             Transaction transaction,
             List<Invoice> invoices,
             Long chartOfAccountsId,
+            AccountType debitAccountType,
+            AccountType creditAccountType,
             Long transactionTypeId,
             User updatedBy
     ) {
         transaction.setTransactionTypeId(transactionTypeId);
 
-        final Account purchasesAccount = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                chartOfAccountsId, PURCHASES.name(), null, null
+        final Account debitAccount = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+                chartOfAccountsId, debitAccountType.name(), null, null
         ).orElseThrow(NullPointerException::new);
 
-        final Account prepaymentAccount = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                chartOfAccountsId, PREPAYMENT.name(), null, null
+        final Account creditAccount = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+                chartOfAccountsId, creditAccountType.name(), null, null
         ).orElseThrow(NullPointerException::new);
 
         final Integer maxEntry = getMaxEntry(transaction);
@@ -95,17 +99,46 @@ public class TransactionService {
                     IntStream.range(0, lineItems.size())
                             .forEach(idx1 -> {
                                 entry.getAndSet(entry.get() + 1);
-                                JournalEntry purchasesJournalEntry = createJournalEntry(purchasesAccount, lineItems.get(idx1).getSubTotal(), DEBIT, entry.get());
+                                JournalEntry purchasesJournalEntry = createJournalEntry(debitAccount, lineItems.get(idx1).getSubTotal(), DEBIT, entry.get());
 
                                 transaction.getJournalEntries().add(purchasesJournalEntry);
                             });
                 });
 
-        BigDecimal totalDebitPrepayments = getJournalEntriesTotalForAccountAndTransactionSide(transaction.getJournalEntries(), prepaymentAccount, DEBIT);
+        BigDecimal totalDebitPrepayments = getJournalEntriesTotalForAccountAndTransactionSide(transaction.getJournalEntries(), creditAccount, DEBIT);
         entry.getAndSet(entry.get() + 1);
-        JournalEntry prepaymentJournalEntry = createJournalEntry(prepaymentAccount, totalDebitPrepayments, CREDIT, entry.get());
+        JournalEntry prepaymentJournalEntry = createJournalEntry(creditAccount, totalDebitPrepayments, CREDIT, entry.get());
         transaction.getJournalEntries().add(prepaymentJournalEntry);
         return transaction;
+    }
+
+    public Transaction computeSalesOrderPaymentInArrearsTransaction(SalesOrder salesOrder, SalesOrder savedSalesOrder, User user) {
+        final Transaction transaction = salesOrder.getTransaction();
+        transaction.setTransactionTypeId(savedSalesOrder.getId());
+
+        final Account account = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+                salesOrder.getCustomer().getPrincipalCompany().getChartOfAccounts().getId(),
+                TRADE_DEBTORS.name(),
+                null,
+                null
+        ).orElseThrow(NullPointerException::new);
+
+        final BigDecimal totalDebit = getJournalEntriesTotalForTransactionSide(transaction.getJournalEntries(), DEBIT);
+
+        final Integer maxEntry = getMaxEntry(transaction);
+
+        if (!totalDebit.equals(ZERO)) {
+            JournalEntry tradeCreditorsJournalEntry = createJournalEntry(account, totalDebit, CREDIT, maxEntry + 1);
+
+            transaction.getJournalEntries().add(tradeCreditorsJournalEntry);
+        } else {
+            LOGGER.warn("Prepayment cannot be zero {}", transaction);
+        }
+        return transaction;
+    }
+
+    public List<Transaction> getAccountTransactions(Long accountId) {
+        return transactionRepository.findByJournalEntriesAccountId(accountId);
     }
 
     public Transaction saveTransaction(Transaction transaction, User createdBy) {
@@ -151,10 +184,6 @@ public class TransactionService {
         transaction.setUpdatedBy(createdBy.getId());
         transaction.setJournalEntries(journalEntries);
         return transactionRepository.save(transaction);
-    }
-
-    public List<Transaction> getAccountTransactions(Long accountId) {
-        return transactionRepository.findByJournalEntriesAccountId(accountId);
     }
 
     private JournalEntry createJournalEntry(Account account, BigDecimal totalCredit, TransactionSide transactionSide, Integer maxEntry) {

@@ -1,7 +1,6 @@
 package com.yaegar.yaegarrestservice.service;
 
 import com.yaegar.yaegarrestservice.model.Invoice;
-import com.yaegar.yaegarrestservice.model.PurchaseOrder;
 import com.yaegar.yaegarrestservice.model.Stock;
 import com.yaegar.yaegarrestservice.model.StockTransaction;
 import com.yaegar.yaegarrestservice.model.User;
@@ -17,6 +16,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.yaegar.yaegarrestservice.model.enums.InvoiceType.PURCHASE;
 
 @Service
 public class InvoiceService {
@@ -36,8 +37,8 @@ public class InvoiceService {
         return invoiceRepository.saveAll(invoices);
     }
 
-    public void computeInventory(PurchaseOrder purchaseOrder, User updatedBy) {
-                purchaseOrder.getInvoices()
+    public void computeInventory(Set<Invoice> invoices, User updatedBy) {
+                invoices
                 .forEach(invoice -> {
                             final List<StockTransaction> stockTransactions1 = invoice.getLineItems()
                                     .stream()
@@ -45,8 +46,12 @@ public class InvoiceService {
                                         final StockTransaction stockTransaction = new StockTransaction();
                                         stockTransaction.setInvoice(invoice);
                                         stockTransaction.setProduct(lineItem.getProduct());
-                                        stockTransaction.setQuantity(lineItem.getQuantity());
-                                        stockTransaction.setToLocation(null);
+                                        if (invoice.getInvoiceType().equals(PURCHASE)) {
+                                            stockTransaction.setQuantity(lineItem.getQuantity());
+                                        } else {
+                                            stockTransaction.setQuantity(-1 * lineItem.getQuantity());
+                                        }
+                                        stockTransaction.setLocation(null);
                                         if (Objects.isNull(stockTransaction.getCreatedBy())) {
                                             stockTransaction.setCreatedBy(updatedBy.getId());
                                         }
@@ -61,7 +66,7 @@ public class InvoiceService {
                                     .map(stockTransaction -> {
                                         final Stock stock = stockRepository
                                                 .findByProductAndLocation(stockTransaction.getProduct(),
-                                                        stockTransaction.getToLocation())
+                                                        stockTransaction.getLocation())
                                                 .orElse(new Stock());
 
                                         if (stock.getId() != null) {
@@ -72,7 +77,7 @@ public class InvoiceService {
                                             stock.setQuantity(quantity);
                                         } else {
                                             stock.setProduct(stockTransaction.getProduct());
-                                            stock.setLocation(stockTransaction.getToLocation());
+                                            stock.setLocation(stockTransaction.getLocation());
                                             stock.setQuantity(stockTransaction.getQuantity());
                                         }
                                         if (Objects.isNull(stock.getCreatedBy())) {

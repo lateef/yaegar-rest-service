@@ -27,12 +27,8 @@ public class StockTransaction extends AbstractEntity implements Serializable {
     private Product product;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "from_location_id", referencedColumnName = "id")
-    private Location fromLocation;
-
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "to_location_id", referencedColumnName = "id")
-    private Location toLocation;
+    @JoinColumn(name = "location_id", referencedColumnName = "id")
+    private Location location;
 
     @Column(name = "quantity")
     private double quantity;

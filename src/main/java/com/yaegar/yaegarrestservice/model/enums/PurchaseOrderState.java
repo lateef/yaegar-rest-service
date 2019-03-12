@@ -8,7 +8,9 @@ public enum PurchaseOrderState {
     SENT("Sent"),
     SUPPLIER_FLAGGED("Supplier flagged"),
     SUPPLIER_ACCEPTED("Supplier accepted"),
-    GOODS_RECEIVED("Goods received");
+    GOODS_RECEIVED("Goods received"),
+    INVOICE_ISSUED("Invoice issued"),
+    SUPPLIER_CREDIT("Supplier credit");
 
     private final String purchaseOrderState;
 

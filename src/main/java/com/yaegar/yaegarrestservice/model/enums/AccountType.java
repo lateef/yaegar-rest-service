@@ -7,7 +7,10 @@ public enum AccountType {
     INCOME_REVENUE("Income/Revenue"),
     EXPENSES("Expenses"),
     PREPAYMENT("Prepayment"),
-    PURCHASES("Purchases");
+    TRADE_DEBTORS("Trade debtors"),
+    TRADE_CREDITORS("Trade creditors"),
+    PURCHASES("Purchases"),
+    SALES_INCOME("Sales Income");
 
     private final String type;
 
