@@ -38,7 +38,6 @@ public abstract class OrderService {
                                     .getId())
                             .orElseThrow(NullPointerException::new);
 
-                    product.setCompany(company);
                     lineItem.setProduct(product);
                     lineItem.setSubTotal(lineItem.getUnitPrice().multiply(BigDecimal.valueOf(lineItem.getQuantity())));
                     if (Objects.isNull(lineItem.getCreatedBy())) {

@@ -1,14 +1,21 @@
 package com.yaegar.yaegarrestservice.model;
 
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
+import com.yaegar.yaegarrestservice.model.enums.GlobalTradeItemNumberType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Set;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -26,13 +33,14 @@ public class Product extends AbstractEntity implements Serializable {
     @Column(name = "name", nullable = false, length = 256)
     private String name;
 
-    //TODO remove company add sku think about a master product table and product variant table
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
-    @JoinColumn(name = "company_id", referencedColumnName = "id")
-    private Company company;
+//TODO and more info manufacturer attributes and figure out how to avoid duplicates
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Set<Account> accounts;
+    @Column(name = "gtin_type", length = 7)
+    @Enumerated(value = EnumType.STRING)
+    private GlobalTradeItemNumberType globalTradeItemNumberType;
+
+    @Column(name = "gtin", length = 14)
+    private String globalTradeItemNumber;
 
     @Column(name = "cost_price")
     private BigDecimal costPrice;

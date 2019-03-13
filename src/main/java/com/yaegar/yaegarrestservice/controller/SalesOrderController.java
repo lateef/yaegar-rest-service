@@ -2,6 +2,7 @@ package com.yaegar.yaegarrestservice.controller;
 
 import com.yaegar.yaegarrestservice.model.Customer;
 import com.yaegar.yaegarrestservice.model.Invoice;
+import com.yaegar.yaegarrestservice.model.JournalEntry;
 import com.yaegar.yaegarrestservice.model.LineItem;
 import com.yaegar.yaegarrestservice.model.Product;
 import com.yaegar.yaegarrestservice.model.SalesOrder;
@@ -76,7 +77,6 @@ public class SalesOrderController {
                             .getProduct()
                             .getId())
                     .orElseThrow(NullPointerException::new);
-            product.setCompany(customer.getPrincipalCompany());
             lineItem.setProduct(product);
         });
 
@@ -106,6 +106,11 @@ public class SalesOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
+        transaction1.getJournalEntries()
+                .stream()
+                .map(JournalEntry::getAccount)
+                .collect(Collectors.toSet())
+                .forEach(transactionService::computeAccountTotal);
         savedSalesOrder.setSalesOrderState(CUSTOMER_INDEBTED);
         savedSalesOrder.setTransaction(transaction1);
         SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(savedSalesOrder, user);
@@ -154,6 +159,11 @@ public class SalesOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
+        transaction1.getJournalEntries()
+                .stream()
+                .map(JournalEntry::getAccount)
+                .collect(Collectors.toSet())
+                .forEach(transactionService::computeAccountTotal);
         savedSalesOrder.setTransaction(transaction1);
 
         //TODO this should factor in delivery note if available

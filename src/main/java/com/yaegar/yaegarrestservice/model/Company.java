@@ -53,12 +53,14 @@ public class Company extends AbstractEntity implements Serializable {
     @JoinColumn(name = "chart_of_accounts_id", referencedColumnName = "id")
     private ChartOfAccounts chartOfAccounts;
 
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @JoinColumn(name = "company_stock_id", referencedColumnName = "id")
+    private Set<Stock> stocks;
+
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinColumn(name = "location_company_id", referencedColumnName = "id")
     private List<Location> locations;
-
-    //TODO products sold by company
 
     public Company(@Length(max = 256) String name) {
         this.name = name;

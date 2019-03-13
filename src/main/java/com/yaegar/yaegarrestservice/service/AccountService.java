@@ -1,6 +1,7 @@
 package com.yaegar.yaegarrestservice.service;
 
 import com.yaegar.yaegarrestservice.model.Account;
+import com.yaegar.yaegarrestservice.model.JournalEntry;
 import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.model.enums.AccountType;
 import com.yaegar.yaegarrestservice.model.enums.AccountCategory;
@@ -9,8 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+
+import static java.math.BigDecimal.ZERO;
 
 @Service
 public class AccountService {
@@ -20,6 +24,10 @@ public class AccountService {
 
     public AccountService(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
+    }
+
+    public Account save(Account account) {
+        return accountRepository.save(account);
     }
 
     public Optional<Account> findById(Long id) {
@@ -73,6 +81,19 @@ public class AccountService {
                 .orElse(parentAccount.getCode());
         account.setCode(maxCode + 1);
         return accountRepository.save(account);
+    }
+
+    public void updateAccountTotals(Account account, List<JournalEntry> journalEntries) {
+        final Account account1 = accountRepository.findById(account.getId())
+                .orElseThrow(NullPointerException::new);
+
+        final BigDecimal journalEntriesTotal = journalEntries.stream()
+                .map(JournalEntry::getAmount)
+                .reduce(ZERO, BigDecimal::add);
+
+        //TODO set other duration and think about performance issues
+        account1.setYearToDateTotal(journalEntriesTotal);
+        accountRepository.save(account1);
     }
 
     public List<Account> getLeafAccounts(Long chartOfAccountsId) {

@@ -7,12 +7,13 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Set;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "stock",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "location_id"})})
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "company_stock_id", "location_id"})})
 public class Stock extends AbstractEntity implements Serializable {
     private static final long serialVersionUID = -8115458467683618041L;
 
@@ -21,18 +22,24 @@ public class Stock extends AbstractEntity implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Length(max = 10)
-    @Column(name = "code", nullable = false, length = 10)
-    private String code;
+    @Length(max = 40)
+    @Column(name = "sku", nullable = false, length = 40)
+    private String sku;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Set<Account> accounts;
+
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "product_id", referencedColumnName = "id")
     private Product product;
+
+    @Column(name = "company_stock_id", nullable = false)
+    private Long companyStockId;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "location_id", referencedColumnName = "id")
     private Location location;
 
     @Column(name = "quantity")
-    private double quantity;
+    private Double quantity;
 }

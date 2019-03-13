@@ -140,6 +140,7 @@ create table location
   updated_datetime datetime null,
   name             varchar(256) not null,
   code             varchar(10) null,
+  location_type    varchar(50) null,
   location_company_id bigint null,
   created_by       bigint null,
   updated_by       bigint null
@@ -256,25 +257,12 @@ create table product
   created_datetime datetime null,
   updated_datetime datetime null,
   name varchar(256) not null,
+  gtin_type varchar(7) null,
+  gtin varchar(14) null,
   cost_price decimal(19,2) null,
   sell_price decimal(19,2) null,
-  company_id bigint null,
   created_by       bigint null,
-  updated_by       bigint null,
-  constraint FK_product_supplier
-    foreign key (company_id) references company (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-create table product_accounts
-(
-  product_id bigint not null,
-  accounts_id bigint not null,
-  constraint UK_product_accounts
-    unique (accounts_id),
-  constraint FK_product_accounts_product
-    foreign key (product_id) references product (id),
-  constraint FK_product_accounts_account
-    foreign key (accounts_id) references account (id)
+  updated_by       bigint null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table purchase_order
@@ -384,14 +372,38 @@ create table stock
   id bigint auto_increment primary key,
   created_datetime datetime null,
   updated_datetime datetime null,
-  code             varchar(10) null,
+  sku             varchar(40) null,
   product_id       bigint null,
+  company_stock_id       bigint null,
   location_id       bigint null,
   quantity double null,
   created_by       bigint null,
   updated_by       bigint null,
   constraint UK_stock
     unique (product_id, location_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table stock_accounts
+(
+  stock_id bigint not null,
+  accounts_id bigint not null,
+  constraint UK_stock_accounts
+    unique (accounts_id),
+  constraint FK_stock_accounts_stock
+    foreign key (stock_id) references stock (id),
+  constraint FK_product_accounts_account
+    foreign key (accounts_id) references account (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table supplier_stocks
+(
+  supplier_id bigint not null,
+  stocks_id bigint not null,
+  primary key (supplier_id, stocks_id),
+  constraint FK_supplier_stocks_supplier
+  foreign key (supplier_id) references supplier (id),
+  constraint FK_supplier_stocks_user
+  foreign key (stocks_id) references stock (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table stock_transaction

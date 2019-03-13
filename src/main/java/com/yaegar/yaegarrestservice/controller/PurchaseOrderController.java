@@ -1,6 +1,7 @@
 package com.yaegar.yaegarrestservice.controller;
 
 import com.yaegar.yaegarrestservice.model.Invoice;
+import com.yaegar.yaegarrestservice.model.JournalEntry;
 import com.yaegar.yaegarrestservice.model.LineItem;
 import com.yaegar.yaegarrestservice.model.PurchaseOrder;
 import com.yaegar.yaegarrestservice.model.Supplier;
@@ -97,6 +98,12 @@ public class PurchaseOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
+        transaction1.getJournalEntries()
+                .stream()
+                .map(JournalEntry::getAccount)
+                .collect(Collectors.toSet())
+                .forEach(transactionService::computeAccountTotal);
+
         savedPurchaseOrder.setPurchaseOrderState(PAID_IN_ADVANCE);
         savedPurchaseOrder.setTransaction(transaction1);
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
@@ -150,6 +157,11 @@ public class PurchaseOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
+        transaction1.getJournalEntries()
+                .stream()
+                .map(JournalEntry::getAccount)
+                .collect(Collectors.toSet())
+                .forEach(transactionService::computeAccountTotal);
         savedPurchaseOrder.setTransaction(transaction1);
 
         //TODO this should factor in delivery note if available

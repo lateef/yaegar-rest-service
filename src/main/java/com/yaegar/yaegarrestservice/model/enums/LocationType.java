@@ -1,11 +1,12 @@
 package com.yaegar.yaegarrestservice.model.enums;
 
-public enum TransactionType {
-    PURCHASE_ORDER("Purchase order");
+public enum LocationType {
+    OFFICE("Office"),
+    STORE("Store");
 
     private final String type;
 
-    TransactionType(String type) {
+    LocationType(String type) {
         this.type = type;
     }
 }

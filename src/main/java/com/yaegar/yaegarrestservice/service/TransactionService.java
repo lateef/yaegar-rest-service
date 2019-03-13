@@ -10,7 +10,7 @@ import com.yaegar.yaegarrestservice.model.Transaction;
 import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.model.enums.AccountType;
 import com.yaegar.yaegarrestservice.model.enums.TransactionSide;
-import com.yaegar.yaegarrestservice.repository.AccountRepository;
+import com.yaegar.yaegarrestservice.repository.JournalEntryRepository;
 import com.yaegar.yaegarrestservice.repository.TransactionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,13 +35,20 @@ import static java.math.BigDecimal.ZERO;
 public class TransactionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionService.class);
 
-    private AccountRepository accountRepository;
+    private AccountService accountService;
+    private JournalEntryRepository journalEntryRepository;
     private TransactionRepository transactionRepository;
 
     private PurchaseOrderService purchaseOrderService;
 
-    public TransactionService(AccountRepository accountRepository, TransactionRepository transactionRepository, PurchaseOrderService purchaseOrderService) {
-        this.accountRepository = accountRepository;
+    public TransactionService(
+            AccountService accountService,
+            JournalEntryRepository journalEntryRepository,
+            TransactionRepository transactionRepository,
+            PurchaseOrderService purchaseOrderService
+    ) {
+        this.accountService = accountService;
+        this.journalEntryRepository = journalEntryRepository;
         this.transactionRepository = transactionRepository;
         this.purchaseOrderService = purchaseOrderService;
     }
@@ -50,7 +57,7 @@ public class TransactionService {
         final Transaction transaction = purchaseOrder.getTransaction();
         transaction.setTransactionTypeId(savedPurchaseOrder.getId());
 
-        final Account account = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+        final Account account = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
                 purchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts().getId(),
                 PREPAYMENT.name(),
                 null,
@@ -82,11 +89,11 @@ public class TransactionService {
     ) {
         transaction.setTransactionTypeId(transactionTypeId);
 
-        final Account debitAccount = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+        final Account debitAccount = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
                 chartOfAccountsId, debitAccountType.name(), null, null
         ).orElseThrow(NullPointerException::new);
 
-        final Account creditAccount = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+        final Account creditAccount = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
                 chartOfAccountsId, creditAccountType.name(), null, null
         ).orElseThrow(NullPointerException::new);
 
@@ -116,7 +123,7 @@ public class TransactionService {
         final Transaction transaction = salesOrder.getTransaction();
         transaction.setTransactionTypeId(savedSalesOrder.getId());
 
-        final Account account = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+        final Account account = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
                 salesOrder.getCustomer().getPrincipalCompany().getChartOfAccounts().getId(),
                 TRADE_DEBTORS.name(),
                 null,
@@ -147,7 +154,7 @@ public class TransactionService {
         final Set<JournalEntry> journalEntries = transaction.getJournalEntries()
                 .stream()
                 .map(journalEntry -> {
-                    Account account = accountRepository
+                    Account account = accountService
                             .findById(journalEntry.getAccount().getId())
                             .orElseThrow(NullPointerException::new);
                     journalEntry.setAccount(account);
@@ -184,6 +191,14 @@ public class TransactionService {
         transaction.setUpdatedBy(createdBy.getId());
         transaction.setJournalEntries(journalEntries);
         return transactionRepository.save(transaction);
+    }
+
+    public void computeAccountTotal(Account account) {
+        final Account account1 = accountService.findById(account.getId())
+                .orElseThrow(NullPointerException::new);
+
+        final List<JournalEntry> journalEntries = journalEntryRepository.findByAccount(account1);
+        accountService.updateAccountTotals(account, journalEntries);
     }
 
     private JournalEntry createJournalEntry(Account account, BigDecimal totalCredit, TransactionSide transactionSide, Integer maxEntry) {

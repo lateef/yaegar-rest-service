@@ -1,6 +1,7 @@
 package com.yaegar.yaegarrestservice.model;
 
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
+import com.yaegar.yaegarrestservice.model.enums.LocationType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
@@ -26,4 +27,8 @@ public class Location extends AbstractEntity implements Serializable {
     @Length(max = 10)
     @Column(name = "code", nullable = false, length = 10)
     private String code;
+
+    @Column(name = "location_type", length = 50)
+    @Enumerated(value = EnumType.STRING)
+    private LocationType locationType;
 }
