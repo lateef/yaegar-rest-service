@@ -35,7 +35,7 @@ public class Account extends AbstractEntity implements Serializable {
     @Column(name = "name", nullable = false, length = 150)
     private String name;
 
-    @Column(name = "account_type")
+    @Column(name = "account_type", nullable = false)
     @Enumerated(value = EnumType.STRING)
     private AccountType accountType;
 
