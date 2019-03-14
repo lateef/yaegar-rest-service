@@ -182,8 +182,8 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
-    public Set<Account> computeAccountTotal(Transaction transaction) {
-        return transaction.getJournalEntries()
+    public Set<Account> computeAccountTotal(Set<JournalEntry> journalEntries) {
+        return journalEntries
                 .stream()
                 .map(JournalEntry::getAccount)
                 .collect(Collectors.toSet())
@@ -192,8 +192,8 @@ public class TransactionService {
                     final Account account1 = accountService.findById(account.getId())
                             .orElseThrow(NullPointerException::new);
 
-                    final List<JournalEntry> journalEntries = journalEntryRepository.findByAccount(account1);
-                    return accountService.updateAccountTotals(account, journalEntries);
+                    final List<JournalEntry> journalEntries1 = journalEntryRepository.findByAccount(account1);
+                    return accountService.updateAccountTotals(account, journalEntries1);
                 })
                 .collect(Collectors.toSet());
     }

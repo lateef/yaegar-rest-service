@@ -32,7 +32,7 @@ public class TransactionController {
     public ResponseEntity<Map<String, Transaction>> addTransaction(@RequestBody final Transaction transaction, ModelMap model, HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        final Set<Account> accounts = transactionService.computeAccountTotal(transaction1);
+        final Set<Account> accounts = transactionService.computeAccountTotal(transaction.getJournalEntries());
         transaction1.setAccounts(accounts);
 
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", transaction1));

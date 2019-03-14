@@ -107,7 +107,7 @@ public class PurchaseOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        final Set<Account> accounts = transactionService.computeAccountTotal(transaction1);
+        final Set<Account> accounts = transactionService.computeAccountTotal(transaction.getJournalEntries());
         savedPurchaseOrder.setPurchaseOrderState(PAID_IN_ADVANCE);
         savedPurchaseOrder.setTransaction(transaction1);
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
@@ -162,7 +162,7 @@ public class PurchaseOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        final Set<Account> accounts = transactionService.computeAccountTotal(transaction1);
+        final Set<Account> accounts = transactionService.computeAccountTotal(transaction.getJournalEntries());
         //TODO this should factor in delivery note if available
         invoiceService.computeInventory(savedPurchaseOrder.getInvoices(), user);
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);

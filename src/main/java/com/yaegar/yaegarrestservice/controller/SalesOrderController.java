@@ -106,7 +106,7 @@ public class SalesOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        final Set<Account> accounts = transactionService.computeAccountTotal(transaction1);
+        final Set<Account> accounts = transactionService.computeAccountTotal(transaction.getJournalEntries());
         savedSalesOrder.setSalesOrderState(CUSTOMER_INDEBTED);
         savedSalesOrder.setTransaction(transaction1);
         SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(savedSalesOrder, user);
@@ -156,7 +156,7 @@ public class SalesOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        final Set<Account> accounts = transactionService.computeAccountTotal(transaction1);
+        final Set<Account> accounts = transactionService.computeAccountTotal(transaction.getJournalEntries());
         savedSalesOrder.setTransaction(transaction1);
 
         //TODO this should factor in delivery note if available
