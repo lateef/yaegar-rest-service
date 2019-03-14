@@ -203,8 +203,6 @@ create table journal_entry
   transaction_side varchar(255) not null,
   created_by       bigint null,
   updated_by       bigint null,
-  constraint UK_journal
-    unique (transaction_id, entry),
   constraint FK_journal_entry_transaction
     foreign key (transaction_id) references transaction (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

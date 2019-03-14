@@ -7,11 +7,7 @@ import com.yaegar.yaegarrestservice.service.CompanyService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -52,5 +48,11 @@ public class AccountController {
         final Account account = accountService.findById(accountId)
                 .orElseThrow(NullPointerException::new);//this should be able to return segregated data
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", account));
+    }
+
+    @RequestMapping(value = "/compute-accounts", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, List<Account>>> computeAccounts(@RequestBody final List<Account> accounts, ModelMap model, HttpServletRequest httpServletRequest) {
+        final List<Account> accounts1 = accountService.computeAccountTotal(accounts);
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", accounts1));
     }
 }

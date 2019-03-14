@@ -9,7 +9,7 @@ import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,10 +26,11 @@ import java.util.stream.Collectors;
 public class Authenticator {
     private static final Logger LOGGER = LoggerFactory.getLogger(Authenticator.class);
 
-    private static ApplicationContext ctx = ApplicationContextProvider.getApplicationContext();
+    @Autowired
+    private DateTimeProvider dateTimeProvider;
 
-    private final DateTimeProvider dateTimeProvider = ctx.getBean(DateTimeProvider.class);
-    private final UserRepository userRepository = ctx.getBean(UserRepository.class);
+    @Autowired
+    private UserRepository userRepository;
 
     public  JwtAuthenticatedUser jwtAuthenticatedUser(JwtUserDto parsedUser,
                                                             Collection<GrantedAuthority> grantedAuthorities) {

@@ -16,6 +16,7 @@ import com.yaegar.yaegarrestservice.repository.TransactionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -151,9 +152,8 @@ public class TransactionService {
         return transactionRepository.findByJournalEntriesAccountId(accountId);
     }
 
+    @Transactional
     public Transaction saveTransaction(Transaction transaction, User createdBy) {
-        final String creditDescription = getCreditDescription(transaction);
-        final String debitDescription = getDebitDescription(transaction);
         final Set<JournalEntry> journalEntries = transaction.getJournalEntries()
                 .stream()
                 .map(journalEntry -> {
@@ -162,8 +162,16 @@ public class TransactionService {
                             .orElseThrow(NullPointerException::new);
                     journalEntry.setAccount(account);
                     setTransactionSide(journalEntry);
+                    return journalEntry;
+                })
+                .collect(Collectors.toSet());
+        final String creditDescription = getCreditDescription(journalEntries);
+        final String debitDescription = getDebitDescription(journalEntries);
 
-                    String description = (journalEntry.getTransactionSide().equals(CREDIT)) ? debitDescription : creditDescription;
+        final Set<JournalEntry> journalEntries1 = journalEntries
+                .stream()
+                .map(journalEntry -> {
+                   String description = (journalEntry.getTransactionSide().equals(CREDIT)) ? debitDescription : creditDescription;
                     validateAndSetShortDescription(journalEntry, description);
                     validateAndSetDescription(journalEntry, description);
 
@@ -178,7 +186,7 @@ public class TransactionService {
             transaction.setCreatedBy(createdBy.getId());
         }
         transaction.setUpdatedBy(createdBy.getId());
-        transaction.setJournalEntries(journalEntries);
+        transaction.setJournalEntries(journalEntries1);
         return transactionRepository.save(transaction);
     }
 
@@ -221,9 +229,9 @@ public class TransactionService {
     }
 
     private void setTransactionSide(JournalEntry journalEntry) {
-        final AccountType rootAccountTypeFromAccount = accountService.getRootAccountTypeFromAccount(journalEntry.getAccount());
+        final Account rootAccount = accountService.getRootAccount(journalEntry.getAccount());
 
-        switch (rootAccountTypeFromAccount) {
+        switch (rootAccount.getAccountType()) {
             case ASSETS:
                 if (journalEntry.getAmount().signum() > 0) {
                     journalEntry.setTransactionSide(DEBIT);
@@ -274,16 +282,16 @@ public class TransactionService {
         return prepaymentJournalEntry;
     }
 
-    private String getDebitDescription(Transaction transaction) {
-        return getDescription(transaction, DEBIT);
+    private String getDebitDescription(Set<JournalEntry> journalEntries) {
+        return getDescription(journalEntries, DEBIT);
     }
 
-    private String getCreditDescription(Transaction transaction) {
-        return getDescription(transaction, CREDIT);
+    private String getCreditDescription(Set<JournalEntry> journalEntries) {
+        return getDescription(journalEntries, CREDIT);
     }
 
-    private String getDescription(Transaction transaction, TransactionSide transactionSide) {
-        final Set<String> uniqueAccountNames = transaction.getJournalEntries()
+    private String getDescription(Set<JournalEntry> journalEntries, TransactionSide transactionSide) {
+        final Set<String> uniqueAccountNames = journalEntries
                 .stream()
                 .filter(journalEntry -> journalEntry.getTransactionSide().equals(transactionSide))
                 .map(journalEntry -> journalEntry.getAccount().getName())

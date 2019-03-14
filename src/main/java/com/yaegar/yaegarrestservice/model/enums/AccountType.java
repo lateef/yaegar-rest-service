@@ -31,7 +31,7 @@ public enum AccountType {
                 return accountType;
             }
         }
-        return null;
+        throw new IllegalArgumentException(text + " is not a valid system account type");
     }
 
     public String getType() {

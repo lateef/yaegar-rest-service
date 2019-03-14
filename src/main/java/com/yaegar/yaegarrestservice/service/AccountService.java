@@ -3,9 +3,10 @@ package com.yaegar.yaegarrestservice.service;
 import com.yaegar.yaegarrestservice.model.Account;
 import com.yaegar.yaegarrestservice.model.JournalEntry;
 import com.yaegar.yaegarrestservice.model.User;
-import com.yaegar.yaegarrestservice.model.enums.AccountType;
 import com.yaegar.yaegarrestservice.model.enums.AccountCategory;
+import com.yaegar.yaegarrestservice.model.enums.AccountType;
 import com.yaegar.yaegarrestservice.repository.AccountRepository;
+import com.yaegar.yaegarrestservice.repository.JournalEntryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -13,13 +14,11 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import static com.yaegar.yaegarrestservice.model.enums.AccountType.ASSETS;
-import static com.yaegar.yaegarrestservice.model.enums.AccountType.EQUITY;
-import static com.yaegar.yaegarrestservice.model.enums.AccountType.EXPENSES;
-import static com.yaegar.yaegarrestservice.model.enums.AccountType.INCOME_REVENUE;
-import static com.yaegar.yaegarrestservice.model.enums.AccountType.LIABILITIES;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.*;
 import static java.math.BigDecimal.ZERO;
 
 @Service
@@ -29,9 +28,11 @@ public class AccountService {
     public static final List<AccountType> ROOT_ACCOUNT_TYPES = Arrays.asList(ASSETS, LIABILITIES, EQUITY, INCOME_REVENUE, EXPENSES);
 
     private AccountRepository accountRepository;
+    private JournalEntryRepository journalEntryRepository;
 
-    public AccountService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository, JournalEntryRepository journalEntryRepository) {
         this.accountRepository = accountRepository;
+        this.journalEntryRepository = journalEntryRepository;
     }
 
     public Account save(Account account) {
@@ -92,6 +93,18 @@ public class AccountService {
         return accountRepository.save(account);
     }
 
+    public List<Account> computeAccountTotal(List<Account> accounts) {
+        return accounts
+                .stream()
+                .map(account -> {
+                    final Account account1 = findById(account.getId())
+                            .orElseThrow(NullPointerException::new);
+                    final List<JournalEntry> journalEntries1 = journalEntryRepository.findByAccount(account1);
+                    return updateAccountTotals(account, journalEntries1);
+                })
+                .collect(Collectors.toList());
+    }
+
     public Account updateAccountTotals(Account account, List<JournalEntry> journalEntries) {
         final Account account1 = accountRepository.findById(account.getId())
                 .orElseThrow(NullPointerException::new);
@@ -118,12 +131,12 @@ public class AccountService {
         }
     }
 
-    public AccountType getRootAccountTypeFromAccount(Account account) {
-
-        AccountType accountType = account.getAccountType();
-        while (!ROOT_ACCOUNT_TYPES.contains(accountType)) {
-            accountType = getAccountTypeFromParentAccount(account);
+    public Account getRootAccount(Account account) {
+        if (Objects.nonNull(account.getParentId())) {
+            account = accountRepository.findById(account.getParentId())
+                    .orElseThrow(NullPointerException::new);
+            account = getRootAccount(account);
         }
-        return accountType;
+        return account;
     }
 }

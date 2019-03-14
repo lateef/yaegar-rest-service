@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "journal_entry", uniqueConstraints = {@UniqueConstraint(columnNames = {"transaction_id", "entry"})})
 public class JournalEntry extends AbstractEntity implements Serializable {
     private static final long serialVersionUID = 6340589739131199534L;
 
