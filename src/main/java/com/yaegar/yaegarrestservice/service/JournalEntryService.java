@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,5 +27,9 @@ public class JournalEntryService {
 
     public List<JournalEntry> findByAccount(Account account) {
         return journalEntryRepository.findByAccount(account);
+    }
+
+    public List<JournalEntry> findByAccountAndTransactionDatetimeBetween(Account account, LocalDateTime from, LocalDateTime to) {
+        return journalEntryRepository.findByAccountAndTransactionDatetimeBetween(account, from, to);
     }
 }

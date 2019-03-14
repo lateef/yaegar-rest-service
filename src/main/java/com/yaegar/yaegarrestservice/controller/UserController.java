@@ -1,10 +1,10 @@
 package com.yaegar.yaegarrestservice.controller;
 
 import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.provider.Authenticator;
 import com.yaegar.yaegarrestservice.service.UserService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,16 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
-import static com.yaegar.yaegarrestservice.util.AuthenticationUtils.getAuthenticatedUser;
 import static java.util.Collections.singletonMap;
 
 @RestController
 public class UserController {
-    private AuthenticationManager authenticationManager;
-    private UserService userService;
+    private final Authenticator authenticator;
+    private final UserService userService;
 
-    public UserController(AuthenticationManager authenticationManager, UserService userService) {
-        this.authenticationManager = authenticationManager;
+    public UserController(Authenticator authenticator, UserService userService) {
+        this.authenticator = authenticator;
         this.userService = userService;
     }
 
@@ -40,7 +39,7 @@ public class UserController {
     @RequestMapping(value = "/confirm-account", method = RequestMethod.POST)
     public ResponseEntity<Map<String, User>> confirmAccount(@RequestBody final User user) {
         final Map<String, User> userResponse = userService.confirmAccount(user);
-        final HttpHeaders headers = getAuthenticatedUser(userResponse.values().stream().findFirst().get());
+        final HttpHeaders headers = authenticator.getAuthenticatedUser(userResponse.values().stream().findFirst().get());
         return ResponseEntity.ok().headers(headers).body(userResponse);
     }
 

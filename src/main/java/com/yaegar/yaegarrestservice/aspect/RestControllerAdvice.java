@@ -5,7 +5,7 @@ import com.yaegar.yaegarrestservice.config.jwt.model.JwtAuthenticationToken;
 import com.yaegar.yaegarrestservice.config.jwt.util.JwtTokenValidator;
 import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.repository.UserRepository;
-import com.yaegar.yaegarrestservice.util.AuthenticationUtils;
+import com.yaegar.yaegarrestservice.provider.Authenticator;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -30,6 +30,9 @@ import java.util.Optional;
 public class RestControllerAdvice {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RestControllerAdvice.class);
+
+    @Autowired
+    private Authenticator authenticator;
 
     @Autowired
     private JwtTokenValidator jwtTokenValidator;
@@ -89,7 +92,7 @@ public class RestControllerAdvice {
                     }
                 }
             }
-            map.put("headers", AuthenticationUtils.getAuthenticatedUser(user));
+            map.put("headers", authenticator.getAuthenticatedUser(user));
         }
     }
 }

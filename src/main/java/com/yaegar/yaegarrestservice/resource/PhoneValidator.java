@@ -1,15 +1,17 @@
-package com.yaegar.yaegarrestservice.util;
+package com.yaegar.yaegarrestservice.resource;
 
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-public class PhoneUtil {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PhoneUtil.class);
+@Component
+public class PhoneValidator {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PhoneValidator.class);
 
-    public static boolean isValidNumber(String numberToParse, String defaultRegion) {
+    public boolean isValidNumber(String numberToParse, String defaultRegion) {
         PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
         Phonenumber.PhoneNumber phoneNumber;
         try {
