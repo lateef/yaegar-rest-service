@@ -15,7 +15,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,7 +28,8 @@ public class Authenticator {
 
     private static ApplicationContext ctx = ApplicationContextProvider.getApplicationContext();
 
-    private static UserRepository userRepository = (UserRepository) ctx.getBean("userRepository");
+    private final DateTimeProvider dateTimeProvider = ctx.getBean(DateTimeProvider.class);
+    private final UserRepository userRepository = ctx.getBean(UserRepository.class);
 
     public  JwtAuthenticatedUser jwtAuthenticatedUser(JwtUserDto parsedUser,
                                                             Collection<GrantedAuthority> grantedAuthorities) {
@@ -49,10 +49,10 @@ public class Authenticator {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
         jwtUserDto.setRole(roles);
-        jwtUserDto.setRefreshToken(LocalDateTime.now());
+        jwtUserDto.setRefreshToken(dateTimeProvider.now());
 
         if (parsedUser.getExpireToken() == null) {
-            jwtUserDto.setExpireToken(LocalDateTime.now());
+            jwtUserDto.setExpireToken(dateTimeProvider.now());
         }
 
         String token = JwtTokenGenerator.generateToken(jwtUserDto, "!r4g34Y!");

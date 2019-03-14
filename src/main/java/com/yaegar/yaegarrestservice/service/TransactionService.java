@@ -10,6 +10,7 @@ import com.yaegar.yaegarrestservice.model.Transaction;
 import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.model.enums.AccountType;
 import com.yaegar.yaegarrestservice.model.enums.TransactionSide;
+import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
 import com.yaegar.yaegarrestservice.repository.JournalEntryRepository;
 import com.yaegar.yaegarrestservice.repository.TransactionRepository;
 import org.slf4j.Logger;
@@ -17,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -35,19 +35,21 @@ import static java.math.BigDecimal.ZERO;
 public class TransactionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionService.class);
 
-    private AccountService accountService;
-    private JournalEntryRepository journalEntryRepository;
-    private TransactionRepository transactionRepository;
+    private final AccountService accountService;
+    private final DateTimeProvider dateTimeProvider;
+    private final JournalEntryRepository journalEntryRepository;
+    private final TransactionRepository transactionRepository;
 
-    private PurchaseOrderService purchaseOrderService;
+    private final PurchaseOrderService purchaseOrderService;
 
     public TransactionService(
             AccountService accountService,
-            JournalEntryRepository journalEntryRepository,
+            DateTimeProvider dateTimeProvider, JournalEntryRepository journalEntryRepository,
             TransactionRepository transactionRepository,
             PurchaseOrderService purchaseOrderService
     ) {
         this.accountService = accountService;
+        this.dateTimeProvider = dateTimeProvider;
         this.journalEntryRepository = journalEntryRepository;
         this.transactionRepository = transactionRepository;
         this.purchaseOrderService = purchaseOrderService;
@@ -207,7 +209,7 @@ public class TransactionService {
         prepaymentJournalEntry.setAmount(totalCredit);
         prepaymentJournalEntry.setAccount(account);
         prepaymentJournalEntry.setEntry(maxEntry + 1);
-        prepaymentJournalEntry.setTransactionDatetime(LocalDateTime.now());
+        prepaymentJournalEntry.setTransactionDatetime(dateTimeProvider.now());
         return prepaymentJournalEntry;
     }
 

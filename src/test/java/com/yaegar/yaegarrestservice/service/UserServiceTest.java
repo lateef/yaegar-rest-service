@@ -4,6 +4,7 @@ import com.yaegar.yaegarrestservice.model.Country;
 import com.yaegar.yaegarrestservice.model.Phone;
 import com.yaegar.yaegarrestservice.model.Role;
 import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
 import com.yaegar.yaegarrestservice.repository.CountryRepository;
 import com.yaegar.yaegarrestservice.repository.RoleRepository;
 import com.yaegar.yaegarrestservice.repository.UserRepository;
@@ -33,6 +34,9 @@ public class UserServiceTest {
     private CountryRepository countryRepository;
 
     @MockBean
+    private DateTimeProvider dateTimeProvider;
+
+    @MockBean
     private PhoneValidator phoneValidator;
 
     @MockBean
@@ -47,7 +51,7 @@ public class UserServiceTest {
 
     @Before
     public void setUp() {
-        userService = new UserService(countryRepository, phoneValidator, roleRepository, userRepository);
+        userService = new UserService(countryRepository, dateTimeProvider, phoneValidator, roleRepository, userRepository);
     }
 
     @Test

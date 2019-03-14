@@ -7,6 +7,7 @@ import com.yaegar.yaegarrestservice.model.PurchaseOrder;
 import com.yaegar.yaegarrestservice.model.Supplier;
 import com.yaegar.yaegarrestservice.model.Transaction;
 import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
 import com.yaegar.yaegarrestservice.service.InvoiceService;
 import com.yaegar.yaegarrestservice.service.PurchaseOrderService;
 import com.yaegar.yaegarrestservice.service.SupplierService;
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,17 +38,20 @@ import static java.util.Collections.singletonMap;
 public class PurchaseOrderController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PurchaseOrderController.class);
 
+    private final DateTimeProvider dateTimeProvider;
     private final InvoiceService invoiceService;
     private final PurchaseOrderService purchaseOrderService;
     private final SupplierService supplierService;
     private final TransactionService transactionService;
 
     public PurchaseOrderController(
+            DateTimeProvider dateTimeProvider,
             InvoiceService invoiceService,
             PurchaseOrderService purchaseOrderService,
             SupplierService supplierService,
             TransactionService transactionService
     ) {
+        this.dateTimeProvider = dateTimeProvider;
         this.invoiceService = invoiceService;
         this.purchaseOrderService = purchaseOrderService;
         this.supplierService = supplierService;
@@ -125,7 +128,7 @@ public class PurchaseOrderController {
                 .stream()
                 .map(invoice -> {
                     if (Objects.isNull(invoice.getCreatedDatetime())) {
-                        invoice.setCreatedDatetime(LocalDateTime.now());
+                        invoice.setCreatedDatetime(dateTimeProvider.now());
                     }
                     return invoice;
                 })
