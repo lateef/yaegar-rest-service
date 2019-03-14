@@ -29,6 +29,7 @@ import static com.yaegar.yaegarrestservice.model.enums.AccountType.PREPAYMENT;
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.TRADE_DEBTORS;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.CREDIT;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.DEBIT;
+import static com.yaegar.yaegarrestservice.service.AccountService.ROOT_ACCOUNT_TYPES;
 import static java.math.BigDecimal.ZERO;
 
 @Service
@@ -160,25 +161,11 @@ public class TransactionService {
                             .findById(journalEntry.getAccount().getId())
                             .orElseThrow(NullPointerException::new);
                     journalEntry.setAccount(account);
+                    setTransactionSide(journalEntry);
+
                     String description = (journalEntry.getTransactionSide().equals(CREDIT)) ? debitDescription : creditDescription;
-
-                    if (journalEntry.getShortDescription() == null) {
-                        journalEntry.setShortDescription(
-                                description.substring(0, (description.length() < 15) ? description.length() : 15));
-                    } else {
-                        journalEntry.setShortDescription(journalEntry.getShortDescription().substring(0,
-                                (journalEntry.getShortDescription().length() < 15)
-                                        ? journalEntry.getShortDescription().length() : 15));
-                    }
-
-                    if (journalEntry.getDescription() == null) {
-                        journalEntry.setDescription(
-                                description.substring(0, (description.length() < 999) ? description.length() : 999));
-                    } else {
-                        journalEntry.setDescription(journalEntry.getDescription().substring(0,
-                                (journalEntry.getDescription().length() < 999)
-                                        ? journalEntry.getDescription().length() : 999));
-                    }
+                    validateAndSetShortDescription(journalEntry, description);
+                    validateAndSetDescription(journalEntry, description);
 
                     if (Objects.isNull(journalEntry.getCreatedBy())) {
                         journalEntry.setCreatedBy(createdBy.getId());
@@ -208,7 +195,73 @@ public class TransactionService {
                     final List<JournalEntry> journalEntries = journalEntryRepository.findByAccount(account1);
                     return accountService.updateAccountTotals(account, journalEntries);
                 })
-        .collect(Collectors.toSet());
+                .collect(Collectors.toSet());
+    }
+
+    private void validateAndSetDescription(JournalEntry journalEntry, String description) {
+        if (journalEntry.getDescription() == null) {
+            journalEntry.setDescription(
+                    description.substring(0, (description.length() < 999) ? description.length() : 999));
+        } else {
+            journalEntry.setDescription(journalEntry.getDescription().substring(0,
+                    (journalEntry.getDescription().length() < 999)
+                            ? journalEntry.getDescription().length() : 999));
+        }
+    }
+
+    private void validateAndSetShortDescription(JournalEntry journalEntry, String description) {
+        if (journalEntry.getShortDescription() == null) {
+            journalEntry.setShortDescription(
+                    description.substring(0, (description.length() < 15) ? description.length() : 15));
+        } else {
+            journalEntry.setShortDescription(journalEntry.getShortDescription().substring(0,
+                    (journalEntry.getShortDescription().length() < 15)
+                            ? journalEntry.getShortDescription().length() : 15));
+        }
+    }
+
+    private void setTransactionSide(JournalEntry journalEntry) {
+        final AccountType rootAccountTypeFromAccount = accountService.getRootAccountTypeFromAccount(journalEntry.getAccount());
+
+        switch (rootAccountTypeFromAccount) {
+            case ASSETS:
+                if (journalEntry.getAmount().signum() > 0) {
+                    journalEntry.setTransactionSide(DEBIT);
+                } else if (journalEntry.getAmount().signum() < 0) {
+                    journalEntry.setTransactionSide(CREDIT);
+                }
+                break;
+            case LIABILITIES:
+                if (journalEntry.getAmount().signum() > 0) {
+                    journalEntry.setTransactionSide(CREDIT);
+                } else if (journalEntry.getAmount().signum() < 0) {
+                    journalEntry.setTransactionSide(DEBIT);
+                }
+                break;
+            case EQUITY:
+                if (journalEntry.getAmount().signum() > 0) {
+                    journalEntry.setTransactionSide(CREDIT);
+                } else if (journalEntry.getAmount().signum() < 0) {
+                    journalEntry.setTransactionSide(DEBIT);
+                }
+                break;
+            case INCOME_REVENUE:
+                if (journalEntry.getAmount().signum() > 0) {
+                    journalEntry.setTransactionSide(CREDIT);
+                } else if (journalEntry.getAmount().signum() < 0) {
+                    journalEntry.setTransactionSide(DEBIT);
+                }
+                break;
+            case EXPENSES:
+                if (journalEntry.getAmount().signum() > 0) {
+                    journalEntry.setTransactionSide(DEBIT);
+                } else if (journalEntry.getAmount().signum() < 0) {
+                    journalEntry.setTransactionSide(CREDIT);
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Account type is not one " + String.join(ROOT_ACCOUNT_TYPES.toString()));
+        }
     }
 
     private JournalEntry createJournalEntry(Account account, BigDecimal totalCredit, TransactionSide transactionSide, Integer maxEntry) {

@@ -11,14 +11,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.ASSETS;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.EQUITY;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.EXPENSES;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.INCOME_REVENUE;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.LIABILITIES;
 import static java.math.BigDecimal.ZERO;
 
 @Service
 public class AccountService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountService.class);
+
+    public static final List<AccountType> ROOT_ACCOUNT_TYPES = Arrays.asList(ASSETS, LIABILITIES, EQUITY, INCOME_REVENUE, EXPENSES);
 
     private AccountRepository accountRepository;
 
@@ -101,12 +109,21 @@ public class AccountService {
         return accountRepository.findByAccountChartOfAccountsIdAndParentFalse(chartOfAccountsId);
     }
 
-    private AccountType getAccountTypeFromParentAccount(Account parentAccount) {
+    public AccountType getAccountTypeFromParentAccount(Account parentAccount) {
         try {
             return AccountType.fromString(parentAccount.getName());
         } catch (IllegalArgumentException e) {
             return getAccountTypeFromParentAccount(accountRepository.findById(parentAccount.getParentId())
                     .orElseThrow(NullPointerException::new));
         }
+    }
+
+    public AccountType getRootAccountTypeFromAccount(Account account) {
+
+        AccountType accountType = account.getAccountType();
+        while (!ROOT_ACCOUNT_TYPES.contains(accountType)) {
+            accountType = getAccountTypeFromParentAccount(account);
+        }
+        return accountType;
     }
 }

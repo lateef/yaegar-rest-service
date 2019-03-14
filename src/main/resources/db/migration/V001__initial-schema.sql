@@ -200,7 +200,7 @@ create table journal_entry
   entry            int not null,
   short_description  varchar(16) not null,
   description        varchar(1000) null,
-  transaction_side varchar(255) null,
+  transaction_side varchar(255) not null,
   created_by       bigint null,
   updated_by       bigint null,
   constraint UK_journal
