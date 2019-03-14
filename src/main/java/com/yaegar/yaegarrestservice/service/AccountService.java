@@ -84,7 +84,7 @@ public class AccountService {
         return accountRepository.save(account);
     }
 
-    public void updateAccountTotals(Account account, List<JournalEntry> journalEntries) {
+    public Account updateAccountTotals(Account account, List<JournalEntry> journalEntries) {
         final Account account1 = accountRepository.findById(account.getId())
                 .orElseThrow(NullPointerException::new);
 
@@ -94,7 +94,7 @@ public class AccountService {
 
         //TODO set other duration and think about performance issues
         account1.setYearToDateTotal(journalEntriesTotal);
-        accountRepository.save(account1);
+        return accountRepository.save(account1);
     }
 
     public List<Account> getLeafAccounts(Long chartOfAccountsId) {

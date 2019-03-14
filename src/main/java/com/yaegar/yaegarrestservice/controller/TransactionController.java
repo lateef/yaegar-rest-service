@@ -1,6 +1,6 @@
 package com.yaegar.yaegarrestservice.controller;
 
-import com.yaegar.yaegarrestservice.model.JournalEntry;
+import com.yaegar.yaegarrestservice.model.Account;
 import com.yaegar.yaegarrestservice.model.Transaction;
 import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.service.TransactionService;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import static java.util.Collections.singletonMap;
 
@@ -32,11 +32,9 @@ public class TransactionController {
     public ResponseEntity<Map<String, Transaction>> addTransaction(@RequestBody final Transaction transaction, ModelMap model, HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        transaction1.getJournalEntries()
-                .stream()
-                .map(JournalEntry::getAccount)
-                .collect(Collectors.toSet())
-                .forEach(transactionService::computeAccountTotal);
+        final Set<Account> accounts = transactionService.computeAccountTotal(transaction1);
+        transaction1.setAccounts(accounts);
+
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", transaction1));
     }
 

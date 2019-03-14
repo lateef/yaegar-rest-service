@@ -16,6 +16,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Set;
 
@@ -40,4 +41,7 @@ public class Transaction extends AbstractEntity implements Serializable {
 
     @Column(name = "transaction_type_id")
     private Long transactionTypeId;
+
+    @Transient
+    private Set<Account> accounts;
 }

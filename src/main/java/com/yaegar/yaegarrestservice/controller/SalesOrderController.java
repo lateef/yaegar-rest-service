@@ -1,8 +1,8 @@
 package com.yaegar.yaegarrestservice.controller;
 
+import com.yaegar.yaegarrestservice.model.Account;
 import com.yaegar.yaegarrestservice.model.Customer;
 import com.yaegar.yaegarrestservice.model.Invoice;
-import com.yaegar.yaegarrestservice.model.JournalEntry;
 import com.yaegar.yaegarrestservice.model.LineItem;
 import com.yaegar.yaegarrestservice.model.Product;
 import com.yaegar.yaegarrestservice.model.SalesOrder;
@@ -106,14 +106,11 @@ public class SalesOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        transaction1.getJournalEntries()
-                .stream()
-                .map(JournalEntry::getAccount)
-                .collect(Collectors.toSet())
-                .forEach(transactionService::computeAccountTotal);
+        final Set<Account> accounts = transactionService.computeAccountTotal(transaction1);
         savedSalesOrder.setSalesOrderState(CUSTOMER_INDEBTED);
         savedSalesOrder.setTransaction(transaction1);
         SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(savedSalesOrder, user);
+        salesOrder1.getTransaction().setAccounts(accounts);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", salesOrder1));
     }
 
@@ -159,17 +156,13 @@ public class SalesOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        transaction1.getJournalEntries()
-                .stream()
-                .map(JournalEntry::getAccount)
-                .collect(Collectors.toSet())
-                .forEach(transactionService::computeAccountTotal);
+        final Set<Account> accounts = transactionService.computeAccountTotal(transaction1);
         savedSalesOrder.setTransaction(transaction1);
 
         //TODO this should factor in delivery note if available
         invoiceService.computeInventory(savedSalesOrder.getInvoices(), user);
-
         SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(savedSalesOrder, user);
+        salesOrder1.getTransaction().setAccounts(accounts);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", salesOrder1));
     }
 }

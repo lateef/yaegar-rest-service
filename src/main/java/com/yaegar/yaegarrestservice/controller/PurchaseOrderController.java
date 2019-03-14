@@ -1,7 +1,7 @@
 package com.yaegar.yaegarrestservice.controller;
 
+import com.yaegar.yaegarrestservice.model.Account;
 import com.yaegar.yaegarrestservice.model.Invoice;
-import com.yaegar.yaegarrestservice.model.JournalEntry;
 import com.yaegar.yaegarrestservice.model.LineItem;
 import com.yaegar.yaegarrestservice.model.PurchaseOrder;
 import com.yaegar.yaegarrestservice.model.Supplier;
@@ -25,7 +25,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.PREPAYMENT;
@@ -101,15 +107,11 @@ public class PurchaseOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        transaction1.getJournalEntries()
-                .stream()
-                .map(JournalEntry::getAccount)
-                .collect(Collectors.toSet())
-                .forEach(transactionService::computeAccountTotal);
-
+        final Set<Account> accounts = transactionService.computeAccountTotal(transaction1);
         savedPurchaseOrder.setPurchaseOrderState(PAID_IN_ADVANCE);
         savedPurchaseOrder.setTransaction(transaction1);
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
+        purchaseOrder.getTransaction().setAccounts(accounts);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrder1));
     }
 
@@ -160,17 +162,11 @@ public class PurchaseOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        transaction1.getJournalEntries()
-                .stream()
-                .map(JournalEntry::getAccount)
-                .collect(Collectors.toSet())
-                .forEach(transactionService::computeAccountTotal);
-        savedPurchaseOrder.setTransaction(transaction1);
-
+        final Set<Account> accounts = transactionService.computeAccountTotal(transaction1);
         //TODO this should factor in delivery note if available
         invoiceService.computeInventory(savedPurchaseOrder.getInvoices(), user);
-
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
+        purchaseOrder1.getTransaction().setAccounts(accounts);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrder1));
     }
 }
