@@ -58,18 +58,19 @@ public class AccountService {
     }
 
     public Account addAccount(Account account, User createdBy) {
-        return addAccount(account.getParentId(), account.getName(), account.getAccountType(), account.getAccountCategory(), createdBy);
+        return addAccount(account.getParentId(), account.getName(), account.getAccountCategory(), createdBy);
     }
 
-    public Account addAccount(Long parentAccountId, String name, AccountType accountType, AccountCategory accountCategory, User createdBy) {
+    public Account addAccount(Long parentAccountId, String name, AccountCategory accountCategory, User createdBy) {
         Account parentAccount = findById(parentAccountId)
                 .orElseThrow(NullPointerException::new);
+        final AccountType accountTypeFromParentAccount = getAccountTypeFromParentAccount(parentAccount);
         Account account = new Account();
         account.setParentId(parentAccount.getId());
         account.setName(name.trim());
         account.setDescription(name.trim());
         account.setAccountChartOfAccountsId(parentAccount.getAccountChartOfAccountsId());
-        account.setAccountType(accountType);
+        account.setAccountType(accountTypeFromParentAccount);
         account.setAccountCategory(accountCategory);
         account.setCreatedBy(createdBy.getId());
         account.setUpdatedBy(createdBy.getId());
@@ -98,5 +99,14 @@ public class AccountService {
 
     public List<Account> getLeafAccounts(Long chartOfAccountsId) {
         return accountRepository.findByAccountChartOfAccountsIdAndParentFalse(chartOfAccountsId);
+    }
+
+    private AccountType getAccountTypeFromParentAccount(Account parentAccount) {
+        try {
+            return AccountType.fromString(parentAccount.getName());
+        } catch (IllegalArgumentException e) {
+            return getAccountTypeFromParentAccount(accountRepository.findById(parentAccount.getParentId())
+                    .orElseThrow(NullPointerException::new));
+        }
     }
 }

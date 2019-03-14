@@ -30,8 +30,6 @@ import java.util.Set;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.PRODUCT;
 import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.PRODUCT_DISCOUNT;
-import static com.yaegar.yaegarrestservice.model.enums.AccountType.EXPENSES;
-import static com.yaegar.yaegarrestservice.model.enums.AccountType.INCOME_REVENUE;
 import static java.util.Collections.singletonMap;
 
 @RestController
@@ -97,16 +95,16 @@ public class StockController {
                 .orElseThrow(NullPointerException::new);
 
         final Account incomeRevenueStockAccount = accountService.addAccount(
-                salesIncome.getId(), stock.getProduct().getName(), INCOME_REVENUE, PRODUCT, user
+                salesIncome.getId(), stock.getProduct().getName(), PRODUCT, user
         );
         final Account costOfSalesGoodsStockAccount = accountService.addAccount(
-                purchases.getId(), stock.getProduct().getName(), EXPENSES, PRODUCT, user
+                purchases.getId(), stock.getProduct().getName(), PRODUCT, user
         );
         final Account incomeRevenueStockDiscountAccount = accountService.addAccount(
-                salesDiscount.getId(), stock.getProduct().getName(), INCOME_REVENUE, PRODUCT_DISCOUNT, user
+                salesDiscount.getId(), stock.getProduct().getName(), PRODUCT_DISCOUNT, user
         );
         final Account costOfSalesGoodsStockDiscountAccount = accountService.addAccount(
-                purchasesDiscount.getId(), stock.getProduct().getName(), EXPENSES, PRODUCT_DISCOUNT, user
+                purchasesDiscount.getId(), stock.getProduct().getName(), PRODUCT_DISCOUNT, user
         );
 
         final Set<Account> stockAccounts = new HashSet<>(

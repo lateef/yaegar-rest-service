@@ -1,5 +1,6 @@
 package com.yaegar.yaegarrestservice.service;
 
+import com.yaegar.yaegarrestservice.model.Account;
 import com.yaegar.yaegarrestservice.model.ChartOfAccounts;
 import com.yaegar.yaegarrestservice.model.Company;
 import com.yaegar.yaegarrestservice.model.User;
@@ -14,6 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
 import static org.hamcrest.Matchers.is;
@@ -53,5 +55,14 @@ public class CompanyServiceTest {
 
         //then
         assertThat(actualCompany, is(sameBeanAs(expectedCompany)));
+    }
+
+    @Test
+    public void readChartOfAccountsTemplateFromFile() throws Exception {
+        //when
+        final List<Account> accounts = companyService.readChartOfAccountsTemplateFromFile();
+
+        //then
+        assertThat(accounts.size(), is(36));
     }
 }

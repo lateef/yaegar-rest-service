@@ -72,7 +72,7 @@ public class CompanyService {
                 .anyMatch(company -> company.getChartOfAccounts().getId().equals(chartOfAccountsId));
     }
 
-    private List<Account> readChartOfAccountsTemplateFromFile() throws IOException {
+    public List<Account> readChartOfAccountsTemplateFromFile() throws IOException {
         String accountFilepath = "/chartOfAccountsTemplate.json";
         try {
             final InputStream resourceAsStream = getClass().getResourceAsStream(accountFilepath);
