@@ -18,14 +18,13 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table
-public class Product extends AbstractEntity implements Serializable {
+public class Product extends AbstractEntity {
     private static final long serialVersionUID = 9131433206492217756L;
 
     @Id

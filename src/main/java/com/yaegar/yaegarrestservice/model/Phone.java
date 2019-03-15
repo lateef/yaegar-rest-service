@@ -18,7 +18,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
-import java.io.Serializable;
 import java.util.Objects;
 
 @ToString
@@ -27,7 +26,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @Entity
 @Table
-public class Phone extends AbstractEntity implements Serializable {
+public class Phone extends AbstractEntity {
     private static final long serialVersionUID = -7901958678943948605L;
 
     @Id

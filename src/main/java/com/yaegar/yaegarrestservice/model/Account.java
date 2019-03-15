@@ -1,14 +1,21 @@
 package com.yaegar.yaegarrestservice.model;
 
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
-import com.yaegar.yaegarrestservice.model.enums.AccountType;
 import com.yaegar.yaegarrestservice.model.enums.AccountCategory;
+import com.yaegar.yaegarrestservice.model.enums.AccountType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotEmpty;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -20,7 +27,7 @@ import java.time.LocalDateTime;
         })
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class Account extends AbstractEntity implements Serializable {
+public class Account extends AbstractEntity {
     private static final long serialVersionUID = -9030131623403189315L;
 
     @Id

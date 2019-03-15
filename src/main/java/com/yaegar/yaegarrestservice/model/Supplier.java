@@ -17,14 +17,13 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import java.io.Serializable;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "supplier",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "principal_company_id"})})
-public class Supplier extends AbstractEntity implements Serializable {
+public class Supplier extends AbstractEntity {
     private static final long serialVersionUID = 4695495638941520513L;
 
     @Id

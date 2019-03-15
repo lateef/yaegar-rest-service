@@ -6,13 +6,18 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 
-import javax.persistence.*;
-import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
-public class Location extends AbstractEntity implements Serializable {
+public class Location extends AbstractEntity {
     private static final long serialVersionUID = 98946293342395817L;
 
     @Id

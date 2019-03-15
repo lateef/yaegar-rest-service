@@ -19,7 +19,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +27,7 @@ import java.util.Set;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
-public class Company extends AbstractEntity implements Serializable {
+public class Company extends AbstractEntity {
     private static final long serialVersionUID = -2248566160300140508L;
 
     @Id
