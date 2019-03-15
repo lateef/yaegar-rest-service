@@ -6,16 +6,20 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -33,7 +37,10 @@ public class Product extends AbstractEntity implements Serializable {
     @Column(name = "name", nullable = false, length = 256)
     private String name;
 
-//TODO and more info manufacturer attributes and figure out how to avoid duplicates
+    //TODO product variant table
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
+    @JoinColumn(name = "company_id", referencedColumnName = "id")
+    private Company company;
 
     @Column(name = "gtin_type", length = 7)
     @Enumerated(value = EnumType.STRING)
@@ -42,9 +49,6 @@ public class Product extends AbstractEntity implements Serializable {
     @Column(name = "gtin", length = 14)
     private String globalTradeItemNumber;
 
-    @Column(name = "cost_price")
-    private BigDecimal costPrice;
-
-    @Column(name = "sell_price")
-    private BigDecimal sellPrice;
+    @Column(name = "deleted_datetime")
+    private LocalDateTime deletedDateTime;
 }

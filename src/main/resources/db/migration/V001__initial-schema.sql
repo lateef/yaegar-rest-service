@@ -255,12 +255,12 @@ create table product
   created_datetime datetime null,
   updated_datetime datetime null,
   name varchar(256) not null,
+  company_id bigint null,
   gtin_type varchar(7) null,
   gtin varchar(14) null,
-  cost_price decimal(19,2) null,
-  sell_price decimal(19,2) null,
   created_by       bigint null,
-  updated_by       bigint null
+  updated_by       bigint null,
+  deleted_datetime datetime null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table purchase_order
@@ -375,6 +375,8 @@ create table stock
   company_stock_id       bigint null,
   location_id       bigint null,
   quantity double null,
+  cost_price decimal(19,2) null,
+  sell_price decimal(19,2) null,
   created_by       bigint null,
   updated_by       bigint null,
   constraint UK_stock
