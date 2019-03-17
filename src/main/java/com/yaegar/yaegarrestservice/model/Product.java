@@ -36,7 +36,7 @@ public class Product extends AbstractEntity {
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<ProductVariant> productVariants;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinColumn(name = "company_id", referencedColumnName = "id")
     private Company company;
 

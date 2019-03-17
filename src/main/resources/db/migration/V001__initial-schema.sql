@@ -289,7 +289,16 @@ create table product_product_variants
     foreign key (product_variants_id) references product_variant (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
+create table supplier_products
+(
+  supplier_id bigint not null,
+  products_id bigint not null,
+  primary key (supplier_id, products_id),
+  constraint FK_supplier_products_supplier
+    foreign key (supplier_id) references supplier (id),
+  constraint FK_supplier_products_product
+    foreign key (products_id) references product (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table purchase_order
 (
@@ -434,7 +443,7 @@ create table company_stock
   primary key (company_id, stock_id),
   constraint FK_company_stock_company
   foreign key (company_id) references company (id),
-  constraint FK_company_stock_user
+  constraint FK_company_stock_stock
   foreign key (stock_id) references stock (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

@@ -7,8 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -33,5 +36,16 @@ public class ProductService {
 
     public List<Product> findAll() {
         return productRepository.findAll();
+    }
+
+    public List<Product> findByCompanyId(Long companyId) {
+        return productRepository.findByCompanyId(companyId);
+    }
+
+    public List<Product> sortProducts(Set<Product> products) {
+        return products
+                .stream()
+                .sorted(Comparator.comparing(Product::getName))
+                .collect(Collectors.toList());
     }
 }

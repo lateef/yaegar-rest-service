@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     List<Supplier> findByPrincipalCompanyId(Long principalCompany);
+    Supplier findOneWithProductsById(Long supplierId);
 }
