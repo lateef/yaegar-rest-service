@@ -3,6 +3,7 @@ package com.yaegar.yaegarrestservice.model;
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.CascadeType;
@@ -22,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.Set;
 
 @Data
+@ToString(exclude = {"product"})
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "stock",
@@ -34,14 +36,15 @@ public class Stock extends AbstractEntity {
     @Column(name = "id")
     private Long id;
 
+    //TODO not nullable
     @Length(max = 40)
-    @Column(name = "sku", nullable = false, length = 40)
+    @Column(name = "sku", unique = true, length = 40)
     private String sku;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     private Set<Account> accounts;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinColumn(name = "product_id", referencedColumnName = "id")
     private Product product;
 
@@ -54,7 +57,7 @@ public class Stock extends AbstractEntity {
     @Column(name = "company_stock_id", nullable = false)
     private Long companyStockId;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinColumn(name = "location_id", referencedColumnName = "id")
     private Location location;
 

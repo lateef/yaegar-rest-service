@@ -6,24 +6,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table
 public class Product extends AbstractEntity {
     private static final long serialVersionUID = 9131433206492217756L;
 
@@ -32,11 +21,21 @@ public class Product extends AbstractEntity {
     @Column(name = "id")
     private Long id;
 
-    @Length(max = 256)
-    @Column(name = "name", nullable = false, length = 256)
+    @Length(max = 128)
+    @Column(name = "name", nullable = false, length = 128)
     private String name;
 
-    //TODO product variant table
+    @Length(max = 128)
+    @Column(name = "manufacturer", nullable = false, length = 128)
+    private String manufacturer;
+
+    @Length(max = 512)
+    @Column(name = "title", nullable = false, length = 512)
+    private String title;
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<ProductVariant> productVariants;
+
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinColumn(name = "company_id", referencedColumnName = "id")
     private Company company;

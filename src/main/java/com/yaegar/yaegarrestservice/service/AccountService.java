@@ -1,8 +1,6 @@
 package com.yaegar.yaegarrestservice.service;
 
-import com.yaegar.yaegarrestservice.model.Account;
-import com.yaegar.yaegarrestservice.model.JournalEntry;
-import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.model.*;
 import com.yaegar.yaegarrestservice.model.enums.AccountCategory;
 import com.yaegar.yaegarrestservice.model.enums.AccountType;
 import com.yaegar.yaegarrestservice.repository.AccountRepository;
@@ -12,26 +10,32 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.PRODUCT;
+import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.PRODUCT_DISCOUNT;
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.*;
 import static java.math.BigDecimal.ZERO;
+import static java.util.Arrays.asList;
 
 @Service
 public class AccountService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountService.class);
 
-    public static final List<AccountType> ROOT_ACCOUNT_TYPES = Arrays.asList(ASSETS, LIABILITIES, EQUITY, INCOME_REVENUE, EXPENSES);
+    public static final List<AccountType> ROOT_ACCOUNT_TYPES = asList(ASSETS, LIABILITIES, EQUITY, INCOME_REVENUE, EXPENSES);
 
     private AccountRepository accountRepository;
+    private CompanyService companyService;
     private JournalEntryRepository journalEntryRepository;
 
-    public AccountService(AccountRepository accountRepository, JournalEntryRepository journalEntryRepository) {
+    public AccountService(
+            AccountRepository accountRepository,
+            CompanyService companyService,
+            JournalEntryRepository journalEntryRepository
+    ) {
         this.accountRepository = accountRepository;
+        this.companyService = companyService;
         this.journalEntryRepository = journalEntryRepository;
     }
 
@@ -70,7 +74,7 @@ public class AccountService {
         return addAccount(account.getParentId(), account.getName(), account.getAccountCategory(), createdBy);
     }
 
-    public Account addAccount(Long parentAccountId, String name, AccountCategory accountCategory, User createdBy) {
+    private Account addAccount(Long parentAccountId, String name, AccountCategory accountCategory, User createdBy) {
         Account parentAccount = findById(parentAccountId)
                 .orElseThrow(NullPointerException::new);
         final AccountType accountTypeFromParentAccount = getAccountTypeFromParentAccount(parentAccount);
@@ -105,7 +109,7 @@ public class AccountService {
                 .collect(Collectors.toList());
     }
 
-    public Account updateAccountTotals(Account account, List<JournalEntry> journalEntries) {
+    Account updateAccountTotals(Account account, List<JournalEntry> journalEntries) {
         final Account account1 = accountRepository.findById(account.getId())
                 .orElseThrow(NullPointerException::new);
 
@@ -122,7 +126,7 @@ public class AccountService {
         return accountRepository.findByAccountChartOfAccountsIdAndParentFalse(chartOfAccountsId);
     }
 
-    public AccountType getAccountTypeFromParentAccount(Account parentAccount) {
+    private AccountType getAccountTypeFromParentAccount(Account parentAccount) {
         try {
             return AccountType.fromString(parentAccount.getName());
         } catch (IllegalArgumentException e) {
@@ -131,12 +135,42 @@ public class AccountService {
         }
     }
 
-    public Account getRootAccount(Account account) {
+    Account getRootAccount(Account account) {
         if (Objects.nonNull(account.getParentId())) {
             account = accountRepository.findById(account.getParentId())
                     .orElseThrow(NullPointerException::new);
             account = getRootAccount(account);
         }
         return account;
+    }
+
+    public Set<Account> createStockAccounts(Stock stock, User user) {
+        final Company company = companyService.findById(stock.getCompanyStockId())
+                .orElseThrow(NullPointerException::new);
+        final List<Account> companyAccounts = findByAccountChartOfAccountsId(company.getChartOfAccounts().getId());
+
+        final Account salesIncome = getAccount(companyAccounts, "Sales Income");
+        final Account purchases = getAccount(companyAccounts, "Purchases");
+        final Account salesDiscount = getAccount(companyAccounts, "Sales Discount");
+        final Account purchasesDiscount = getAccount(companyAccounts, "Purchases Discount");
+
+        final Account incomeRevenueStockAccount = addAccount(salesIncome.getId(), stock.getProduct().getTitle(), PRODUCT, user);
+        final Account costOfSalesGoodsStockAccount = addAccount(purchases.getId(), stock.getProduct().getTitle(), PRODUCT, user);
+        final Account incomeRevenueStockDiscountAccount = addAccount(salesDiscount.getId(), stock.getProduct().getTitle(), PRODUCT_DISCOUNT, user);
+        final Account costOfSalesGoodsStockDiscountAccount = addAccount(purchasesDiscount.getId(), stock.getProduct().getTitle(), PRODUCT_DISCOUNT, user);
+
+        return new HashSet<>(
+                asList(incomeRevenueStockAccount,
+                        costOfSalesGoodsStockAccount,
+                        incomeRevenueStockDiscountAccount,
+                        costOfSalesGoodsStockDiscountAccount)
+        );
+    }
+
+    private Account getAccount(List<Account> companyAccounts, String accountName) {
+        return companyAccounts.stream()
+                .filter(account -> account.getName().equals(accountName))
+                .findFirst()
+                .orElseThrow(NullPointerException::new);
     }
 }

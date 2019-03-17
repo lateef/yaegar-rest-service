@@ -21,6 +21,7 @@ public class ProductService {
     }
 
     public Product saveProduct(Product product, User user) {
+        //TODO check variant does not already exist
         product.setCreatedBy(user.getId());
         product.setUpdatedBy(user.getId());
         return productRepository.save(product);

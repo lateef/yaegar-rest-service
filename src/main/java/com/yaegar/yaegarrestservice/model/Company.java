@@ -52,9 +52,10 @@ public class Company extends AbstractEntity {
     @JoinColumn(name = "chart_of_accounts_id", referencedColumnName = "id")
     private ChartOfAccounts chartOfAccounts;
 
+    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinColumn(name = "company_stock_id", referencedColumnName = "id")
-    private Set<Stock> stocks;
+    private Set<Stock> stock;
 
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
