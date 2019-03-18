@@ -461,3 +461,35 @@ create table stock_transaction
   constraint FK_stock_transaction_location
     foreign key (location_id) references location (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table subscription_plan
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  name varchar(256) not null,
+  credits_per_month varchar(256) not null,
+  price_per_month          double not null,
+  price_per_year          double not null,
+  created_by       bigint null,
+  updated_by       bigint null
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table subscription
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  user_id       bigint not null,
+  subscription_plan_id       bigint not null,
+  subscription_start_datetime datetime not null,
+  subscription_end_datetime datetime not null,
+  created_by       bigint null,
+  updated_by       bigint null,
+  constraint UK_subscription
+    unique (user_id, subscription_plan_id, subscription_start_datetime, subscription_end_datetime),
+  constraint FK_subscription_user
+    foreign key (user_id) references user (id),
+  constraint FK_subscription_subscription_plan
+    foreign key (subscription_plan_id) references subscription_plan (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

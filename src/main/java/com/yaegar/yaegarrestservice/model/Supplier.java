@@ -22,7 +22,7 @@ public class Supplier extends AbstractEntity {
     private Long id;
 
     @Length(max = 256)
-    @Column(name = "Name", nullable = false, length = 256)
+    @Column(name = "name", nullable = false, length = 256)
     private String name;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
