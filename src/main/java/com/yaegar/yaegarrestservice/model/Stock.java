@@ -27,7 +27,7 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "stock",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "company_stock_id", "location_id"})})
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"sku", "product_id", "company_stock_id", "location_id"})})
 public class Stock extends AbstractEntity {
     private static final long serialVersionUID = -8115458467683618041L;
 
@@ -38,7 +38,7 @@ public class Stock extends AbstractEntity {
 
     //TODO not nullable
     @Length(max = 40)
-    @Column(name = "sku", unique = true, length = 40)
+    @Column(name = "sku", length = 256)
     private String sku;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)

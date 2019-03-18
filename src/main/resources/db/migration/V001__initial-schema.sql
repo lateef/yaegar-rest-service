@@ -407,7 +407,7 @@ create table stock
   id bigint auto_increment primary key,
   created_datetime datetime null,
   updated_datetime datetime null,
-  sku             varchar(40) null,
+  sku             varchar(256) null,
   product_id       bigint null,
   company_stock_id   bigint null,
   location_id       bigint null,
@@ -417,7 +417,7 @@ create table stock
   created_by       bigint null,
   updated_by       bigint null,
   constraint UK_stock
-    unique (product_id, company_stock_id, location_id),
+    unique (sku, product_id, company_stock_id, location_id),
   constraint FK_stock_product
     foreign key (product_id) references product (id),
   constraint FK_stock_location
