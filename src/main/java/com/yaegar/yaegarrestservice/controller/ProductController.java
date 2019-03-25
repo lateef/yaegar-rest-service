@@ -44,7 +44,7 @@ public class ProductController {
     public ResponseEntity<Map<String, Product>> saveCompanyProduct(@RequestBody final Product product, ModelMap model, HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
         final Product product1 = productService.saveProduct(product, user);
-        stockService.addStock(product1, product1.getCompany().getId(), ZERO, ZERO, null, 0.0, null, user);
+        stockService.addStock(product1, product1.getCompanyId(), ZERO, ZERO, null, 0.0, null, user);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", product1));
     }
 

@@ -77,7 +77,7 @@ public class PurchaseOrderController {
         purchaseOrder.setSupplier(supplier);
 
         final List<LineItem> lineItems = purchaseOrderService.sortLineItemsIntoOrderedList(purchaseOrder.getLineItems());
-        final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(lineItems, supplier.getPrincipalCompany(), user);
+        final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(lineItems, user);
         purchaseOrder.setLineItems(lineItems1);
 
         purchaseOrder.setTotalPrice(purchaseOrderService.sumLineItemsSubTotal(lineItems1));
@@ -139,7 +139,7 @@ public class PurchaseOrderController {
                 .map(invoice -> {
                     final List<LineItem> lineItems = purchaseOrderService.sortLineItemsIntoOrderedList(invoice.getLineItems());
                     final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(
-                            lineItems, purchaseOrder.getSupplier().getPrincipalCompany(), user);
+                            lineItems, user);
                     invoice.setLineItems(lineItems1);
                     invoice.setInvoiceType(PURCHASE);
                     invoice.setTotalPrice(purchaseOrderService.sumLineItemsSubTotal(lineItems1));

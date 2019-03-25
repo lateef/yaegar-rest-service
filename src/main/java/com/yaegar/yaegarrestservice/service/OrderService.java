@@ -1,6 +1,5 @@
 package com.yaegar.yaegarrestservice.service;
 
-import com.yaegar.yaegarrestservice.model.Company;
 import com.yaegar.yaegarrestservice.model.LineItem;
 import com.yaegar.yaegarrestservice.model.Product;
 import com.yaegar.yaegarrestservice.model.User;
@@ -26,7 +25,7 @@ public abstract class OrderService {
         this.productRepository = productRepository;
     }
 
-    public Set<LineItem> validateLineItems(List<LineItem> lineItems, Company company, User createdBy) {
+    public Set<LineItem> validateLineItems(List<LineItem> lineItems, User createdBy) {
         IntStream.range(0, lineItems.size())
                 .forEach(idx -> {
                     final LineItem lineItem = lineItems.get(idx);

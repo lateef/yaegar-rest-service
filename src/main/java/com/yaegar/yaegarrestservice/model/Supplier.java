@@ -3,11 +3,13 @@ package com.yaegar.yaegarrestservice.model;
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import java.util.Set;
 
+@ToString(exclude = {"principalCompany"})
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity

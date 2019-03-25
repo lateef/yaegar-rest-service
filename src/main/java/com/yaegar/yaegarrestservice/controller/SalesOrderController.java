@@ -132,7 +132,7 @@ public class SalesOrderController {
                 .map(invoice -> {
                     final List<LineItem> lineItems = salesOrderService.sortLineItemsIntoOrderedList(invoice.getLineItems());
                     final Set<LineItem> lineItems1 = salesOrderService.validateLineItems(
-                            lineItems, salesOrder.getCustomer().getPrincipalCompany(), user);
+                            lineItems, user);
                     invoice.setLineItems(lineItems1);
                     invoice.setInvoiceType(SALES);
 

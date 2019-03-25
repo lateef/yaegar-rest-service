@@ -436,17 +436,6 @@ create table stock_accounts
     foreign key (accounts_id) references account (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-create table company_stock
-(
-  company_id bigint not null,
-  stock_id bigint not null,
-  primary key (company_id, stock_id),
-  constraint FK_company_stock_company
-  foreign key (company_id) references company (id),
-  constraint FK_company_stock_stock
-  foreign key (stock_id) references stock (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 create table stock_transaction
 (
   id bigint auto_increment primary key,
