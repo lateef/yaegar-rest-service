@@ -19,7 +19,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +27,7 @@ import java.util.Set;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
-public class Company extends AbstractEntity implements Serializable {
+public class Company extends AbstractEntity {
     private static final long serialVersionUID = -2248566160300140508L;
 
     @Id
@@ -55,10 +54,13 @@ public class Company extends AbstractEntity implements Serializable {
 
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @JoinColumn(name = "company_stock_id", referencedColumnName = "id")
+    private Set<Stock> stock;
+
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinColumn(name = "location_company_id", referencedColumnName = "id")
     private List<Location> locations;
-
-    //TODO products sold by company
 
     public Company(@Length(max = 256) String name) {
         this.name = name;

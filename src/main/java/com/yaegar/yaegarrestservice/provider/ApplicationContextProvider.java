@@ -1,4 +1,4 @@
-package com.yaegar.yaegarrestservice.util;
+package com.yaegar.yaegarrestservice.provider;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

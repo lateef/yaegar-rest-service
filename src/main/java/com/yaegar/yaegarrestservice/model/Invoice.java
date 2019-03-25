@@ -17,7 +17,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -26,7 +25,7 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table
-public class Invoice extends AbstractEntity implements Serializable {
+public class Invoice extends AbstractEntity {
     private static final long serialVersionUID = -8487720107977216771L;
 
     @Id

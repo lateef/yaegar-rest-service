@@ -6,11 +6,7 @@ import com.yaegar.yaegarrestservice.service.TransactionService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -35,7 +31,7 @@ public class TransactionController {
 
     @RequestMapping(value = "/get-account-transactions", method = RequestMethod.GET)
     public ResponseEntity<Map<String, List<Transaction>>> getAccountTransactions(@RequestParam final Long accountId, ModelMap model, HttpServletRequest httpServletRequest) {
-        List<Transaction>  transactions = transactionService.getAccountTransactions(accountId);
+        List<Transaction> transactions = transactionService.getAccountTransactions(accountId);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", transactions));
     }
 }

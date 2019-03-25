@@ -1,4 +1,4 @@
-package com.yaegar.yaegarrestservice.util;
+package com.yaegar.yaegarrestservice.provider;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,12 +9,12 @@ import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,17 +22,17 @@ import java.util.stream.Collectors;
 /**
  * @author Lateef Adeniji-Adele
  */
-public class AuthenticationUtils {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationUtils.class);
+@Component
+public class Authenticator {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Authenticator.class);
 
-    private static ApplicationContext ctx = ApplicationContextProvider.getApplicationContext();
+    @Autowired
+    private DateTimeProvider dateTimeProvider;
 
-    private static UserRepository userRepository = (UserRepository) ctx.getBean("userRepository");
+    @Autowired
+    private UserRepository userRepository;
 
-    private AuthenticationUtils() {
-    }
-
-    public static JwtAuthenticatedUser jwtAuthenticatedUser(JwtUserDto parsedUser,
+    public  JwtAuthenticatedUser jwtAuthenticatedUser(JwtUserDto parsedUser,
                                                             Collection<GrantedAuthority> grantedAuthorities) {
         Optional<User> userOptional = userRepository.findOptionalByPhoneNumber(parsedUser.getUsername());
 
@@ -50,10 +50,10 @@ public class AuthenticationUtils {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
         jwtUserDto.setRole(roles);
-        jwtUserDto.setRefreshToken(LocalDateTime.now());
+        jwtUserDto.setRefreshToken(dateTimeProvider.now());
 
         if (parsedUser.getExpireToken() == null) {
-            jwtUserDto.setExpireToken(LocalDateTime.now());
+            jwtUserDto.setExpireToken(dateTimeProvider.now());
         }
 
         String token = JwtTokenGenerator.generateToken(jwtUserDto, "!r4g34Y!");
@@ -62,7 +62,7 @@ public class AuthenticationUtils {
                 token, grantedAuthorities);
     }
 
-    public static HttpHeaders getAuthenticatedUser(User user) {
+    public HttpHeaders getAuthenticatedUser(User user) {
         JwtUserDto jwtUserDto = new JwtUserDto();
         JwtAuthenticatedUser jwtAuthenticatedUser;
         HttpHeaders headers = new HttpHeaders();

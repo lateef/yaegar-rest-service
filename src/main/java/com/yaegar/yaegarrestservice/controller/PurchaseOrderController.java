@@ -1,11 +1,13 @@
 package com.yaegar.yaegarrestservice.controller;
 
+import com.yaegar.yaegarrestservice.model.Account;
 import com.yaegar.yaegarrestservice.model.Invoice;
 import com.yaegar.yaegarrestservice.model.LineItem;
 import com.yaegar.yaegarrestservice.model.PurchaseOrder;
 import com.yaegar.yaegarrestservice.model.Supplier;
 import com.yaegar.yaegarrestservice.model.Transaction;
 import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
 import com.yaegar.yaegarrestservice.service.InvoiceService;
 import com.yaegar.yaegarrestservice.service.PurchaseOrderService;
 import com.yaegar.yaegarrestservice.service.SupplierService;
@@ -23,8 +25,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.PREPAYMENT;
@@ -37,17 +44,20 @@ import static java.util.Collections.singletonMap;
 public class PurchaseOrderController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PurchaseOrderController.class);
 
+    private final DateTimeProvider dateTimeProvider;
     private final InvoiceService invoiceService;
     private final PurchaseOrderService purchaseOrderService;
     private final SupplierService supplierService;
     private final TransactionService transactionService;
 
     public PurchaseOrderController(
+            DateTimeProvider dateTimeProvider,
             InvoiceService invoiceService,
             PurchaseOrderService purchaseOrderService,
             SupplierService supplierService,
             TransactionService transactionService
     ) {
+        this.dateTimeProvider = dateTimeProvider;
         this.invoiceService = invoiceService;
         this.purchaseOrderService = purchaseOrderService;
         this.supplierService = supplierService;
@@ -67,7 +77,7 @@ public class PurchaseOrderController {
         purchaseOrder.setSupplier(supplier);
 
         final List<LineItem> lineItems = purchaseOrderService.sortLineItemsIntoOrderedList(purchaseOrder.getLineItems());
-        final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(lineItems, supplier.getPrincipalCompany(), user);
+        final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(lineItems, user);
         purchaseOrder.setLineItems(lineItems1);
 
         purchaseOrder.setTotalPrice(purchaseOrderService.sumLineItemsSubTotal(lineItems1));
@@ -97,9 +107,11 @@ public class PurchaseOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
+        final Set<Account> accounts = transactionService.computeAccountTotal(transaction.getJournalEntries());
         savedPurchaseOrder.setPurchaseOrderState(PAID_IN_ADVANCE);
         savedPurchaseOrder.setTransaction(transaction1);
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
+        purchaseOrder.getTransaction().setAccounts(accounts);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrder1));
     }
 
@@ -118,7 +130,7 @@ public class PurchaseOrderController {
                 .stream()
                 .map(invoice -> {
                     if (Objects.isNull(invoice.getCreatedDatetime())) {
-                        invoice.setCreatedDatetime(LocalDateTime.now());
+                        invoice.setCreatedDatetime(dateTimeProvider.now());
                     }
                     return invoice;
                 })
@@ -127,7 +139,7 @@ public class PurchaseOrderController {
                 .map(invoice -> {
                     final List<LineItem> lineItems = purchaseOrderService.sortLineItemsIntoOrderedList(invoice.getLineItems());
                     final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(
-                            lineItems, purchaseOrder.getSupplier().getPrincipalCompany(), user);
+                            lineItems, user);
                     invoice.setLineItems(lineItems1);
                     invoice.setInvoiceType(PURCHASE);
                     invoice.setTotalPrice(purchaseOrderService.sumLineItemsSubTotal(lineItems1));
@@ -150,12 +162,11 @@ public class PurchaseOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        savedPurchaseOrder.setTransaction(transaction1);
-
+        final Set<Account> accounts = transactionService.computeAccountTotal(transaction.getJournalEntries());
         //TODO this should factor in delivery note if available
         invoiceService.computeInventory(savedPurchaseOrder.getInvoices(), user);
-
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
+        purchaseOrder1.getTransaction().setAccounts(accounts);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrder1));
     }
 }

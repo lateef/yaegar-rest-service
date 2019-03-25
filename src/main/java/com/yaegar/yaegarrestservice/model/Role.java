@@ -1,6 +1,7 @@
 package com.yaegar.yaegarrestservice.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.Column;
@@ -11,10 +12,15 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Data
+@NoArgsConstructor
 @Entity
 @Table
 public class Role implements GrantedAuthority {
     private static final long serialVersionUID = -4638993974570292412L;
+
+    public Role(String authority) {
+        this.authority = authority;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

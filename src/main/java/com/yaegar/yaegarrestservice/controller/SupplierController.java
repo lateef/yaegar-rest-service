@@ -1,6 +1,7 @@
 package com.yaegar.yaegarrestservice.controller;
 
 import com.yaegar.yaegarrestservice.model.Company;
+import com.yaegar.yaegarrestservice.model.Product;
 import com.yaegar.yaegarrestservice.model.Supplier;
 import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.service.CompanyService;
@@ -43,7 +44,7 @@ public class SupplierController {
         }
         supplier.setCreatedBy(user.getId());
         supplier.setUpdatedBy(user.getId());
-        Supplier supplier1 = supplierService.addSupplier(supplier);
+        Supplier supplier1 = supplierService.saveSupplier(supplier, user);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", supplier1));
     }
 
@@ -51,5 +52,15 @@ public class SupplierController {
     public ResponseEntity<Map<String, List<Supplier>>> getSuppliers(@PathVariable Long companyId, ModelMap model, HttpServletRequest httpServletRequest) {
         List<Supplier> suppliers = supplierService.getSuppliersByPrincipalCompanyId(companyId);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", suppliers));
+    }
+
+    @RequestMapping(value = "/add-supplier-product", method = RequestMethod.POST)
+    public ResponseEntity<Map<String,Supplier>> addSupplierProduct(@RequestBody final Supplier supplier, ModelMap model, HttpServletRequest httpServletRequest) {
+        final User user = (User) model.get("user");
+        final Supplier supplier1 = supplierService.findById(supplier.getId()).orElseThrow(NullPointerException::new);
+        final Product product = supplier.getProducts().stream().findFirst().orElseThrow(NullPointerException::new);
+        supplier1.getProducts().add(product);
+        final Supplier supplier2 = supplierService.saveSupplier(supplier1, user);
+        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", supplier2));
     }
 }

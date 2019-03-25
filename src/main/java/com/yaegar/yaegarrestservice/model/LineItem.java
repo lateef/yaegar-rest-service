@@ -14,14 +14,13 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table
-public class LineItem extends AbstractEntity implements Serializable {
+public class LineItem extends AbstractEntity {
     private static final long serialVersionUID = -6014073973315307273L;
 
     @Id

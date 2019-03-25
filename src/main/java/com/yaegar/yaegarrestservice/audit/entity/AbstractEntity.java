@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @MappedSuperclass
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
         value = {"createdBy", "updatedBy", "createdDatetime", "updatedDatetime"}
 )
 @Data
-public abstract class AbstractEntity {
+public abstract class AbstractEntity implements Serializable {
    @CreatedBy
     @Column(name = "created_by")
     private Long createdBy;

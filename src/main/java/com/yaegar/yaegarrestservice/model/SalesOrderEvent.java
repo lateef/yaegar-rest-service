@@ -13,13 +13,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.io.Serializable;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table
-public class SalesOrderEvent extends AbstractEntity implements Serializable {
+public class SalesOrderEvent extends AbstractEntity {
     private static final long serialVersionUID = -1257871228750276950L;
 
     @Id

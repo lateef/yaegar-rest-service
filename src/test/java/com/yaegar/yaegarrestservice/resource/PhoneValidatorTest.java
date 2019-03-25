@@ -1,11 +1,14 @@
-package com.yaegar.yaegarrestservice.util;
+package com.yaegar.yaegarrestservice.resource;
 
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class PhoneUtilTest {
+public class PhoneValidatorTest {
+
+    private PhoneValidator phoneValidator = new PhoneValidator();
+
     @Test
     public void givenInvalidPhoneNumberAndInvalidCountry_thenReturnFalse() {
         //given
@@ -13,7 +16,7 @@ public class PhoneUtilTest {
         String country = "UQ";
 
         //then
-        assertFalse(PhoneUtil.isValidNumber(phoneNumber, country));
+        assertFalse(phoneValidator.isValidNumber(phoneNumber, country));
     }
 
     @Test
@@ -23,15 +26,15 @@ public class PhoneUtilTest {
         String country = "UK";
 
         //then
-        assertFalse(PhoneUtil.isValidNumber(phoneNumber, country));
+        assertFalse(phoneValidator.isValidNumber(phoneNumber, country));
     }
 
     @Test
     public void givenValidPhoneNumberAndValidCountry_thenReturnTrue() {
         //then
-        assertTrue(PhoneUtil.isValidNumber("7780708394", "GB"));
-        assertTrue(PhoneUtil.isValidNumber("07780708394", "GB"));
-        assertTrue(PhoneUtil.isValidNumber("+447780708394", "GB"));
-        assertTrue(PhoneUtil.isValidNumber("+4407780708394", "GB"));
+        assertTrue(phoneValidator.isValidNumber("7780708394", "GB"));
+        assertTrue(phoneValidator.isValidNumber("07780708394", "GB"));
+        assertTrue(phoneValidator.isValidNumber("+447780708394", "GB"));
+        assertTrue(phoneValidator.isValidNumber("+4407780708394", "GB"));
     }
 }

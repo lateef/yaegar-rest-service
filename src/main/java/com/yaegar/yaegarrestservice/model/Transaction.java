@@ -16,13 +16,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import java.io.Serializable;
+import javax.persistence.Transient;
 import java.util.Set;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
-public class Transaction extends AbstractEntity implements Serializable {
+public class Transaction extends AbstractEntity {
     private static final long serialVersionUID = -6306868349093193363L;
 
     @Id
@@ -40,4 +40,7 @@ public class Transaction extends AbstractEntity implements Serializable {
 
     @Column(name = "transaction_type_id")
     private Long transactionTypeId;
+
+    @Transient
+    private Set<Account> accounts;
 }

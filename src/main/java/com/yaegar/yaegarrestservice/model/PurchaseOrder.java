@@ -19,7 +19,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -27,7 +26,7 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table
-public class PurchaseOrder extends AbstractEntity implements Serializable {
+public class PurchaseOrder extends AbstractEntity {
     private static final long serialVersionUID = -5218638929994847147L;
 
     @Id

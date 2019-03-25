@@ -4,9 +4,11 @@ import com.yaegar.yaegarrestservice.model.Country;
 import com.yaegar.yaegarrestservice.model.Phone;
 import com.yaegar.yaegarrestservice.model.Role;
 import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
 import com.yaegar.yaegarrestservice.repository.CountryRepository;
 import com.yaegar.yaegarrestservice.repository.RoleRepository;
 import com.yaegar.yaegarrestservice.repository.UserRepository;
+import com.yaegar.yaegarrestservice.resource.PhoneValidator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -32,6 +34,12 @@ public class UserServiceTest {
     private CountryRepository countryRepository;
 
     @MockBean
+    private DateTimeProvider dateTimeProvider;
+
+    @MockBean
+    private PhoneValidator phoneValidator;
+
+    @MockBean
     private RoleRepository roleRepository;
 
     @MockBean
@@ -39,9 +47,11 @@ public class UserServiceTest {
 
     private UserService userService;
 
+    private String countryCode = "GB";
+
     @Before
     public void setUp() {
-        userService = new UserService(countryRepository, roleRepository, userRepository);
+        userService = new UserService(countryRepository, dateTimeProvider, phoneValidator, roleRepository, userRepository);
     }
 
     @Test
@@ -103,7 +113,7 @@ public class UserServiceTest {
     public void whenGetUserWithExistingPhone_thenReturnValidMessage() {
         //given
         String phoneNumber = "+447780708394";
-        Country country = new Country("United Kingdom of Great Britain & Northern Ireland", "GB", "EU");
+        Country country = new Country("United Kingdom of Great Britain & Northern Ireland", countryCode, "EU");
         Phone phone = new Phone("+44", phoneNumber, true, country);
 
         User expectedUser = new User();
@@ -111,6 +121,7 @@ public class UserServiceTest {
 
         Map expectedAccount = singletonMap("Phone already registered", expectedUser);
         when(userRepository.findOptionalByPhoneNumber(phoneNumber)).thenReturn(Optional.of(expectedUser));
+        when(phoneValidator.isValidNumber(phoneNumber, countryCode)).thenReturn(true);
 
         //when
         Map<String, User> account = userService.createAccount(expectedUser);
@@ -122,8 +133,9 @@ public class UserServiceTest {
     @Test
     public void whenGetUserWithExistingPhoneFormattedWithSpaces_thenReturnValidMessage() {
         //given
+        final String phoneNumber = "+44 7780 708394";
         Country country = new Country("United Kingdom of Great Britain & Northern Ireland", "GB", "EU");
-        Phone phone = new Phone("+44", "+44 7780 708394", true, country);
+        Phone phone = new Phone("+44", phoneNumber, true, country);
         Phone savedPhone = new Phone("44", "+447780708394", true, country);
 
         User user = new User();
@@ -135,6 +147,7 @@ public class UserServiceTest {
 
         Map expectedAccount = singletonMap("Phone already registered", expectedUser);
         when(userRepository.findOptionalByPhoneNumber(savedPhone.getNumber())).thenReturn(Optional.of(expectedUser));
+        when(phoneValidator.isValidNumber(phoneNumber, countryCode)).thenReturn(true);
 
         //when
         Map<String, User> account = userService.createAccount(user);
@@ -156,6 +169,7 @@ public class UserServiceTest {
 
         Map expectedAccount = singletonMap("success", expectedUser);
         when(userRepository.findOptionalByPhoneNumber(phoneNumber)).thenReturn(Optional.empty());
+        when(phoneValidator.isValidNumber(phoneNumber, countryCode)).thenReturn(true);
         when(countryRepository.findByCode(country.getCode())).thenReturn(Optional.of(country));
         when(roleRepository.findByAuthority(AUTHORITY_USER)).thenReturn(Optional.of(new Role()));
         when(userRepository.save(expectedUser)).thenReturn(expectedUser);

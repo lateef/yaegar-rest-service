@@ -10,14 +10,15 @@ import com.yaegar.yaegarrestservice.model.Transaction;
 import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.model.enums.AccountType;
 import com.yaegar.yaegarrestservice.model.enums.TransactionSide;
-import com.yaegar.yaegarrestservice.repository.AccountRepository;
+import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
+import com.yaegar.yaegarrestservice.repository.JournalEntryRepository;
 import com.yaegar.yaegarrestservice.repository.TransactionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -29,19 +30,29 @@ import static com.yaegar.yaegarrestservice.model.enums.AccountType.PREPAYMENT;
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.TRADE_DEBTORS;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.CREDIT;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.DEBIT;
+import static com.yaegar.yaegarrestservice.service.AccountService.ROOT_ACCOUNT_TYPES;
 import static java.math.BigDecimal.ZERO;
 
 @Service
 public class TransactionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionService.class);
 
-    private AccountRepository accountRepository;
-    private TransactionRepository transactionRepository;
+    private final AccountService accountService;
+    private final DateTimeProvider dateTimeProvider;
+    private final JournalEntryRepository journalEntryRepository;
+    private final TransactionRepository transactionRepository;
 
-    private PurchaseOrderService purchaseOrderService;
+    private final PurchaseOrderService purchaseOrderService;
 
-    public TransactionService(AccountRepository accountRepository, TransactionRepository transactionRepository, PurchaseOrderService purchaseOrderService) {
-        this.accountRepository = accountRepository;
+    public TransactionService(
+            AccountService accountService,
+            DateTimeProvider dateTimeProvider, JournalEntryRepository journalEntryRepository,
+            TransactionRepository transactionRepository,
+            PurchaseOrderService purchaseOrderService
+    ) {
+        this.accountService = accountService;
+        this.dateTimeProvider = dateTimeProvider;
+        this.journalEntryRepository = journalEntryRepository;
         this.transactionRepository = transactionRepository;
         this.purchaseOrderService = purchaseOrderService;
     }
@@ -50,7 +61,7 @@ public class TransactionService {
         final Transaction transaction = purchaseOrder.getTransaction();
         transaction.setTransactionTypeId(savedPurchaseOrder.getId());
 
-        final Account account = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+        final Account account = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
                 purchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts().getId(),
                 PREPAYMENT.name(),
                 null,
@@ -82,11 +93,11 @@ public class TransactionService {
     ) {
         transaction.setTransactionTypeId(transactionTypeId);
 
-        final Account debitAccount = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+        final Account debitAccount = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
                 chartOfAccountsId, debitAccountType.name(), null, null
         ).orElseThrow(NullPointerException::new);
 
-        final Account creditAccount = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+        final Account creditAccount = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
                 chartOfAccountsId, creditAccountType.name(), null, null
         ).orElseThrow(NullPointerException::new);
 
@@ -116,7 +127,7 @@ public class TransactionService {
         final Transaction transaction = salesOrder.getTransaction();
         transaction.setTransactionTypeId(savedSalesOrder.getId());
 
-        final Account account = accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
+        final Account account = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
                 salesOrder.getCustomer().getPrincipalCompany().getChartOfAccounts().getId(),
                 TRADE_DEBTORS.name(),
                 null,
@@ -141,35 +152,28 @@ public class TransactionService {
         return transactionRepository.findByJournalEntriesAccountId(accountId);
     }
 
+    @Transactional
     public Transaction saveTransaction(Transaction transaction, User createdBy) {
-        final String creditDescription = getCreditDescription(transaction);
-        final String debitDescription = getDebitDescription(transaction);
         final Set<JournalEntry> journalEntries = transaction.getJournalEntries()
                 .stream()
                 .map(journalEntry -> {
-                    Account account = accountRepository
+                    Account account = accountService
                             .findById(journalEntry.getAccount().getId())
                             .orElseThrow(NullPointerException::new);
                     journalEntry.setAccount(account);
-                    String description = (journalEntry.getTransactionSide().equals(CREDIT)) ? debitDescription : creditDescription;
+                    setTransactionSide(journalEntry);
+                    return journalEntry;
+                })
+                .collect(Collectors.toSet());
+        final String creditDescription = getCreditDescription(journalEntries);
+        final String debitDescription = getDebitDescription(journalEntries);
 
-                    if (journalEntry.getShortDescription() == null) {
-                        journalEntry.setShortDescription(
-                                description.substring(0, (description.length() < 15) ? description.length() : 15));
-                    } else {
-                        journalEntry.setShortDescription(journalEntry.getShortDescription().substring(0,
-                                (journalEntry.getShortDescription().length() < 15)
-                                        ? journalEntry.getShortDescription().length() : 15));
-                    }
-
-                    if (journalEntry.getDescription() == null) {
-                        journalEntry.setDescription(
-                                description.substring(0, (description.length() < 999) ? description.length() : 999));
-                    } else {
-                        journalEntry.setDescription(journalEntry.getDescription().substring(0,
-                                (journalEntry.getDescription().length() < 999)
-                                        ? journalEntry.getDescription().length() : 999));
-                    }
+        final Set<JournalEntry> journalEntries1 = journalEntries
+                .stream()
+                .map(journalEntry -> {
+                   String description = (journalEntry.getTransactionSide().equals(CREDIT)) ? debitDescription : creditDescription;
+                    validateAndSetShortDescription(journalEntry, description);
+                    validateAndSetDescription(journalEntry, description);
 
                     if (Objects.isNull(journalEntry.getCreatedBy())) {
                         journalEntry.setCreatedBy(createdBy.getId());
@@ -182,8 +186,90 @@ public class TransactionService {
             transaction.setCreatedBy(createdBy.getId());
         }
         transaction.setUpdatedBy(createdBy.getId());
-        transaction.setJournalEntries(journalEntries);
+        transaction.setJournalEntries(journalEntries1);
         return transactionRepository.save(transaction);
+    }
+
+    public Set<Account> computeAccountTotal(Set<JournalEntry> journalEntries) {
+        return journalEntries
+                .stream()
+                .map(JournalEntry::getAccount)
+                .collect(Collectors.toSet())
+                .stream()
+                .map(account -> {
+                    final Account account1 = accountService.findById(account.getId())
+                            .orElseThrow(NullPointerException::new);
+
+                    final List<JournalEntry> journalEntries1 = journalEntryRepository.findByAccount(account1);
+                    return accountService.updateAccountTotals(account, journalEntries1);
+                })
+                .collect(Collectors.toSet());
+    }
+
+    private void validateAndSetDescription(JournalEntry journalEntry, String description) {
+        if (journalEntry.getDescription() == null) {
+            journalEntry.setDescription(
+                    description.substring(0, (description.length() < 999) ? description.length() : 999));
+        } else {
+            journalEntry.setDescription(journalEntry.getDescription().substring(0,
+                    (journalEntry.getDescription().length() < 999)
+                            ? journalEntry.getDescription().length() : 999));
+        }
+    }
+
+    private void validateAndSetShortDescription(JournalEntry journalEntry, String description) {
+        if (journalEntry.getShortDescription() == null) {
+            journalEntry.setShortDescription(
+                    description.substring(0, (description.length() < 15) ? description.length() : 15));
+        } else {
+            journalEntry.setShortDescription(journalEntry.getShortDescription().substring(0,
+                    (journalEntry.getShortDescription().length() < 15)
+                            ? journalEntry.getShortDescription().length() : 15));
+        }
+    }
+
+    private void setTransactionSide(JournalEntry journalEntry) {
+        final Account rootAccount = accountService.getRootAccount(journalEntry.getAccount());
+
+        switch (rootAccount.getAccountType()) {
+            case ASSETS:
+                if (journalEntry.getAmount().signum() > 0) {
+                    journalEntry.setTransactionSide(DEBIT);
+                } else if (journalEntry.getAmount().signum() < 0) {
+                    journalEntry.setTransactionSide(CREDIT);
+                }
+                break;
+            case LIABILITIES:
+                if (journalEntry.getAmount().signum() > 0) {
+                    journalEntry.setTransactionSide(CREDIT);
+                } else if (journalEntry.getAmount().signum() < 0) {
+                    journalEntry.setTransactionSide(DEBIT);
+                }
+                break;
+            case EQUITY:
+                if (journalEntry.getAmount().signum() > 0) {
+                    journalEntry.setTransactionSide(CREDIT);
+                } else if (journalEntry.getAmount().signum() < 0) {
+                    journalEntry.setTransactionSide(DEBIT);
+                }
+                break;
+            case INCOME_REVENUE:
+                if (journalEntry.getAmount().signum() > 0) {
+                    journalEntry.setTransactionSide(CREDIT);
+                } else if (journalEntry.getAmount().signum() < 0) {
+                    journalEntry.setTransactionSide(DEBIT);
+                }
+                break;
+            case EXPENSES:
+                if (journalEntry.getAmount().signum() > 0) {
+                    journalEntry.setTransactionSide(DEBIT);
+                } else if (journalEntry.getAmount().signum() < 0) {
+                    journalEntry.setTransactionSide(CREDIT);
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Account type is not one " + String.join(ROOT_ACCOUNT_TYPES.toString()));
+        }
     }
 
     private JournalEntry createJournalEntry(Account account, BigDecimal totalCredit, TransactionSide transactionSide, Integer maxEntry) {
@@ -192,20 +278,20 @@ public class TransactionService {
         prepaymentJournalEntry.setAmount(totalCredit);
         prepaymentJournalEntry.setAccount(account);
         prepaymentJournalEntry.setEntry(maxEntry + 1);
-        prepaymentJournalEntry.setTransactionDatetime(LocalDateTime.now());
+        prepaymentJournalEntry.setTransactionDatetime(dateTimeProvider.now());
         return prepaymentJournalEntry;
     }
 
-    private String getDebitDescription(Transaction transaction) {
-        return getDescription(transaction, DEBIT);
+    private String getDebitDescription(Set<JournalEntry> journalEntries) {
+        return getDescription(journalEntries, DEBIT);
     }
 
-    private String getCreditDescription(Transaction transaction) {
-        return getDescription(transaction, CREDIT);
+    private String getCreditDescription(Set<JournalEntry> journalEntries) {
+        return getDescription(journalEntries, CREDIT);
     }
 
-    private String getDescription(Transaction transaction, TransactionSide transactionSide) {
-        final Set<String> uniqueAccountNames = transaction.getJournalEntries()
+    private String getDescription(Set<JournalEntry> journalEntries, TransactionSide transactionSide) {
+        final Set<String> uniqueAccountNames = journalEntries
                 .stream()
                 .filter(journalEntry -> journalEntry.getTransactionSide().equals(transactionSide))
                 .map(journalEntry -> journalEntry.getAccount().getName())

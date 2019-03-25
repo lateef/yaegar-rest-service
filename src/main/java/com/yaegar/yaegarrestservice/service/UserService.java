@@ -4,16 +4,16 @@ import com.yaegar.yaegarrestservice.model.Country;
 import com.yaegar.yaegarrestservice.model.Phone;
 import com.yaegar.yaegarrestservice.model.Role;
 import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
 import com.yaegar.yaegarrestservice.repository.CountryRepository;
 import com.yaegar.yaegarrestservice.repository.RoleRepository;
 import com.yaegar.yaegarrestservice.repository.UserRepository;
-import com.yaegar.yaegarrestservice.util.PhoneUtil;
+import com.yaegar.yaegarrestservice.resource.PhoneValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.yaegar.yaegarrestservice.model.Role.AUTHORITY_USER;
@@ -24,21 +24,29 @@ import static java.util.Collections.singletonMap;
 public class UserService {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
-    private CountryRepository countryRepository;
-    private RoleRepository roleRepository;
-    private UserRepository userRepository;
+    private final CountryRepository countryRepository;
+    private final DateTimeProvider dateTimeProvider;
+    private final PhoneValidator phoneValidator;
+    private final RoleRepository roleRepository;
+    private final UserRepository userRepository;
 
     public UserService(
-            CountryRepository countryRepository, RoleRepository roleRepository, UserRepository userRepository
+            CountryRepository countryRepository,
+            DateTimeProvider dateTimeProvider,
+            PhoneValidator phoneValidator,
+            RoleRepository roleRepository,
+            UserRepository userRepository
     ) {
         this.countryRepository = countryRepository;
+        this.dateTimeProvider = dateTimeProvider;
+        this.phoneValidator = phoneValidator;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
     }
 
     public Map<String, User> createAccount(User user) {
-        if (user.getId() != null) {
-            return singletonMap("There has been a problem", user);
+        if (Objects.nonNull(user.getId())) {
+            return singletonMap("Attempt to create account with an existing account", user);
         }
         try {
             Phone phone = getPrincipalPhone(user);
@@ -88,7 +96,7 @@ public class UserService {
             if (existingUserOptional.isPresent()) {
                 User existingUser = existingUserOptional.get();
                 Phone existingPrincipalPhone = getPrincipalPhone(existingUser);
-                final Duration duration = between(existingPrincipalPhone.getUpdatedDatetime(), LocalDateTime.now());
+                final Duration duration = between(existingPrincipalPhone.getUpdatedDatetime(), dateTimeProvider.now());
                 if (existingPrincipalPhone.getConfirmationCode() == null || duration.toMinutes() > 5L) {
                     setPhoneConfirmationCode(existingPrincipalPhone);
                 }
@@ -153,6 +161,6 @@ public class UserService {
     }
 
     private boolean isValidNumber(String numberToParse, String defaultRegion) {
-        return PhoneUtil.isValidNumber(numberToParse, defaultRegion);
+        return phoneValidator.isValidNumber(numberToParse, defaultRegion);
     }
 }
