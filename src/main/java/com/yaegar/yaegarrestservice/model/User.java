@@ -49,7 +49,7 @@ public class User extends AbstractEntity {
     private String phoneNumber;
 
     @Length(min = 6, max = 128)
-    @Column(name = "password", nullable = false, length = 128)
+    @Column(name = "password", length = 128)
     private String password;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
