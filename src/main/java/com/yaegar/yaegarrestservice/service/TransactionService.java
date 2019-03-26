@@ -26,8 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.yaegar.yaegarrestservice.model.enums.AccountType.PREPAYMENT;
-import static com.yaegar.yaegarrestservice.model.enums.AccountType.TRADE_DEBTORS;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.*;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.CREDIT;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.DEBIT;
 import static com.yaegar.yaegarrestservice.service.AccountService.ROOT_ACCOUNT_TYPES;
@@ -64,7 +63,7 @@ public class TransactionService {
         final Account account = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
                 purchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts().getId(),
                 PREPAYMENT.name(),
-                null,
+                CASH_AND_CASH_EQUIVALENTS,
                 null
         ).orElseThrow(NullPointerException::new);
 
@@ -94,11 +93,11 @@ public class TransactionService {
         transaction.setTransactionTypeId(transactionTypeId);
 
         final Account debitAccount = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                chartOfAccountsId, debitAccountType.name(), null, null
+                chartOfAccountsId, debitAccountType.name(), EXPENSES, null
         ).orElseThrow(NullPointerException::new);
 
         final Account creditAccount = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                chartOfAccountsId, creditAccountType.name(), null, null
+                chartOfAccountsId, creditAccountType.name(), CASH_AND_CASH_EQUIVALENTS, null
         ).orElseThrow(NullPointerException::new);
 
         final Integer maxEntry = getMaxEntry(transaction);
