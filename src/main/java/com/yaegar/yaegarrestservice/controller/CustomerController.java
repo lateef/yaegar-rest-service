@@ -38,7 +38,7 @@ public class CustomerController {
         }
         customer.setCreatedBy(user.getId());
         customer.setUpdatedBy(user.getId());
-        Customer customer1 = customerService.addCustomer(customer);
+        Customer customer1 = customerService.saveCustomer(customer, user);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(Collections.singletonMap("success", customer1));
     }
 

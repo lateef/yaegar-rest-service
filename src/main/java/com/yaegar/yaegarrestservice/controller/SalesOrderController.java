@@ -1,13 +1,6 @@
 package com.yaegar.yaegarrestservice.controller;
 
-import com.yaegar.yaegarrestservice.model.Account;
-import com.yaegar.yaegarrestservice.model.Customer;
-import com.yaegar.yaegarrestservice.model.Invoice;
-import com.yaegar.yaegarrestservice.model.LineItem;
-import com.yaegar.yaegarrestservice.model.Product;
-import com.yaegar.yaegarrestservice.model.SalesOrder;
-import com.yaegar.yaegarrestservice.model.Transaction;
-import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.model.*;
 import com.yaegar.yaegarrestservice.service.CustomerService;
 import com.yaegar.yaegarrestservice.service.InvoiceService;
 import com.yaegar.yaegarrestservice.service.ProductService;
@@ -71,15 +64,11 @@ public class SalesOrderController {
                 .orElseThrow(NullPointerException::new);
         salesOrder.setCustomer(customer);
 
-        salesOrder.getLineItems().forEach(lineItem -> {
-            Product product = productService
-                    .findById(lineItem
-                            .getProduct()
-                            .getId())
-                    .orElseThrow(NullPointerException::new);
-            lineItem.setProduct(product);
-        });
+        final List<LineItem> lineItems = salesOrderService.sortLineItemsIntoOrderedList(salesOrder.getLineItems());
+        final Set<LineItem> lineItems1 = salesOrderService.validateLineItems(lineItems, user);
+        salesOrder.setLineItems(lineItems1);
 
+        salesOrder.setTotalPrice(salesOrderService.sumLineItemsSubTotal(lineItems1));
         SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(salesOrder, user);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", salesOrder1));
     }
