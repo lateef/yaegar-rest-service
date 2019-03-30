@@ -62,7 +62,7 @@ public class TransactionService {
 
         final Account account = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
                 purchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts().getId(),
-                PREPAYMENT.name(),
+                PREPAYMENT.getType(),
                 CASH_AND_CASH_EQUIVALENTS,
                 null
         ).orElseThrow(NullPointerException::new);
@@ -93,11 +93,11 @@ public class TransactionService {
         transaction.setTransactionTypeId(transactionTypeId);
 
         final Account debitAccount = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                chartOfAccountsId, debitAccountType.name(), EXPENSES, null
+                chartOfAccountsId, debitAccountType.getType(), INCOME_REVENUE, null
         ).orElseThrow(NullPointerException::new);
 
         final Account creditAccount = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                chartOfAccountsId, creditAccountType.name(), CASH_AND_CASH_EQUIVALENTS, null
+                chartOfAccountsId, creditAccountType.getType(), CURRENT_ASSETS, null
         ).orElseThrow(NullPointerException::new);
 
         final Integer maxEntry = getMaxEntry(transaction);
@@ -128,8 +128,8 @@ public class TransactionService {
 
         final Account account = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
                 salesOrder.getCustomer().getPrincipalCompany().getChartOfAccounts().getId(),
-                TRADE_DEBTORS.name(),
-                null,
+                TRADE_DEBTORS.getType(),
+                CURRENT_ASSETS,
                 null
         ).orElseThrow(NullPointerException::new);
 

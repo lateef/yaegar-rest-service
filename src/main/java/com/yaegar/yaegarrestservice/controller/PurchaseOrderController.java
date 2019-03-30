@@ -162,7 +162,9 @@ public class PurchaseOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        final Set<Account> accounts = transactionService.computeAccountTotal(transaction.getJournalEntries());
+        final Set<Account> accounts = transactionService.computeAccountTotal(transaction1.getJournalEntries());
+        savedPurchaseOrder.setTransaction(transaction1);
+
         //TODO this should factor in delivery note if available
         invoiceService.computeInventory(savedPurchaseOrder.getInvoices(), user);
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
