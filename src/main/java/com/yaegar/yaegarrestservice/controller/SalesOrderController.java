@@ -1,9 +1,9 @@
 package com.yaegar.yaegarrestservice.controller;
 
 import com.yaegar.yaegarrestservice.model.*;
+import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
 import com.yaegar.yaegarrestservice.service.CustomerService;
 import com.yaegar.yaegarrestservice.service.InvoiceService;
-import com.yaegar.yaegarrestservice.service.ProductService;
 import com.yaegar.yaegarrestservice.service.SalesOrderService;
 import com.yaegar.yaegarrestservice.service.TransactionService;
 import org.slf4j.Logger;
@@ -12,19 +12,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.SALES_INCOME;
@@ -38,20 +29,20 @@ public class SalesOrderController {
     private static final Logger LOGGER = LoggerFactory.getLogger(SalesOrderController.class);
 
     private final CustomerService customerService;
+    private final DateTimeProvider dateTimeProvider;
     private final InvoiceService invoiceService;
-    private final ProductService productService;
     private final SalesOrderService salesOrderService;
     private final TransactionService transactionService;
 
     public SalesOrderController(
+            DateTimeProvider dateTimeProvider,
             InvoiceService invoiceService,
-            ProductService productService,
             SalesOrderService salesOrderService,
             CustomerService customerService,
             TransactionService transactionService
     ) {
+        this.dateTimeProvider = dateTimeProvider;
         this.invoiceService = invoiceService;
-        this.productService = productService;
         this.salesOrderService = salesOrderService;
         this.customerService = customerService;
         this.transactionService = transactionService;
@@ -82,8 +73,8 @@ public class SalesOrderController {
     @Transactional
     @RequestMapping(value = "/save-sales-order-transaction", method = RequestMethod.POST)
     public ResponseEntity<Map<String, SalesOrder>> saveTransaction(@RequestBody SalesOrder salesOrder,
-                                                                      ModelMap model,
-                                                                      HttpServletRequest httpServletRequest) {
+                                                                   ModelMap model,
+                                                                   HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
 
         SalesOrder savedSalesOrder = salesOrderService
@@ -106,8 +97,8 @@ public class SalesOrderController {
     @Transactional
     @RequestMapping(value = "/save-sales-order-invoices", method = RequestMethod.POST)
     public ResponseEntity<Map<String, SalesOrder>> saveInvoices(@RequestBody SalesOrder salesOrder,
-                                                                   ModelMap model,
-                                                                   HttpServletRequest httpServletRequest) {
+                                                                ModelMap model,
+                                                                HttpServletRequest httpServletRequest) {
         final User user = (User) model.get("user");
 
         SalesOrder savedSalesOrder = salesOrderService
@@ -116,6 +107,12 @@ public class SalesOrderController {
 
         final Set<Invoice> invoices = salesOrder.getInvoices()
                 .stream()
+                .map(invoice -> {
+                    if (Objects.isNull(invoice.getCreatedDatetime())) {
+                        invoice.setCreatedDatetime(dateTimeProvider.now());
+                    }
+                    return invoice;
+                })
                 .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(Invoice::getCreatedDatetime))))
                 .stream()
                 .map(invoice -> {

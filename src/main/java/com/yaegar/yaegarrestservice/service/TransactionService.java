@@ -62,7 +62,7 @@ public class TransactionService {
 
         final Account account = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
                 purchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts().getId(),
-                PREPAYMENT.name(),
+                PREPAYMENT.getType(),
                 CASH_AND_CASH_EQUIVALENTS,
                 null
         ).orElseThrow(NullPointerException::new);
@@ -92,12 +92,25 @@ public class TransactionService {
     ) {
         transaction.setTransactionTypeId(transactionTypeId);
 
+        AccountType accountTypeDebit = null;
+        if (debitAccountType.equals(PURCHASES)) {
+            accountTypeDebit = EXPENSES;
+        } else if (debitAccountType.equals(SALES_INCOME)) {
+            accountTypeDebit = INCOME_REVENUE;
+        }
+
+        AccountType accountTypeCredit = null;
+        if (creditAccountType.equals(PREPAYMENT)) {
+            accountTypeCredit = CASH_AND_CASH_EQUIVALENTS;
+        } else if (creditAccountType.equals(TRADE_DEBTORS)) {
+            accountTypeCredit = CURRENT_ASSETS;
+        }
         final Account debitAccount = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                chartOfAccountsId, debitAccountType.name(), EXPENSES, null
+                chartOfAccountsId, debitAccountType.getType(), accountTypeDebit, null
         ).orElseThrow(NullPointerException::new);
 
         final Account creditAccount = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                chartOfAccountsId, creditAccountType.name(), CASH_AND_CASH_EQUIVALENTS, null
+                chartOfAccountsId, creditAccountType.getType(), accountTypeCredit, null
         ).orElseThrow(NullPointerException::new);
 
         final Integer maxEntry = getMaxEntry(transaction);
@@ -128,8 +141,8 @@ public class TransactionService {
 
         final Account account = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
                 salesOrder.getCustomer().getPrincipalCompany().getChartOfAccounts().getId(),
-                TRADE_DEBTORS.name(),
-                null,
+                TRADE_DEBTORS.getType(),
+                CURRENT_ASSETS,
                 null
         ).orElseThrow(NullPointerException::new);
 

@@ -1,7 +1,7 @@
 package com.yaegar.yaegarrestservice.model.enums;
 
 public enum TransactionType {
-    PURCHASE_ORDER("Purchase order");
+    PURCHASE_ORDER("Purchase order"), SALES_ORDER("Sales order");
 
     private final String type;
 
