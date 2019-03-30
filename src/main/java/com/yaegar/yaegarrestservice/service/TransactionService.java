@@ -92,12 +92,25 @@ public class TransactionService {
     ) {
         transaction.setTransactionTypeId(transactionTypeId);
 
+        AccountType accountTypeDebit = null;
+        if (debitAccountType.equals(PURCHASES)) {
+            accountTypeDebit = EXPENSES;
+        } else if (debitAccountType.equals(SALES_INCOME)) {
+            accountTypeDebit = INCOME_REVENUE;
+        }
+
+        AccountType accountTypeCredit = null;
+        if (creditAccountType.equals(PREPAYMENT)) {
+            accountTypeCredit = CASH_AND_CASH_EQUIVALENTS;
+        } else if (creditAccountType.equals(TRADE_DEBTORS)) {
+            accountTypeCredit = CURRENT_ASSETS;
+        }
         final Account debitAccount = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                chartOfAccountsId, debitAccountType.getType(), INCOME_REVENUE, null
+                chartOfAccountsId, debitAccountType.getType(), accountTypeDebit, null
         ).orElseThrow(NullPointerException::new);
 
         final Account creditAccount = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                chartOfAccountsId, creditAccountType.getType(), CURRENT_ASSETS, null
+                chartOfAccountsId, creditAccountType.getType(), accountTypeCredit, null
         ).orElseThrow(NullPointerException::new);
 
         final Integer maxEntry = getMaxEntry(transaction);
