@@ -162,6 +162,7 @@ create table account
   month_to_date_total         decimal(19,2) null,
   year_to_date_total          decimal(19,2) null,
   last_one_year_total         decimal(19,2) null,
+  overdraft_limit         decimal(19,2) null,
   parent_id        bigint null,
   parent          bit null,
   enable          bit null,

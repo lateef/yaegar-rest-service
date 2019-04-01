@@ -85,4 +85,7 @@ public class Account extends AbstractEntity {
 
     @Column(name = "last_one_year_total")
     private BigDecimal lastOneYearTotal;
+
+    @Column(name = "overdraft_limit")
+    private BigDecimal overDraftLimit;
 }
