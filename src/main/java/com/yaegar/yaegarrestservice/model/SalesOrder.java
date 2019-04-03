@@ -63,7 +63,7 @@ public class SalesOrder extends AbstractEntity {
     @Column(name = "description", length = 1000)
     private String description;
 
-    @Column(name = "sales_order_state", length = 50)
+    @Column(name = "sales_order_state", nullable = false, length = 50)
     @Enumerated(value = EnumType.STRING)
     private SalesOrderState salesOrderState;
 
