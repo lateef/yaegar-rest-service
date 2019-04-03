@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(
-        value = {"createdBy", "updatedBy", "createdDatetime", "updatedDatetime"}
+        value = {"createdBy", "updatedBy", "updatedDatetime"}
 )
 @Data
 public abstract class AbstractEntity implements Serializable {

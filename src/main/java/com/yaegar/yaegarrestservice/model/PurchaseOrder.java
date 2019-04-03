@@ -63,7 +63,7 @@ public class PurchaseOrder extends AbstractEntity {
     @Column(name = "description", length = 1000)
     private String description;
 
-    @Column(name = "purchase_order_state", length = 50)
+    @Column(name = "purchase_order_state", nullable = false, length = 50)
     @Enumerated(value = EnumType.STRING)
     private PurchaseOrderState purchaseOrderState;
 

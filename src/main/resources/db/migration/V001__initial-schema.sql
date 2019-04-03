@@ -312,7 +312,7 @@ create table purchase_order
   total_price decimal(19,2) null,
   paid_amount      decimal(19,2) null,
   description        varchar(1000) null,
-  purchase_order_state varchar(50) null,
+  purchase_order_state varchar(50) not null,
   created_by       bigint null,
   updated_by       bigint null,
   constraint FK_purchase_order_supplier
@@ -362,7 +362,7 @@ create table sales_order
   total_price decimal(19,2) null,
   received_amount    decimal(19,2) null,
   description        varchar(1000) null,
-  sales_order_state varchar(50) null,
+  sales_order_state varchar(50) not null,
   delivery_datetime datetime null,
   created_by       bigint null,
   updated_by       bigint null,
