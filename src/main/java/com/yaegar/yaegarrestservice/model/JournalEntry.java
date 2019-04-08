@@ -47,7 +47,7 @@ public class JournalEntry extends AbstractEntity {
     @Column(name = "entry")
     private int entry;
 
-    @Column(name = "transaction_datetime")
+    @Column(name = "transaction_datetime", nullable = false)
     private LocalDateTime transactionDatetime;
 
     @Column(name = "short_description", length = 16, nullable = false)

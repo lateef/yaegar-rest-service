@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -72,7 +73,7 @@ public class TransactionService {
         final Integer maxEntry = getMaxEntry(transaction);
 
         if (!totalCredit.equals(ZERO)) {
-            JournalEntry prepaymentJournalEntry = createJournalEntry(account, totalCredit, DEBIT, maxEntry);
+            JournalEntry prepaymentJournalEntry = createJournalEntry(account, totalCredit, DEBIT, maxEntry, "positive");
 
             transaction.getJournalEntries().add(prepaymentJournalEntry);
         } else {
@@ -121,7 +122,7 @@ public class TransactionService {
                     final List<LineItem> lineItems = purchaseOrderService.sortLineItemsIntoOrderedList(invoices.get(idx).getLineItems());
                     IntStream.range(0, lineItems.size())
                             .forEach(idx1 -> {
-                                JournalEntry purchasesJournalEntry = createJournalEntry(debitAccount, lineItems.get(idx1).getSubTotal(), DEBIT, entry.get());
+                                JournalEntry purchasesJournalEntry = createJournalEntry(debitAccount, lineItems.get(idx1).getSubTotal(), DEBIT, entry.get(), "positive");
                                 entry.getAndSet(entry.get() + 1);
 
                                 transaction.getJournalEntries().add(purchasesJournalEntry);
@@ -129,7 +130,7 @@ public class TransactionService {
                 });
 
         BigDecimal totalDebitPrepayments = getJournalEntriesTotalForAccountAndTransactionSide(transaction.getJournalEntries(), creditAccount, DEBIT);
-        JournalEntry prepaymentJournalEntry = createJournalEntry(creditAccount, totalDebitPrepayments, CREDIT, entry.get());
+        JournalEntry prepaymentJournalEntry = createJournalEntry(creditAccount, totalDebitPrepayments, CREDIT, entry.get(), "negative");
         entry.getAndSet(entry.get() + 1);
         transaction.getJournalEntries().add(prepaymentJournalEntry);
         return transaction;
@@ -151,7 +152,7 @@ public class TransactionService {
         final Integer maxEntry = getMaxEntry(transaction);
 
         if (!totalDebit.equals(ZERO)) {
-            JournalEntry tradeCreditorsJournalEntry = createJournalEntry(account, totalDebit, CREDIT, maxEntry);
+            JournalEntry tradeCreditorsJournalEntry = createJournalEntry(account, totalDebit, CREDIT, maxEntry, "positive");
 
             transaction.getJournalEntries().add(tradeCreditorsJournalEntry);
         } else {
@@ -177,13 +178,22 @@ public class TransactionService {
                     return journalEntry;
                 })
                 .collect(Collectors.toSet());
+
+        if (Objects.isNull(transaction.getCreatedBy())) {
+            transaction.setCreatedBy(createdBy.getId());
+        }
+        transaction.setUpdatedBy(createdBy.getId());
+        transaction.setJournalEntries(null);
+        final Transaction transaction1 = transactionRepository.save(transaction);
+
         final String creditDescription = getCreditDescription(journalEntries);
         final String debitDescription = getDebitDescription(journalEntries);
-
-        final Set<JournalEntry> journalEntries1 = journalEntries
+        //TODO if either is null set with the other for now
+        final List<JournalEntry> journalEntries1 = journalEntries
                 .stream()
                 .map(journalEntry -> {
-                   String description = (journalEntry.getTransactionSide().equals(CREDIT)) ? debitDescription : creditDescription;
+                    journalEntry.setTransactionId(transaction1.getId());
+                    String description = (journalEntry.getTransactionSide().equals(CREDIT)) ? debitDescription : creditDescription;
                     validateAndSetShortDescription(journalEntry, description);
                     validateAndSetDescription(journalEntry, description);
 
@@ -193,13 +203,11 @@ public class TransactionService {
                     journalEntry.setUpdatedBy(createdBy.getId());
                     return journalEntry;
                 })
-                .collect(Collectors.toSet());
-        if (Objects.isNull(transaction.getCreatedBy())) {
-            transaction.setCreatedBy(createdBy.getId());
-        }
-        transaction.setUpdatedBy(createdBy.getId());
-        transaction.setJournalEntries(journalEntries1);
-        return transactionRepository.save(transaction);
+                .collect(Collectors.toList());
+        final List<JournalEntry> journalEntries2 = journalEntryRepository.saveAll(journalEntries1);
+
+        transaction1.setJournalEntries(new HashSet<>(journalEntries2));
+        return transactionRepository.save(transaction1);
     }
 
     public Set<Account> computeAccountTotal(Set<JournalEntry> journalEntries) {
@@ -213,7 +221,7 @@ public class TransactionService {
                             .orElseThrow(NullPointerException::new);
 
                     final List<JournalEntry> journalEntries1 = journalEntryRepository.findByAccount(account1);
-                    return accountService.updateAccountTotals(account, journalEntries1);
+                    return accountService.updateAccountTotals(journalEntries1);
                 })
                 .collect(Collectors.toSet());
     }
@@ -284,10 +292,14 @@ public class TransactionService {
         }
     }
 
-    private JournalEntry createJournalEntry(Account account, BigDecimal totalCredit, TransactionSide transactionSide, Integer maxEntry) {
+    private JournalEntry createJournalEntry(Account account, BigDecimal totalCredit, TransactionSide transactionSide, Integer maxEntry, String sign) {
         JournalEntry prepaymentJournalEntry = new JournalEntry();
         prepaymentJournalEntry.setTransactionSide(transactionSide);
-        prepaymentJournalEntry.setAmount(totalCredit);
+        if ("positive".equalsIgnoreCase(sign)) {
+            prepaymentJournalEntry.setAmount(totalCredit.abs());
+        } else {
+            prepaymentJournalEntry.setAmount(totalCredit.abs().negate());
+        }
         prepaymentJournalEntry.setAccount(account);
         prepaymentJournalEntry.setEntry(maxEntry + 1);
         prepaymentJournalEntry.setTransactionDatetime(dateTimeProvider.now());
@@ -330,7 +342,7 @@ public class TransactionService {
     private BigDecimal getJournalEntriesTotalForAccountAndTransactionSide(Set<JournalEntry> journalEntries, Account account, TransactionSide transactionSide) {
         return journalEntries
                 .stream()
-                .filter(journalEntry -> journalEntry.getAccount().equals(account))
+                .filter(journalEntry -> journalEntry.getAccount().getId().equals(account.getId()))
                 .filter(journalEntry -> journalEntry.getTransactionSide().equals(transactionSide))
                 .map(JournalEntry::getAmount)
                 .reduce(ZERO, BigDecimal::add);

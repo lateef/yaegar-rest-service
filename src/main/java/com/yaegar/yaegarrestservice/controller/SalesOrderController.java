@@ -142,13 +142,11 @@ public class SalesOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        final Set<Account> accounts = transactionService.computeAccountTotal(transaction.getJournalEntries());
         savedSalesOrder.setTransaction(transaction1);
 
         //TODO this should factor in delivery note if available
         invoiceService.computeInventory(savedSalesOrder.getInvoices(), user);
         SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(savedSalesOrder, user);
-        salesOrder1.getTransaction().setAccounts(accounts);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", salesOrder1));
     }
 }
