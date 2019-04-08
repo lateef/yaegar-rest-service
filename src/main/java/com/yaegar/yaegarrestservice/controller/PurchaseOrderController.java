@@ -107,11 +107,9 @@ public class PurchaseOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        final Set<Account> accounts = transactionService.computeAccountTotal(transaction.getJournalEntries());
         savedPurchaseOrder.setPurchaseOrderState(PAID_IN_ADVANCE);
         savedPurchaseOrder.setTransaction(transaction1);
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
-        purchaseOrder.getTransaction().setAccounts(accounts);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrder1));
     }
 
@@ -126,26 +124,7 @@ public class PurchaseOrderController {
                 .getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        final Set<Invoice> invoices = purchaseOrder.getInvoices()
-                .stream()
-                .map(invoice -> {
-                    if (Objects.isNull(invoice.getCreatedDatetime())) {
-                        invoice.setCreatedDatetime(dateTimeProvider.now());
-                    }
-                    return invoice;
-                })
-                .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(Invoice::getCreatedDatetime))))
-                .stream()
-                .map(invoice -> {
-                    final List<LineItem> lineItems = purchaseOrderService.sortLineItemsIntoOrderedList(invoice.getLineItems());
-                    final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(
-                            lineItems, user);
-                    invoice.setLineItems(lineItems1);
-                    invoice.setInvoiceType(PURCHASE);
-                    invoice.setTotalPrice(purchaseOrderService.sumLineItemsSubTotal(lineItems1));
-                    return invoice;
-                })
-                .collect(Collectors.toSet());
+        final Set<Invoice> invoices = processInvoices(purchaseOrder, user);
 
         final List<Invoice> invoices1 = invoiceService.saveAll(invoices);
 
@@ -162,13 +141,34 @@ public class PurchaseOrderController {
         );
 
         final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
-        final Set<Account> accounts = transactionService.computeAccountTotal(transaction1.getJournalEntries());
         savedPurchaseOrder.setTransaction(transaction1);
 
         //TODO this should factor in delivery note if available
         invoiceService.computeInventory(savedPurchaseOrder.getInvoices(), user);
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
-        purchaseOrder1.getTransaction().setAccounts(accounts);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrder1));
+    }
+
+    private Set<Invoice> processInvoices(PurchaseOrder purchaseOrder, User user) {
+        return purchaseOrder.getInvoices()
+                    .stream()
+                    .map(invoice -> {
+                        if (Objects.isNull(invoice.getCreatedDatetime())) {
+                            invoice.setCreatedDatetime(dateTimeProvider.now());
+                        }
+                        return invoice;
+                    })
+                    .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(Invoice::getCreatedDatetime))))
+                    .stream()
+                    .map(invoice -> {
+                        final List<LineItem> lineItems = purchaseOrderService.sortLineItemsIntoOrderedList(invoice.getLineItems());
+                        final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(
+                                lineItems, user);
+                        invoice.setLineItems(lineItems1);
+                        invoice.setInvoiceType(PURCHASE);
+                        invoice.setTotalPrice(purchaseOrderService.sumLineItemsSubTotal(lineItems1));
+                        return invoice;
+                    })
+                    .collect(Collectors.toSet());
     }
 }

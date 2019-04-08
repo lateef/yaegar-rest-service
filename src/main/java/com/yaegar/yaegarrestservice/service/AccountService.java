@@ -101,17 +101,15 @@ public class AccountService {
         return accounts
                 .stream()
                 .map(account -> {
-                    final Account account1 = findById(account.getId())
-                            .orElseThrow(NullPointerException::new);
-                    final List<JournalEntry> journalEntries1 = journalEntryRepository.findByAccount(account1);
-                    return updateAccountTotals(account, journalEntries1);
+                    final List<JournalEntry> journalEntries1 = journalEntryRepository.findByAccount(account);
+                    final Account account1 = (journalEntries1.size() == 0) ? account : updateAccountTotals(journalEntries1);
+                    return account1;
                 })
                 .collect(Collectors.toList());
     }
 
-    Account updateAccountTotals(Account account, List<JournalEntry> journalEntries) {
-        final Account account1 = accountRepository.findById(account.getId())
-                .orElseThrow(NullPointerException::new);
+    Account updateAccountTotals(List<JournalEntry> journalEntries) {
+        final Account account1 = journalEntries.get(0).getAccount();
 
         final BigDecimal journalEntriesTotal = journalEntries.stream()
                 .map(JournalEntry::getAmount)
