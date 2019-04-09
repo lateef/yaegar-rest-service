@@ -210,22 +210,6 @@ public class TransactionService {
         return transactionRepository.save(transaction1);
     }
 
-    public Set<Account> computeAccountTotal(Set<JournalEntry> journalEntries) {
-        return journalEntries
-                .stream()
-                .map(JournalEntry::getAccount)
-                .collect(Collectors.toSet())
-                .stream()
-                .map(account -> {
-                    final Account account1 = accountService.findById(account.getId())
-                            .orElseThrow(NullPointerException::new);
-
-                    final List<JournalEntry> journalEntries1 = journalEntryRepository.findByAccount(account1);
-                    return accountService.updateAccountTotals(journalEntries1);
-                })
-                .collect(Collectors.toSet());
-    }
-
     private void validateAndSetDescription(JournalEntry journalEntry, String description) {
         if (journalEntry.getDescription() == null) {
             journalEntry.setDescription(
