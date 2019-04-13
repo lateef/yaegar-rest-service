@@ -23,10 +23,8 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public Product saveProduct(Product product, User user) {
+    public Product saveProduct(Product product) {
         //TODO check variant does not already exist
-        product.setCreatedBy(user.getId());
-        product.setUpdatedBy(user.getId());
         return productRepository.save(product);
     }
 

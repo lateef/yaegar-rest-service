@@ -25,12 +25,10 @@ public class CustomerService {
         return customerRepository.findById(id);
     }
 
-    public Customer saveCustomer(Customer customer, User user) {
+    public Customer saveCustomer(Customer customer) {
         if (Objects.isNull(customer.getId())) {
             customer.setName(customer.getName().trim());
-            customer.setCreatedBy(user.getId());
         }
-        customer.setUpdatedBy(user.getId());
         return customerRepository.save(customer);
     }
 

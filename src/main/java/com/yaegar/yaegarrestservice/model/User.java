@@ -22,7 +22,6 @@ import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,7 +29,7 @@ import static com.yaegar.yaegarrestservice.model.Role.ANONYMOUS_USER;
 import static java.util.Collections.singleton;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"phones", "roles"})
 @Entity
 public class User extends AbstractEntity {
     private static final long serialVersionUID = 4857310005018510052L;
@@ -54,7 +53,7 @@ public class User extends AbstractEntity {
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "phone_user_id", referencedColumnName = "id")
-    private List<Phone> phones;
+    private Set<Phone> phones;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "country_id", referencedColumnName = "id")
@@ -90,7 +89,7 @@ public class User extends AbstractEntity {
         phones = phones.stream().map(phone -> {
             phone.setConfirmationCode(null);
             return phone;
-        }).collect(Collectors.toList());
+        }).collect(Collectors.toSet());
     }
 
     public Collection<GrantedAuthority> getAuthorities() {

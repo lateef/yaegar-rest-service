@@ -11,7 +11,7 @@ import java.util.Set;
 
 @ToString(exclude = {"principalCompany"})
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"principalCompany", "supplierCompany", "products", "b2BAccount"})
 @Entity
 @Table(name = "supplier",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "principal_company_id"})})

@@ -1,13 +1,11 @@
 package com.yaegar.yaegarrestservice.service;
 
 import com.yaegar.yaegarrestservice.model.SalesOrder;
-import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.repository.ProductRepository;
 import com.yaegar.yaegarrestservice.repository.SalesOrderRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -20,11 +18,7 @@ public class SalesOrderService extends OrderService {
         this.salesOrderRepository = salesOrderRepository;
     }
 
-    public SalesOrder saveSalesOrder(SalesOrder savedSalesOrder, User user) {
-        if (Objects.isNull(savedSalesOrder.getCreatedBy())) {
-            savedSalesOrder.setCreatedBy(user.getId());
-        }
-        savedSalesOrder.setUpdatedBy(user.getId());
+    public SalesOrder saveSalesOrder(SalesOrder savedSalesOrder) {
         return salesOrderRepository.save(savedSalesOrder);
     }
 

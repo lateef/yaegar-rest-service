@@ -1,7 +1,6 @@
 package com.yaegar.yaegarrestservice.service;
 
 import com.yaegar.yaegarrestservice.model.Supplier;
-import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.repository.SupplierRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +24,10 @@ public class SupplierService {
         return supplierRepository.findById(id);
     }
 
-    public Supplier saveSupplier(Supplier supplier, User user) {
+    public Supplier saveSupplier(Supplier supplier) {
         if (Objects.isNull(supplier.getId())) {
             supplier.setName(supplier.getName().trim());
-            supplier.setCreatedBy(user.getId());
         }
-        supplier.setUpdatedBy(user.getId());
         return supplierRepository.save(supplier);
     }
 

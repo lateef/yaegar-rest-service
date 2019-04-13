@@ -1,5 +1,7 @@
 package com.yaegar.yaegarrestservice.config.jwt;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yaegar.yaegarrestservice.config.jwt.exception.JwtTokenMissingException;
 import com.yaegar.yaegarrestservice.config.jwt.model.JwtAuthenticationToken;
 import org.slf4j.Logger;
@@ -45,7 +47,12 @@ public class JwtAuthenticationFilter extends AbstractAuthenticationProcessingFil
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
         super.successfulAuthentication(request, response, chain, authResult);
-
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            response.setHeader("access_token", objectMapper.writeValueAsString(authResult.getPrincipal()));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
         // As this authentication is in HTTP header, after success we need to continue the request normally
         // and return the response as if the resource was not secured at all
         chain.doFilter(request, response);

@@ -1,12 +1,6 @@
 package com.yaegar.yaegarrestservice.controller;
 
-import com.yaegar.yaegarrestservice.model.Account;
-import com.yaegar.yaegarrestservice.model.Invoice;
-import com.yaegar.yaegarrestservice.model.LineItem;
-import com.yaegar.yaegarrestservice.model.PurchaseOrder;
-import com.yaegar.yaegarrestservice.model.Supplier;
-import com.yaegar.yaegarrestservice.model.Transaction;
-import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.model.*;
 import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
 import com.yaegar.yaegarrestservice.service.InvoiceService;
 import com.yaegar.yaegarrestservice.service.PurchaseOrderService;
@@ -14,24 +8,11 @@ import com.yaegar.yaegarrestservice.service.SupplierService;
 import com.yaegar.yaegarrestservice.service.TransactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.PREPAYMENT;
@@ -41,6 +22,7 @@ import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID_I
 import static java.util.Collections.singletonMap;
 
 @RestController
+@RequestMapping(value = "/secure-api")
 public class PurchaseOrderController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PurchaseOrderController.class);
 
@@ -64,67 +46,53 @@ public class PurchaseOrderController {
         this.transactionService = transactionService;
     }
 
-    @RequestMapping(value = {"/add-purchase-order", "/save-purchase-order"}, method = RequestMethod.POST)
-    public ResponseEntity<Map<String, PurchaseOrder>> addPurchaseOrder(
-            @RequestBody final PurchaseOrder purchaseOrder,
-            ModelMap model,
-            HttpServletRequest httpServletRequest
-    ) {
-        final User user = (User) model.get("user");
-
+    @RequestMapping(value = "/save-purchase-order", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, PurchaseOrder>> savePurchaseOrder(@RequestBody final PurchaseOrder purchaseOrder) {
         Supplier supplier = supplierService.findById(purchaseOrder.getSupplier().getId())
                 .orElseThrow(NullPointerException::new);
         purchaseOrder.setSupplier(supplier);
 
         final List<LineItem> lineItems = purchaseOrderService.sortLineItemsIntoOrderedList(purchaseOrder.getLineItems());
-        final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(lineItems, user);
+        final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(lineItems);
         purchaseOrder.setLineItems(lineItems1);
 
         purchaseOrder.setTotalPrice(purchaseOrderService.sumLineItemsSubTotal(lineItems1));
-        PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(purchaseOrder, user);
-        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrder1));
+        PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(purchaseOrder);
+        return ResponseEntity.ok().body(singletonMap("success", purchaseOrder1));
     }
 
     @RequestMapping(value = "/get-purchase-orders", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, List<PurchaseOrder>>> getPurchaseOrders(@RequestParam final Long companyId, ModelMap model, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<Map<String, List<PurchaseOrder>>> getPurchaseOrders(@RequestParam final Long companyId) {
         List<PurchaseOrder> purchaseOrders = purchaseOrderService.getPurchaseOrders(companyId);
-        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrders));
+        return ResponseEntity.ok().body(singletonMap("success", purchaseOrders));
     }
 
     @Transactional
     @RequestMapping(value = "/save-purchase-order-transaction", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, PurchaseOrder>> saveTransaction(@RequestBody PurchaseOrder purchaseOrder,
-                                                                      ModelMap model,
-                                                                      HttpServletRequest httpServletRequest) {
-        final User user = (User) model.get("user");
-
+    public ResponseEntity<Map<String, PurchaseOrder>> saveTransaction(@RequestBody PurchaseOrder purchaseOrder) {
         PurchaseOrder savedPurchaseOrder = purchaseOrderService
                 .getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
         final Transaction transaction = transactionService.computePurchaseOrderPaymentInAdvanceTransaction(
-                purchaseOrder, savedPurchaseOrder, user
+                purchaseOrder, savedPurchaseOrder
         );
 
-        final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
+        final Transaction transaction1 = transactionService.saveTransaction(transaction);
         savedPurchaseOrder.setPurchaseOrderState(PAID_IN_ADVANCE);
         savedPurchaseOrder.setTransaction(transaction1);
-        PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
-        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrder1));
+        PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder);
+        return ResponseEntity.ok().body(singletonMap("success", purchaseOrder1));
     }
 
     @Transactional
     @RequestMapping(value = "/save-purchase-order-invoices", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, PurchaseOrder>> saveInvoices(@RequestBody PurchaseOrder purchaseOrder,
-                                                                   ModelMap model,
-                                                                   HttpServletRequest httpServletRequest) {
-        final User user = (User) model.get("user");
-
+    public ResponseEntity<Map<String, PurchaseOrder>> saveInvoices(@RequestBody PurchaseOrder purchaseOrder) {
         PurchaseOrder savedPurchaseOrder = purchaseOrderService
                 .getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        final Set<Invoice> invoices = processInvoices(purchaseOrder, user);
+        final Set<Invoice> invoices = processInvoices(purchaseOrder);
 
         final List<Invoice> invoices1 = invoiceService.saveAll(invoices);
 
@@ -133,23 +101,22 @@ public class PurchaseOrderController {
         final Transaction transaction = transactionService.computeInvoicesTransaction(
                 purchaseOrder.getTransaction(),
                 invoiceService.sortInvoicesByDate(savedPurchaseOrder.getInvoices()),
-                purchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts().getId(),
+                purchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts(),
                 PURCHASES,
                 PREPAYMENT,
-                savedPurchaseOrder.getId(),
-                user
+                savedPurchaseOrder.getId()
         );
 
-        final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
+        final Transaction transaction1 = transactionService.saveTransaction(transaction);
         savedPurchaseOrder.setTransaction(transaction1);
 
         //TODO this should factor in delivery note if available
-        invoiceService.computeInventory(savedPurchaseOrder.getInvoices(), user);
-        PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder, user);
-        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", purchaseOrder1));
+        invoiceService.computeInventory(savedPurchaseOrder.getInvoices());
+        PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder);
+        return ResponseEntity.ok().body(singletonMap("success", purchaseOrder1));
     }
 
-    private Set<Invoice> processInvoices(PurchaseOrder purchaseOrder, User user) {
+    private Set<Invoice> processInvoices(PurchaseOrder purchaseOrder) {
         return purchaseOrder.getInvoices()
                     .stream()
                     .map(invoice -> {
@@ -163,7 +130,7 @@ public class PurchaseOrderController {
                     .map(invoice -> {
                         final List<LineItem> lineItems = purchaseOrderService.sortLineItemsIntoOrderedList(invoice.getLineItems());
                         final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(
-                                lineItems, user);
+                                lineItems);
                         invoice.setLineItems(lineItems1);
                         invoice.setInvoiceType(PURCHASE);
                         invoice.setTotalPrice(purchaseOrderService.sumLineItemsSubTotal(lineItems1));

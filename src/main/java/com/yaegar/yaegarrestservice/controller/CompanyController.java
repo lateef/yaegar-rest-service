@@ -14,13 +14,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequestMapping(value = "/secure-api")
 public class CompanyController {
     private static final Logger LOGGER = LoggerFactory.getLogger(CompanyController.class);
 
@@ -33,7 +34,7 @@ public class CompanyController {
     @Transactional
     @RequestMapping(value = "/add-company", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Company>> addCompany(
-            @RequestBody final Company company, ModelMap model, HttpServletRequest httpServletRequest)
+            @RequestBody final Company company, Principal principal, ModelMap model)
             throws IOException {
         final User user = (User) model.get("user");
         Company company1 = companyService.addCompany(company, user);
@@ -41,7 +42,7 @@ public class CompanyController {
     }
 
     @RequestMapping(value = "/get-user-companies", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, List<Company>>> getCompanies(ModelMap model, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<Map<String, List<Company>>> getCompanies(Principal principal, ModelMap model) {
         final User user = (User) model.get("user");
         List<Company> companies = companyService.getCompaniesByEmployeesIn(Collections.singletonList(user));
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(Collections.singletonMap("success", companies));

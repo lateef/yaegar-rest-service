@@ -1,13 +1,6 @@
 package com.yaegar.yaegarrestservice.service;
 
-import com.yaegar.yaegarrestservice.model.Account;
-import com.yaegar.yaegarrestservice.model.Invoice;
-import com.yaegar.yaegarrestservice.model.JournalEntry;
-import com.yaegar.yaegarrestservice.model.LineItem;
-import com.yaegar.yaegarrestservice.model.PurchaseOrder;
-import com.yaegar.yaegarrestservice.model.SalesOrder;
-import com.yaegar.yaegarrestservice.model.Transaction;
-import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.model.*;
 import com.yaegar.yaegarrestservice.model.enums.AccountType;
 import com.yaegar.yaegarrestservice.model.enums.TransactionSide;
 import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
@@ -57,12 +50,12 @@ public class TransactionService {
         this.purchaseOrderService = purchaseOrderService;
     }
 
-    public Transaction computePurchaseOrderPaymentInAdvanceTransaction(PurchaseOrder purchaseOrder, PurchaseOrder savedPurchaseOrder, User updatedBy) {
+    public Transaction computePurchaseOrderPaymentInAdvanceTransaction(PurchaseOrder purchaseOrder, PurchaseOrder savedPurchaseOrder) {
         final Transaction transaction = purchaseOrder.getTransaction();
         transaction.setTransactionTypeId(savedPurchaseOrder.getId());
 
-        final Account account = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                purchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts().getId(),
+        final Account account = accountService.findByChartOfAccountsAndNameAndAccountTypeAndAccountCategory(
+                purchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts(),
                 PREPAYMENT.getType(),
                 CASH_AND_CASH_EQUIVALENTS,
                 null
@@ -85,11 +78,10 @@ public class TransactionService {
     public Transaction computeInvoicesTransaction(
             Transaction transaction,
             List<Invoice> invoices,
-            Long chartOfAccountsId,
+            ChartOfAccounts chartOfAccounts,
             AccountType debitAccountType,
             AccountType creditAccountType,
-            Long transactionTypeId,
-            User updatedBy
+            Long transactionTypeId
     ) {
         transaction.setTransactionTypeId(transactionTypeId);
 
@@ -106,12 +98,12 @@ public class TransactionService {
         } else if (creditAccountType.equals(TRADE_DEBTORS)) {
             accountTypeCredit = CURRENT_ASSETS;
         }
-        final Account debitAccount = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                chartOfAccountsId, debitAccountType.getType(), accountTypeDebit, null
+        final Account debitAccount = accountService.findByChartOfAccountsAndNameAndAccountTypeAndAccountCategory(
+                chartOfAccounts, debitAccountType.getType(), accountTypeDebit, null
         ).orElseThrow(NullPointerException::new);
 
-        final Account creditAccount = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                chartOfAccountsId, creditAccountType.getType(), accountTypeCredit, null
+        final Account creditAccount = accountService.findByChartOfAccountsAndNameAndAccountTypeAndAccountCategory(
+                chartOfAccounts, creditAccountType.getType(), accountTypeCredit, null
         ).orElseThrow(NullPointerException::new);
 
         final Integer maxEntry = getMaxEntry(transaction);
@@ -136,12 +128,12 @@ public class TransactionService {
         return transaction;
     }
 
-    public Transaction computeSalesOrderPaymentInArrearsTransaction(SalesOrder salesOrder, SalesOrder savedSalesOrder, User user) {
+    public Transaction computeSalesOrderPaymentInArrearsTransaction(SalesOrder salesOrder, SalesOrder savedSalesOrder) {
         final Transaction transaction = salesOrder.getTransaction();
         transaction.setTransactionTypeId(savedSalesOrder.getId());
 
-        final Account account = accountService.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                salesOrder.getCustomer().getPrincipalCompany().getChartOfAccounts().getId(),
+        final Account account = accountService.findByChartOfAccountsAndNameAndAccountTypeAndAccountCategory(
+                salesOrder.getCustomer().getPrincipalCompany().getChartOfAccounts(),
                 TRADE_DEBTORS.getType(),
                 CURRENT_ASSETS,
                 null
@@ -166,7 +158,7 @@ public class TransactionService {
     }
 
     @Transactional
-    public Transaction saveTransaction(Transaction transaction, User createdBy) {
+    public Transaction saveTransaction(Transaction transaction) {
         final Set<JournalEntry> journalEntries = transaction.getJournalEntries()
                 .stream()
                 .map(journalEntry -> {
@@ -179,10 +171,6 @@ public class TransactionService {
                 })
                 .collect(Collectors.toSet());
 
-        if (Objects.isNull(transaction.getCreatedBy())) {
-            transaction.setCreatedBy(createdBy.getId());
-        }
-        transaction.setUpdatedBy(createdBy.getId());
         transaction.setJournalEntries(null);
         final Transaction transaction1 = transactionRepository.save(transaction);
 
@@ -192,15 +180,13 @@ public class TransactionService {
         final List<JournalEntry> journalEntries1 = journalEntries
                 .stream()
                 .map(journalEntry -> {
-                    journalEntry.setTransactionId(transaction1.getId());
+                    journalEntry.setTransaction(transaction1);
                     String description = (journalEntry.getTransactionSide().equals(CREDIT)) ? debitDescription : creditDescription;
                     validateAndSetShortDescription(journalEntry, description);
                     validateAndSetDescription(journalEntry, description);
-
-                    if (Objects.isNull(journalEntry.getCreatedBy())) {
-                        journalEntry.setCreatedBy(createdBy.getId());
+                    if (Objects.isNull(journalEntry.getTransactionDatetime())) {
+                        journalEntry.setTransactionDatetime(dateTimeProvider.now());
                     }
-                    journalEntry.setUpdatedBy(createdBy.getId());
                     return journalEntry;
                 })
                 .collect(Collectors.toList());

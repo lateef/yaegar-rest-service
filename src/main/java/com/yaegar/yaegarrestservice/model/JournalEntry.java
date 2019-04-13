@@ -1,26 +1,17 @@
 package com.yaegar.yaegarrestservice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
 import com.yaegar.yaegarrestservice.model.enums.TransactionSide;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = "transaction")
 @Entity
 public class JournalEntry extends AbstractEntity {
     private static final long serialVersionUID = 6340589739131199534L;
@@ -30,8 +21,9 @@ public class JournalEntry extends AbstractEntity {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "transaction_id")
-    private Long transactionId;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Transaction transaction;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinColumn(name = "account_id", referencedColumnName = "id", nullable = false)

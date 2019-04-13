@@ -1,6 +1,7 @@
 package com.yaegar.yaegarrestservice.audit.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.yaegar.yaegarrestservice.model.User;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -8,9 +9,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.Column;
-import javax.persistence.EntityListeners;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -21,13 +20,15 @@ import java.time.LocalDateTime;
 )
 @Data
 public abstract class AbstractEntity implements Serializable {
-   @CreatedBy
-    @Column(name = "created_by")
-    private Long createdBy;
+    @CreatedBy
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
+    @JoinColumn(name = "created_by", referencedColumnName = "id")
+    private User createdBy;
 
     @LastModifiedBy
-    @Column(name = "updated_by")
-    private Long updatedBy;
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
+    @JoinColumn(name = "updated_by", referencedColumnName = "id")
+    private User updatedBy;
 
     @CreatedDate
     @Column(name = "created_datetime")

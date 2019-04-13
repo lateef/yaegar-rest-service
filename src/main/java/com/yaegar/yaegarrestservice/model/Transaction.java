@@ -14,13 +14,12 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import java.util.Set;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = "accounts")
 @Entity
 public class Transaction extends AbstractEntity {
     private static final long serialVersionUID = -6306868349093193363L;
@@ -30,8 +29,7 @@ public class Transaction extends AbstractEntity {
     @Column(name = "id")
     private Long id;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "transaction_id", referencedColumnName = "id")
+    @OneToMany(mappedBy = "transaction", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<JournalEntry> journalEntries;
 
     @Column(name = "transaction_type")

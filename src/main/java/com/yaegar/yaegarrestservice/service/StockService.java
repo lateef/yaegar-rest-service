@@ -25,7 +25,7 @@ public class StockService {
     }
 
     @Transactional
-    public Stock addStock(Stock stock, User user) {
+    public Stock addStock(Stock stock) {
         return addStock(
                 stock.getProduct(),
                 stock.getCompanyStockId(),
@@ -33,8 +33,7 @@ public class StockService {
                 stock.getSellPrice(),
                 stock.getSku(),
                 stock.getQuantity(),
-                stock.getLocation(),
-                user
+                stock.getLocation()
         );
     }
 
@@ -46,8 +45,7 @@ public class StockService {
             BigDecimal sellPrice,
             String sku,
             Double quantity,
-            Location location,
-            User user
+            Location location
     ) {
         findByProductAndCompanyStockId(product, companyStockId)
                 .ifPresent(e -> {
@@ -63,14 +61,9 @@ public class StockService {
         stock.setQuantity(quantity);
         stock.setSku(sku);
         stock.setQuantity(quantity);
-        stock.setCreatedBy(user.getId());
-        stock.setUpdatedBy(user.getId());
 
-
-        final Set<Account> purchasesAndSalesAccounts = accountService.createStockAccounts(stock, user);
+        final Set<Account> purchasesAndSalesAccounts = accountService.createStockAccounts(stock);
         stock.setAccounts(purchasesAndSalesAccounts);
-        stock.setCreatedBy(user.getId());
-        stock.setUpdatedBy(user.getId());
         return stockRepository.save(stock);
     }
 
