@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 import java.util.Set;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"supplier", "lineItems", "transaction", "invoices"})
 @Entity
 @Table
 public class PurchaseOrder extends AbstractEntity {
@@ -48,7 +48,7 @@ public class PurchaseOrder extends AbstractEntity {
     @Column(name = "total_price")
     private BigDecimal totalPrice;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "transaction_id", referencedColumnName = "id")
     private Transaction transaction;
 

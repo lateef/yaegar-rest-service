@@ -94,7 +94,7 @@ create table company
   created_datetime datetime null,
   updated_datetime datetime null,
   name             varchar(256) not null,
-  chart_of_accounts_id bigint null,
+  chart_of_accounts_id bigint not null,
   created_by       bigint null,
   updated_by       bigint null,
   constraint FK_company_chart_of_accounts
@@ -167,13 +167,15 @@ create table account
   parent          bit null,
   enable          bit null,
   can_delete          bit null,
-  account_chart_of_accounts_id bigint null,
+  chart_of_accounts_id bigint not null,
   created_by       bigint null,
   updated_by       bigint null,
   constraint UK_account1
-    unique (account_chart_of_accounts_id, code),
+    unique (chart_of_accounts_id, code),
   constraint UK_account2
-    unique (account_chart_of_accounts_id, name, account_type, parent_id)
+    unique (chart_of_accounts_id, name, account_type, parent_id),
+  constraint FK_account_chart_of_accounts
+    foreign key (chart_of_accounts_id) references chart_of_accounts (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table transaction
@@ -194,10 +196,10 @@ create table journal_entry
   created_datetime datetime null,
   updated_datetime datetime null,
   deleted_datetime datetime null,
-  transaction_id   bigint null,
+  transaction_id   bigint not null,
   account_id        bigint not null,
   amount           decimal(19,2) null,
-  transaction_datetime datetime null,
+  transaction_datetime datetime not null,
   entry            int not null,
   short_description  varchar(16) not null,
   description        varchar(1000) null,

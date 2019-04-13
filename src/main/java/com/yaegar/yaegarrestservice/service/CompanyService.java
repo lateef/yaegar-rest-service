@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -48,23 +49,17 @@ public class CompanyService {
             return company;
         }
         company.setName(company.getName().trim());
-        company.setCreatedBy(user.getId());
-        company.setUpdatedBy(user.getId());
         company.setOwners(Collections.singleton(user));
         company.setEmployees(Collections.singleton(user));
-        List<Account> primaryCompanyAccounts = createPrimaryCompanyAccount(user);
-        ChartOfAccounts chartOfAccounts = new ChartOfAccounts(primaryCompanyAccounts);
+        ChartOfAccounts chartOfAccounts = new ChartOfAccounts();
         company.setChartOfAccounts(chartOfAccounts);
         Company company1 = companyRepository.save(company);
 
-        List<Account> companyAccounts = createCompanyAccount(
-                primaryCompanyAccounts,
-                company1.getChartOfAccounts().getId(),
-                user
-        );
+        List<Account> primaryCompanyAccounts = accountRepository.saveAll(createPrimaryCompanyAccount(company1.getChartOfAccounts()));
+        List<Account> companyAccounts = createCompanyAccount(primaryCompanyAccounts, company1.getChartOfAccounts());
         List<Account> companyAccounts2 = accountRepository.saveAll(companyAccounts);
         primaryCompanyAccounts.addAll(companyAccounts2);
-        chartOfAccounts.setAccounts(primaryCompanyAccounts);
+        chartOfAccounts.setAccounts(new HashSet<>(primaryCompanyAccounts));
 
         setSuperUserRoleOnCompanyCreate(user, company1);
         return company1;
@@ -96,20 +91,19 @@ public class CompanyService {
         }
     }
 
-    private List<Account> createPrimaryCompanyAccount(User user) throws IOException {
+    private List<Account> createPrimaryCompanyAccount(ChartOfAccounts chartOfAccounts) throws IOException {
         List<Account> companyAccounts = readChartOfAccountsTemplateFromFile();
 
         return companyAccounts.stream()
                 .filter(companyAccount -> (companyAccount.getCode() % 1000000) == 0)
                 .map(companyAccount -> {
-                    companyAccount.setCreatedBy(user.getId());
-                    companyAccount.setUpdatedBy(user.getId());
+                    companyAccount.setChartOfAccounts(chartOfAccounts);
                     return companyAccount;
                 })
                 .collect(Collectors.toList());
     }
 
-    private List<Account> createCompanyAccount(List<Account> primaryAccounts, Long chartOfAccountsId, User user) throws IOException {
+    private List<Account> createCompanyAccount(List<Account> primaryAccounts, ChartOfAccounts chartOfAccounts) throws IOException {
         List<Account> companyAccounts = readChartOfAccountsTemplateFromFile();
 
         return companyAccounts.stream()
@@ -121,10 +115,8 @@ public class CompanyService {
                             .findFirst()
                             .orElseThrow(NullPointerException::new);
 
-                    companyAccount.setCreatedBy(user.getId());
-                    companyAccount.setUpdatedBy(user.getId());
                     companyAccount.setParentId(primaryAccount.getId());
-                    companyAccount.setAccountChartOfAccountsId(chartOfAccountsId);
+                    companyAccount.setChartOfAccounts(chartOfAccounts);
                     return companyAccount;
                 })
                 .collect(Collectors.toList());

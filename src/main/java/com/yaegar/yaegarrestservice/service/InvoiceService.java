@@ -37,7 +37,7 @@ public class InvoiceService {
         return invoiceRepository.saveAll(invoices);
     }
 
-    public void computeInventory(Set<Invoice> invoices, User updatedBy) {
+    public void computeInventory(Set<Invoice> invoices) {
                 invoices
                 .forEach(invoice -> {
                             final List<StockTransaction> stockTransactions1 = invoice.getLineItems()
@@ -52,10 +52,6 @@ public class InvoiceService {
                                             stockTransaction.setQuantity(-1 * lineItem.getQuantity());
                                         }
                                         stockTransaction.setLocation(null);
-                                        if (Objects.isNull(stockTransaction.getCreatedBy())) {
-                                            stockTransaction.setCreatedBy(updatedBy.getId());
-                                        }
-                                        stockTransaction.setUpdatedBy(updatedBy.getId());
                                         return stockTransaction;
                                     })
                                     .collect(Collectors.toList());
@@ -80,10 +76,6 @@ public class InvoiceService {
                                             stock.setLocation(stockTransaction.getLocation());
                                             stock.setQuantity(stockTransaction.getQuantity());
                                         }
-                                        if (Objects.isNull(stock.getCreatedBy())) {
-                                            stock.setCreatedBy(updatedBy.getId());
-                                        }
-                                        stock.setUpdatedBy(updatedBy.getId());
                                         return stock;
                                     })
                                     .collect(Collectors.toList());

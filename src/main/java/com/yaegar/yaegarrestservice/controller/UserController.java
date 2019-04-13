@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
+import java.security.Principal;
 import java.util.Map;
 
 import static java.util.Collections.singletonMap;
@@ -24,6 +24,11 @@ public class UserController {
     public UserController(Authenticator authenticator, UserService userService) {
         this.authenticator = authenticator;
         this.userService = userService;
+    }
+
+    @RequestMapping(value = "/do-nothing", method = RequestMethod.GET)
+    public ResponseEntity<User> doNothing() {
+        return ResponseEntity.ok(new User());
     }
 
     @RequestMapping(value = "/create-account", method = RequestMethod.POST)
@@ -43,15 +48,9 @@ public class UserController {
         return ResponseEntity.ok().headers(headers).body(userResponse);
     }
 
-    @RequestMapping(value = "/get-logged-in-user", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, User>> getLoggedInUser(ModelMap model,  HttpServletRequest httpServletRequest) {
+    @RequestMapping(value = "/secure-api/get-logged-in-user", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, User>> getLoggedInUser(Principal principal, ModelMap model) {
         final User user = (User) model.get("user");
-        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", user));
+        return ResponseEntity.ok().body(singletonMap("success", user));
     }
-
-    @RequestMapping(value = "/do-nothing", method = RequestMethod.GET)
-    public ResponseEntity<User> doNothing() {
-        return ResponseEntity.ok(new User());
-    }
-
 }

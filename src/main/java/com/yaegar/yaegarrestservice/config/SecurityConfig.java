@@ -49,8 +49,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/create-account", "log-in")
+                .antMatchers("/create-account", "/confirm-account", "log-in")
                 .permitAll()
+                .antMatchers("/secure-api/**")
+                .authenticated()
                 .and().exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
                 .and()
                 .sessionManagement()
@@ -70,7 +72,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter("/api/auth/**");
+        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter("/secure-api/**");
         jwtAuthenticationFilter.setAuthenticationManager(jwtAuthenticationManager());
         jwtAuthenticationFilter.setAuthenticationSuccessHandler(new JwtAuthenticationSuccessHandler());
         jwtAuthenticationFilter.setAuthenticationFailureHandler(new JwtAuthenticationFailureHandler());

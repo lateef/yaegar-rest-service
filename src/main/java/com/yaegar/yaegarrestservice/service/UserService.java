@@ -160,6 +160,10 @@ public class UserService {
         }
     }
 
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
     private boolean isValidNumber(String numberToParse, String defaultRegion) {
         return phoneValidator.isValidNumber(numberToParse, defaultRegion);
     }

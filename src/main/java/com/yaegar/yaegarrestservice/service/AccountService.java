@@ -47,11 +47,11 @@ public class AccountService {
         return accountRepository.findById(id);
     }
 
-    public Optional<Account> findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-            Long id, String name, AccountType accountType, AccountCategory accountCategory
+    public Optional<Account> findByChartOfAccountsAndNameAndAccountTypeAndAccountCategory(
+            ChartOfAccounts chartOfAccounts, String name, AccountType accountType, AccountCategory accountCategory
     ) {
-        return accountRepository.findByAccountChartOfAccountsIdAndNameAndAccountTypeAndAccountCategory(
-                id, name, accountType, accountCategory);
+        return accountRepository.findByChartOfAccountsAndNameAndAccountTypeAndAccountCategory(
+                chartOfAccounts, name, accountType, accountCategory);
     }
 
     public List<Account> findByParentId(Long parentId) {
@@ -66,15 +66,15 @@ public class AccountService {
         return accountRepository.findByParentIdAndAccountCategory(parentId, accountCategory);
     }
 
-    public List<Account> findByAccountChartOfAccountsId(Long accountChartOfAccountsId) {
-        return accountRepository.findByAccountChartOfAccountsId(accountChartOfAccountsId);
+    public List<Account> findByChartOfAccounts(ChartOfAccounts chartOfAccounts) {
+        return accountRepository.findByChartOfAccounts(chartOfAccounts);
     }
 
-    public Account addAccount(Account account, User createdBy) {
-        return addAccount(account.getParentId(), account.getName(), account.getAccountCategory(), createdBy);
+    public Account addAccount(Account account) {
+        return addAccount(account.getParentId(), account.getName(), account.getAccountCategory());
     }
 
-    private Account addAccount(Long parentAccountId, String name, AccountCategory accountCategory, User createdBy) {
+    private Account addAccount(Long parentAccountId, String name, AccountCategory accountCategory) {
         Account parentAccount = findById(parentAccountId)
                 .orElseThrow(NullPointerException::new);
         final AccountType accountTypeFromParentAccount = getAccountTypeFromParentAccount(parentAccount);
@@ -82,11 +82,9 @@ public class AccountService {
         account.setParentId(parentAccount.getId());
         account.setName(name.trim());
         account.setDescription(name.trim());
-        account.setAccountChartOfAccountsId(parentAccount.getAccountChartOfAccountsId());
+        account.setChartOfAccounts(parentAccount.getChartOfAccounts());
         account.setAccountType(accountTypeFromParentAccount);
         account.setAccountCategory(accountCategory);
-        account.setCreatedBy(createdBy.getId());
-        account.setUpdatedBy(createdBy.getId());
         account.setEnable(true);
         final Integer maxCode = findByParentId(parentAccount.getId())
                 .stream()
@@ -121,7 +119,7 @@ public class AccountService {
     }
 
     public List<Account> getLeafAccounts(Long chartOfAccountsId) {
-        return accountRepository.findByAccountChartOfAccountsIdAndParentFalse(chartOfAccountsId);
+        return accountRepository.findByChartOfAccountsIdAndParentFalse(chartOfAccountsId);
     }
 
     private AccountType getAccountTypeFromParentAccount(Account parentAccount) {
@@ -142,20 +140,20 @@ public class AccountService {
         return account;
     }
 
-    public Set<Account> createStockAccounts(Stock stock, User user) {
+    public Set<Account> createStockAccounts(Stock stock) {
         final Company company = companyService.findById(stock.getCompanyStockId())
                 .orElseThrow(NullPointerException::new);
-        final List<Account> companyAccounts = findByAccountChartOfAccountsId(company.getChartOfAccounts().getId());
+        final List<Account> companyAccounts = findByChartOfAccounts(company.getChartOfAccounts());
 
         final Account salesIncome = getAccount(companyAccounts, "Sales Income");
         final Account purchases = getAccount(companyAccounts, "Purchases");
         final Account salesDiscount = getAccount(companyAccounts, "Sales Discount");
         final Account purchasesDiscount = getAccount(companyAccounts, "Purchases Discount");
 
-        final Account incomeRevenueStockAccount = addAccount(salesIncome.getId(), stock.getProduct().getTitle(), PRODUCT, user);
-        final Account costOfSalesGoodsStockAccount = addAccount(purchases.getId(), stock.getProduct().getTitle(), PRODUCT, user);
-        final Account incomeRevenueStockDiscountAccount = addAccount(salesDiscount.getId(), stock.getProduct().getTitle(), PRODUCT_DISCOUNT, user);
-        final Account costOfSalesGoodsStockDiscountAccount = addAccount(purchasesDiscount.getId(), stock.getProduct().getTitle(), PRODUCT_DISCOUNT, user);
+        final Account incomeRevenueStockAccount = addAccount(salesIncome.getId(), stock.getProduct().getTitle(), PRODUCT);
+        final Account costOfSalesGoodsStockAccount = addAccount(purchases.getId(), stock.getProduct().getTitle(), PRODUCT);
+        final Account incomeRevenueStockDiscountAccount = addAccount(salesDiscount.getId(), stock.getProduct().getTitle(), PRODUCT_DISCOUNT);
+        final Account costOfSalesGoodsStockDiscountAccount = addAccount(purchasesDiscount.getId(), stock.getProduct().getTitle(), PRODUCT_DISCOUNT);
 
         return new HashSet<>(
                 asList(incomeRevenueStockAccount,

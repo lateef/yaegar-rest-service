@@ -8,13 +8,10 @@ import com.yaegar.yaegarrestservice.service.SalesOrderService;
 import com.yaegar.yaegarrestservice.service.TransactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,6 +22,7 @@ import static com.yaegar.yaegarrestservice.model.enums.SalesOrderState.PAID_IN_A
 import static java.util.Collections.singletonMap;
 
 @RestController
+@RequestMapping(value = "/secure-api")
 public class SalesOrderController {
     private static final Logger LOGGER = LoggerFactory.getLogger(SalesOrderController.class);
 
@@ -49,61 +47,52 @@ public class SalesOrderController {
     }
 
     @RequestMapping(value = {"/add-sales-order", "/save-sales-order"}, method = RequestMethod.POST)
-    public ResponseEntity<Map<String, SalesOrder>> addSalesOrder(@RequestBody final SalesOrder salesOrder, ModelMap model, HttpServletRequest httpServletRequest) {
-        final User user = (User) model.get("user");
+    public ResponseEntity<Map<String, SalesOrder>> addSalesOrder(@RequestBody final SalesOrder salesOrder) {
         Customer customer = customerService.findById(salesOrder.getCustomer().getId())
                 .orElseThrow(NullPointerException::new);
         salesOrder.setCustomer(customer);
 
         final List<LineItem> lineItems = salesOrderService.sortLineItemsIntoOrderedList(salesOrder.getLineItems());
-        final Set<LineItem> lineItems1 = salesOrderService.validateLineItems(lineItems, user);
+        final Set<LineItem> lineItems1 = salesOrderService.validateLineItems(lineItems);
         salesOrder.setLineItems(lineItems1);
 
         salesOrder.setTotalPrice(salesOrderService.sumLineItemsSubTotal(lineItems1));
-        SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(salesOrder, user);
-        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", salesOrder1));
+        SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(salesOrder);
+        return ResponseEntity.ok().body(singletonMap("success", salesOrder1));
     }
 
     @RequestMapping(value = "/get-sales-orders", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, List<SalesOrder>>> getSalesOrders(@RequestParam final Long companyId, ModelMap model, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<Map<String, List<SalesOrder>>> getSalesOrders(@RequestParam final Long companyId) {
         List<SalesOrder> salesOrders = salesOrderService.getSalesOrders(companyId);
-        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", salesOrders));
+        return ResponseEntity.ok().body(singletonMap("success", salesOrders));
     }
 
     @Transactional
     @RequestMapping(value = "/save-sales-order-transaction", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, SalesOrder>> saveTransaction(@RequestBody SalesOrder salesOrder,
-                                                                   ModelMap model,
-                                                                   HttpServletRequest httpServletRequest) {
-        final User user = (User) model.get("user");
-
+    public ResponseEntity<Map<String, SalesOrder>> saveTransaction(@RequestBody SalesOrder salesOrder) {
         SalesOrder savedSalesOrder = salesOrderService
                 .getSalesOrder(salesOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
         final Transaction transaction = transactionService.computeSalesOrderPaymentInArrearsTransaction(
-                salesOrder, savedSalesOrder, user
+                salesOrder, savedSalesOrder
         );
 
-        final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
+        final Transaction transaction1 = transactionService.saveTransaction(transaction);
         savedSalesOrder.setSalesOrderState(PAID_IN_ADVANCE);
         savedSalesOrder.setTransaction(transaction1);
-        SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(savedSalesOrder, user);
-        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", salesOrder1));
+        SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(savedSalesOrder);
+        return ResponseEntity.ok().body(singletonMap("success", salesOrder1));
     }
 
     @Transactional
     @RequestMapping(value = "/save-sales-order-invoices", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, SalesOrder>> saveInvoices(@RequestBody SalesOrder salesOrder,
-                                                                ModelMap model,
-                                                                HttpServletRequest httpServletRequest) {
-        final User user = (User) model.get("user");
-
+    public ResponseEntity<Map<String, SalesOrder>> saveInvoices(@RequestBody SalesOrder salesOrder) {
         SalesOrder savedSalesOrder = salesOrderService
                 .getSalesOrder(salesOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        final Set<Invoice> invoices = processInvoices(salesOrder, user);
+        final Set<Invoice> invoices = processInvoices(salesOrder);
 
         final List<Invoice> invoices1 = invoiceService.saveAll(invoices);
 
@@ -112,23 +101,22 @@ public class SalesOrderController {
         final Transaction transaction = transactionService.computeInvoicesTransaction(
                 salesOrder.getTransaction(),
                 invoiceService.sortInvoicesByDate(savedSalesOrder.getInvoices()),
-                salesOrder.getCustomer().getPrincipalCompany().getChartOfAccounts().getId(),
+                salesOrder.getCustomer().getPrincipalCompany().getChartOfAccounts(),
                 SALES_INCOME,
                 TRADE_DEBTORS,
-                savedSalesOrder.getId(),
-                user
+                savedSalesOrder.getId()
         );
 
-        final Transaction transaction1 = transactionService.saveTransaction(transaction, user);
+        final Transaction transaction1 = transactionService.saveTransaction(transaction);
         savedSalesOrder.setTransaction(transaction1);
 
         //TODO this should factor in delivery note if available
-        invoiceService.computeInventory(savedSalesOrder.getInvoices(), user);
-        SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(savedSalesOrder, user);
-        return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(singletonMap("success", salesOrder1));
+        invoiceService.computeInventory(savedSalesOrder.getInvoices());
+        SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(savedSalesOrder);
+        return ResponseEntity.ok().body(singletonMap("success", salesOrder1));
     }
 
-    private Set<Invoice> processInvoices(@RequestBody SalesOrder salesOrder, User user) {
+    private Set<Invoice> processInvoices(@RequestBody SalesOrder salesOrder) {
         return salesOrder.getInvoices()
                     .stream()
                     .map(invoice -> {
@@ -142,7 +130,7 @@ public class SalesOrderController {
                     .map(invoice -> {
                         final List<LineItem> lineItems = salesOrderService.sortLineItemsIntoOrderedList(invoice.getLineItems());
                         final Set<LineItem> lineItems1 = salesOrderService.validateLineItems(
-                                lineItems, user);
+                                lineItems);
                         invoice.setLineItems(lineItems1);
                         invoice.setInvoiceType(SALES);
 

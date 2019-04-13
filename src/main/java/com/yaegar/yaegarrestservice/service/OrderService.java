@@ -2,7 +2,6 @@ package com.yaegar.yaegarrestservice.service;
 
 import com.yaegar.yaegarrestservice.model.LineItem;
 import com.yaegar.yaegarrestservice.model.Product;
-import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +9,6 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -25,7 +23,7 @@ public abstract class OrderService {
         this.productRepository = productRepository;
     }
 
-    public Set<LineItem> validateLineItems(List<LineItem> lineItems, User createdBy) {
+    public Set<LineItem> validateLineItems(List<LineItem> lineItems) {
         IntStream.range(0, lineItems.size())
                 .forEach(idx -> {
                     final LineItem lineItem = lineItems.get(idx);
@@ -39,10 +37,6 @@ public abstract class OrderService {
 
                     lineItem.setProduct(product);
                     lineItem.setSubTotal(lineItem.getUnitPrice().multiply(BigDecimal.valueOf(lineItem.getQuantity())));
-                    if (Objects.isNull(lineItem.getCreatedBy())) {
-                        lineItem.setCreatedBy(createdBy.getId());
-                    }
-                    lineItem.setUpdatedBy(createdBy.getId());
                 });
         return new HashSet<>(lineItems);
     }
