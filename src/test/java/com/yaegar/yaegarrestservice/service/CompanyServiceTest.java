@@ -1,10 +1,6 @@
 package com.yaegar.yaegarrestservice.service;
 
-import com.yaegar.yaegarrestservice.model.Account;
-import com.yaegar.yaegarrestservice.model.ChartOfAccounts;
-import com.yaegar.yaegarrestservice.model.Company;
-import com.yaegar.yaegarrestservice.model.Role;
-import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.model.*;
 import com.yaegar.yaegarrestservice.repository.AccountRepository;
 import com.yaegar.yaegarrestservice.repository.CompanyRepository;
 import com.yaegar.yaegarrestservice.repository.RoleRepository;
@@ -17,11 +13,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
@@ -57,7 +53,18 @@ public class CompanyServiceTest {
         expectedChartOfAccounts.setId(1L);
         expectedCompany.setChartOfAccounts(expectedChartOfAccounts);
         when(companyRepository.save(company)).thenReturn(expectedCompany);
-        when(accountRepository.saveAll(ArgumentMatchers.any())).thenReturn(Collections.emptyList());
+
+        final Account account1 = new Account();
+        account1.setCode(1000000);
+        final Account account2 = new Account();
+        account2.setCode(2000000);
+        final Account account3 = new Account();
+        account3.setCode(3000000);
+        final Account account4 = new Account();
+        account4.setCode(4000000);
+        final Account account5 = new Account();
+        account5.setCode(5000000);
+        when(accountRepository.saveAll(ArgumentMatchers.any())).thenReturn(asList(account1, account2, account3, account4, account5));
         when(roleRepository.save(ArgumentMatchers.any())).thenReturn(new Role());
 
         //when
