@@ -15,9 +15,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
-import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
@@ -64,7 +65,9 @@ public class CompanyServiceTest {
         account4.setCode(4000000);
         final Account account5 = new Account();
         account5.setCode(5000000);
-        when(accountRepository.saveAll(ArgumentMatchers.any())).thenReturn(asList(account1, account2, account3, account4, account5));
+        when(accountRepository.saveAll(ArgumentMatchers.any())).thenReturn(
+                Stream.of(account1, account2, account3, account4, account5)
+        .collect(Collectors.toList()));
         when(roleRepository.save(ArgumentMatchers.any())).thenReturn(new Role());
 
         //when
