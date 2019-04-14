@@ -7,10 +7,13 @@ import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Component
+@Transactional(propagation = Propagation.REQUIRES_NEW)
 public class SpringSecurityAuditorAware implements AuditorAware<User> {
 
     @Autowired

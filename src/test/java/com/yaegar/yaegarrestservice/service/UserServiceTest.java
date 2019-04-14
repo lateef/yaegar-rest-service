@@ -61,7 +61,7 @@ public class UserServiceTest {
 
         //given
         User expectedUser = new User();
-        expectedUser.setPhones(emptyList());
+        expectedUser.setPhones(emptySet());
 
         //when
         Map<String, User> account = userService.createAccount(expectedUser);
@@ -81,7 +81,7 @@ public class UserServiceTest {
         Phone phone = new Phone(null, null, true, country);
 
         User expectedUser = new User();
-        expectedUser.setPhones(singletonList(phone));
+        expectedUser.setPhones(singleton(phone));
 
         //when
         Map<String, User> account = userService.createAccount(expectedUser);
@@ -98,7 +98,7 @@ public class UserServiceTest {
         Phone phone = new Phone("+44", "80708394", true, country);
 
         User expectedUser = new User();
-        expectedUser.setPhones(singletonList(phone));
+        expectedUser.setPhones(singleton(phone));
 
         Map expectedAccount = singletonMap("Not a valid number", expectedUser);
 
@@ -117,7 +117,7 @@ public class UserServiceTest {
         Phone phone = new Phone("+44", phoneNumber, true, country);
 
         User expectedUser = new User();
-        expectedUser.setPhones(singletonList(phone));
+        expectedUser.setPhones(singleton(phone));
 
         Map expectedAccount = singletonMap("Phone already registered", expectedUser);
         when(userRepository.findOptionalByPhoneNumber(phoneNumber)).thenReturn(Optional.of(expectedUser));
@@ -139,10 +139,10 @@ public class UserServiceTest {
         Phone savedPhone = new Phone("44", "+447780708394", true, country);
 
         User user = new User();
-        user.setPhones(singletonList(phone));
+        user.setPhones(singleton(phone));
 
         User expectedUser = new User();
-        expectedUser.setPhones(singletonList(savedPhone));
+        expectedUser.setPhones(singleton(savedPhone));
         expectedUser.setPhoneNumber(savedPhone.getNumber());
 
         Map expectedAccount = singletonMap("Phone already registered", expectedUser);
@@ -165,7 +165,7 @@ public class UserServiceTest {
         Phone phone = new Phone("+44", phoneNumber, true, country);
 
         User expectedUser = new User();
-        expectedUser.setPhones(singletonList(phone));
+        expectedUser.setPhones(singleton(phone));
 
         Map expectedAccount = singletonMap("success", expectedUser);
         when(userRepository.findOptionalByPhoneNumber(phoneNumber)).thenReturn(Optional.empty());
