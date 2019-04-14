@@ -6,6 +6,7 @@ import com.yaegar.yaegarrestservice.model.enums.AccountCategory;
 import com.yaegar.yaegarrestservice.model.enums.AccountType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
         })
 @Data
 @EqualsAndHashCode(callSuper = true, exclude = {"chartOfAccounts", "accountCategory"})
+@ToString(exclude = "chartOfAccounts")
 public class Account extends AbstractEntity {
     private static final long serialVersionUID = -9030131623403189315L;
 

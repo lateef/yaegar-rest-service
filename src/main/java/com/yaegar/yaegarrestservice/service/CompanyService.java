@@ -55,12 +55,11 @@ public class CompanyService {
         company.setChartOfAccounts(chartOfAccounts);
         Company company1 = companyRepository.save(company);
 
-        List<Account> companyAccounts = createCompanyAccount(
-                createPrimaryCompanyAccount(company1.getChartOfAccounts()),
-                company1.getChartOfAccounts()
-        );
+        List<Account> primaryCompanyAccounts = accountRepository.saveAll(createPrimaryCompanyAccount(company1.getChartOfAccounts()));
+        List<Account> companyAccounts = createCompanyAccount(primaryCompanyAccounts, company1.getChartOfAccounts());
         List<Account> companyAccounts2 = accountRepository.saveAll(companyAccounts);
-        chartOfAccounts.setAccounts(new HashSet<>(companyAccounts2));
+        primaryCompanyAccounts.addAll(companyAccounts2);
+        chartOfAccounts.setAccounts(new HashSet<>(primaryCompanyAccounts));
 
         setSuperUserRoleOnCompanyCreate(user, company1);
         return company1;

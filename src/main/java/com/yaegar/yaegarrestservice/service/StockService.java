@@ -38,14 +38,7 @@ public class StockService {
     }
 
     @Transactional
-    public Stock addStock(
-            Product product,
-            Long companyStockId,
-            BigDecimal costPrice,
-            BigDecimal sellPrice,
-            String sku,
-            Double quantity,
-            Location location
+    public Stock addStock(Product product, Long companyStockId, BigDecimal costPrice, BigDecimal sellPrice, String sku, Double quantity, Location location
     ) {
         findByProductAndCompanyStockId(product, companyStockId)
                 .ifPresent(e -> {
