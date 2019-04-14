@@ -38,6 +38,7 @@ public class CompanyController {
             throws IOException {
         final User user = (User) model.get("user");
         Company company1 = companyService.addCompany(company, user);
+        LOGGER.info("New company {} added by {}", company1, user);
         return ResponseEntity.ok().headers((HttpHeaders) model.get("headers")).body(Collections.singletonMap("success", company1));
     }
 
