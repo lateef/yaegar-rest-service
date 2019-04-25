@@ -3,7 +3,7 @@ package com.yaegar.yaegarrestservice.controller;
 import com.yaegar.yaegarrestservice.model.*;
 import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
 import com.yaegar.yaegarrestservice.service.CustomerService;
-import com.yaegar.yaegarrestservice.service.InvoiceService;
+import com.yaegar.yaegarrestservice.service.SalesInvoiceService;
 import com.yaegar.yaegarrestservice.service.SalesOrderService;
 import com.yaegar.yaegarrestservice.service.TransactionService;
 import org.slf4j.Logger;
@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.SALES_INCOME;
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.TRADE_DEBTORS;
-import static com.yaegar.yaegarrestservice.model.enums.InvoiceType.SALES;
 import static com.yaegar.yaegarrestservice.model.enums.SalesOrderState.PAID_IN_ADVANCE;
 import static java.util.Collections.singletonMap;
 
@@ -28,19 +27,19 @@ public class SalesOrderController {
 
     private final CustomerService customerService;
     private final DateTimeProvider dateTimeProvider;
-    private final InvoiceService invoiceService;
+    private final SalesInvoiceService salesInvoiceService;
     private final SalesOrderService salesOrderService;
     private final TransactionService transactionService;
 
     public SalesOrderController(
             DateTimeProvider dateTimeProvider,
-            InvoiceService invoiceService,
+            SalesInvoiceService salesInvoiceService,
             SalesOrderService salesOrderService,
             CustomerService customerService,
             TransactionService transactionService
     ) {
         this.dateTimeProvider = dateTimeProvider;
-        this.invoiceService = invoiceService;
+        this.salesInvoiceService = salesInvoiceService;
         this.salesOrderService = salesOrderService;
         this.customerService = customerService;
         this.transactionService = transactionService;
@@ -52,11 +51,11 @@ public class SalesOrderController {
                 .orElseThrow(NullPointerException::new);
         salesOrder.setCustomer(customer);
 
-        final List<LineItem> lineItems = salesOrderService.sortLineItemsIntoOrderedList(salesOrder.getLineItems());
-        final Set<LineItem> lineItems1 = salesOrderService.validateLineItems(lineItems);
+        final List<SalesOrderLineItem> lineItems = salesOrderService.sortOrderLineItemsIntoOrderedList(salesOrder.getLineItems());
+        final Set<SalesOrderLineItem> lineItems1 = salesOrderService.validateOrderLineItems(lineItems);
         salesOrder.setLineItems(lineItems1);
 
-        salesOrder.setTotalPrice(salesOrderService.sumLineItemsSubTotal(lineItems1));
+        salesOrder.setTotalPrice(salesOrderService.sumOrderLineItemsSubTotal(lineItems1));
         SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(salesOrder);
         return ResponseEntity.ok().body(singletonMap("success", salesOrder1));
     }
@@ -92,15 +91,15 @@ public class SalesOrderController {
                 .getSalesOrder(salesOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        final Set<Invoice> invoices = processInvoices(salesOrder);
+        final Set<SalesInvoice> salesInvoices = processInvoices(salesOrder);
 
-        final List<Invoice> invoices1 = invoiceService.saveAll(invoices);
+        final List<SalesInvoice> salesInvoices1 = salesInvoiceService.saveAll(salesInvoices);
 
-        savedSalesOrder.setInvoices(new HashSet<>(invoices1));
+        savedSalesOrder.setInvoices(new HashSet<>(salesInvoices1));
 
-        final Transaction transaction = transactionService.computeInvoicesTransaction(
+        final Transaction transaction = transactionService.computeSalesInvoicesTransaction(
                 salesOrder.getTransaction(),
-                invoiceService.sortInvoicesByDate(savedSalesOrder.getInvoices()),
+                salesInvoiceService.sortInvoicesByDate(savedSalesOrder.getInvoices()),
                 salesOrder.getCustomer().getPrincipalCompany().getChartOfAccounts(),
                 SALES_INCOME,
                 TRADE_DEBTORS,
@@ -111,31 +110,30 @@ public class SalesOrderController {
         savedSalesOrder.setTransaction(transaction1);
 
         //TODO this should factor in delivery note if available
-        invoiceService.computeInventory(savedSalesOrder.getInvoices());
+        salesInvoiceService.computeInventory(savedSalesOrder.getInvoices());
         SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(savedSalesOrder);
         return ResponseEntity.ok().body(singletonMap("success", salesOrder1));
     }
 
-    private Set<Invoice> processInvoices(@RequestBody SalesOrder salesOrder) {
+    private Set<SalesInvoice> processInvoices(@RequestBody SalesOrder salesOrder) {
         return salesOrder.getInvoices()
                     .stream()
-                    .map(invoice -> {
-                        if (Objects.isNull(invoice.getCreatedDatetime())) {
-                            invoice.setCreatedDatetime(dateTimeProvider.now());
+                    .map(salesInvoice -> {
+                        if (Objects.isNull(salesInvoice.getCreatedDatetime())) {
+                            salesInvoice.setCreatedDatetime(dateTimeProvider.now());
                         }
-                        return invoice;
+                        return salesInvoice;
                     })
-                    .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(Invoice::getCreatedDatetime))))
+                    .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(SalesInvoice::getCreatedDatetime))))
                     .stream()
-                    .map(invoice -> {
-                        final List<LineItem> lineItems = salesOrderService.sortLineItemsIntoOrderedList(invoice.getLineItems());
-                        final Set<LineItem> lineItems1 = salesOrderService.validateLineItems(
+                    .map(salesInvoice -> {
+                        final List<SalesInvoiceLineItem> lineItems = salesOrderService.sortInvoiceLineItemsIntoOrderedList(salesInvoice.getLineItems());
+                        final Set<SalesInvoiceLineItem> lineItems1 = salesOrderService.validateInvoiceLineItems(
                                 lineItems);
-                        invoice.setLineItems(lineItems1);
-                        invoice.setInvoiceType(SALES);
+                        salesInvoice.setLineItems(lineItems1);
 
-                        invoice.setTotalPrice(salesOrderService.sumLineItemsSubTotal(lineItems1));
-                        return invoice;
+                        salesInvoice.setTotalPrice(salesOrderService.sumInvoiceLineItemsSubTotal(lineItems1));
+                        return salesInvoice;
                     })
                     .collect(Collectors.toSet());
     }

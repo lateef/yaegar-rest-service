@@ -42,8 +42,8 @@ public class PurchaseOrder extends AbstractEntity {
     private Supplier supplier;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "line_item_purchase_order_id", referencedColumnName = "id")
-    private Set<LineItem> lineItems;
+    @JoinColumn(name = "line_item_id", referencedColumnName = "id")
+    private Set<PurchaseOrderLineItem> lineItems;
 
     @Column(name = "total_price")
     private BigDecimal totalPrice;
@@ -53,8 +53,8 @@ public class PurchaseOrder extends AbstractEntity {
     private Transaction transaction;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "invoice_purchase_order_id", referencedColumnName = "id")
-    private Set<Invoice> invoices;
+    @JoinColumn(name = "purchase_order_id", referencedColumnName = "id")
+    private Set<PurchaseInvoice> invoices;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "purchase_order_event_id", referencedColumnName = "id")

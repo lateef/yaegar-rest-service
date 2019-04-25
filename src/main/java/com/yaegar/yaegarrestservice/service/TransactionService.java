@@ -33,21 +33,24 @@ public class TransactionService {
     private final AccountService accountService;
     private final DateTimeProvider dateTimeProvider;
     private final JournalEntryRepository journalEntryRepository;
-    private final TransactionRepository transactionRepository;
-
     private final PurchaseOrderService purchaseOrderService;
+    private final SalesOrderService salesOrderService;
+    private final TransactionRepository transactionRepository;
 
     public TransactionService(
             AccountService accountService,
-            DateTimeProvider dateTimeProvider, JournalEntryRepository journalEntryRepository,
-            TransactionRepository transactionRepository,
-            PurchaseOrderService purchaseOrderService
+            DateTimeProvider dateTimeProvider,
+            JournalEntryRepository journalEntryRepository,
+            PurchaseOrderService purchaseOrderService,
+            SalesOrderService salesOrderService,
+            TransactionRepository transactionRepository
     ) {
         this.accountService = accountService;
         this.dateTimeProvider = dateTimeProvider;
         this.journalEntryRepository = journalEntryRepository;
-        this.transactionRepository = transactionRepository;
         this.purchaseOrderService = purchaseOrderService;
+        this.salesOrderService = salesOrderService;
+        this.transactionRepository = transactionRepository;
     }
 
     public Transaction computePurchaseOrderPaymentInAdvanceTransaction(PurchaseOrder purchaseOrder, PurchaseOrder savedPurchaseOrder) {
@@ -75,9 +78,9 @@ public class TransactionService {
         return transaction;
     }
 
-    public Transaction computeInvoicesTransaction(
+    public Transaction computePurchaseInvoicesTransaction(
             Transaction transaction,
-            List<Invoice> invoices,
+            List<PurchaseInvoice> invoices,
             ChartOfAccounts chartOfAccounts,
             AccountType debitAccountType,
             AccountType creditAccountType,
@@ -111,7 +114,60 @@ public class TransactionService {
 
         IntStream.range(0, invoices.size())
                 .forEach(idx -> {
-                    final List<LineItem> lineItems = purchaseOrderService.sortLineItemsIntoOrderedList(invoices.get(idx).getLineItems());
+                    final List<PurchaseInvoiceLineItem> lineItems = purchaseOrderService.sortInvoiceLineItemsIntoOrderedList(invoices.get(idx).getLineItems());
+                    IntStream.range(0, lineItems.size())
+                            .forEach(idx1 -> {
+                                JournalEntry purchasesJournalEntry = createJournalEntry(debitAccount, lineItems.get(idx1).getSubTotal(), DEBIT, entry.get(), "positive");
+                                entry.getAndSet(entry.get() + 1);
+
+                                transaction.getJournalEntries().add(purchasesJournalEntry);
+                            });
+                });
+
+        BigDecimal totalDebitPrepayments = getJournalEntriesTotalForAccountAndTransactionSide(transaction.getJournalEntries(), creditAccount, DEBIT);
+        JournalEntry prepaymentJournalEntry = createJournalEntry(creditAccount, totalDebitPrepayments, CREDIT, entry.get(), "negative");
+        entry.getAndSet(entry.get() + 1);
+        transaction.getJournalEntries().add(prepaymentJournalEntry);
+        return transaction;
+    }
+
+    public Transaction computeSalesInvoicesTransaction(
+            Transaction transaction,
+            List<SalesInvoice> invoices,
+            ChartOfAccounts chartOfAccounts,
+            AccountType debitAccountType,
+            AccountType creditAccountType,
+            Long transactionTypeId
+    ) {
+        transaction.setTransactionTypeId(transactionTypeId);
+
+        AccountType accountTypeDebit = null;
+        if (debitAccountType.equals(PURCHASES)) {
+            accountTypeDebit = EXPENSES;
+        } else if (debitAccountType.equals(SALES_INCOME)) {
+            accountTypeDebit = INCOME_REVENUE;
+        }
+
+        AccountType accountTypeCredit = null;
+        if (creditAccountType.equals(PREPAYMENT)) {
+            accountTypeCredit = CASH_AND_CASH_EQUIVALENTS;
+        } else if (creditAccountType.equals(TRADE_DEBTORS)) {
+            accountTypeCredit = CURRENT_ASSETS;
+        }
+        final Account debitAccount = accountService.findByChartOfAccountsAndNameAndAccountTypeAndAccountCategory(
+                chartOfAccounts, debitAccountType.getType(), accountTypeDebit, null
+        ).orElseThrow(NullPointerException::new);
+
+        final Account creditAccount = accountService.findByChartOfAccountsAndNameAndAccountTypeAndAccountCategory(
+                chartOfAccounts, creditAccountType.getType(), accountTypeCredit, null
+        ).orElseThrow(NullPointerException::new);
+
+        final Integer maxEntry = getMaxEntry(transaction);
+        AtomicReference<Integer> entry = new AtomicReference<>(maxEntry);
+
+        IntStream.range(0, invoices.size())
+                .forEach(idx -> {
+                    final List<SalesInvoiceLineItem> lineItems = salesOrderService.sortInvoiceLineItemsIntoOrderedList(invoices.get(idx).getLineItems());
                     IntStream.range(0, lineItems.size())
                             .forEach(idx1 -> {
                                 JournalEntry purchasesJournalEntry = createJournalEntry(debitAccount, lineItems.get(idx1).getSubTotal(), DEBIT, entry.get(), "positive");
@@ -174,14 +230,11 @@ public class TransactionService {
         transaction.setJournalEntries(null);
         final Transaction transaction1 = transactionRepository.save(transaction);
 
-        final String creditDescription = getCreditDescription(journalEntries);
-        final String debitDescription = getDebitDescription(journalEntries);
-        //TODO if either is null set with the other for now
         final List<JournalEntry> journalEntries1 = journalEntries
                 .stream()
                 .map(journalEntry -> {
                     journalEntry.setTransaction(transaction1);
-                    String description = (journalEntry.getTransactionSide().equals(CREDIT)) ? debitDescription : creditDescription;
+                    String description = getDescription(journalEntry, journalEntries);
                     validateAndSetShortDescription(journalEntry, description);
                     validateAndSetDescription(journalEntry, description);
                     if (Objects.isNull(journalEntry.getTransactionDatetime())) {
@@ -276,21 +329,13 @@ public class TransactionService {
         return prepaymentJournalEntry;
     }
 
-    private String getDebitDescription(Set<JournalEntry> journalEntries) {
-        return getDescription(journalEntries, DEBIT);
-    }
-
-    private String getCreditDescription(Set<JournalEntry> journalEntries) {
-        return getDescription(journalEntries, CREDIT);
-    }
-
-    private String getDescription(Set<JournalEntry> journalEntries, TransactionSide transactionSide) {
+    private String getDescription(JournalEntry refJournalEntry, Set<JournalEntry> journalEntries) {
         final Set<String> uniqueAccountNames = journalEntries
                 .stream()
-                .filter(journalEntry -> journalEntry.getTransactionSide().equals(transactionSide))
+                .filter(journalEntry -> !journalEntry.getAccount().getName().equals(refJournalEntry.getAccount().getName()))
                 .map(journalEntry -> journalEntry.getAccount().getName())
                 .collect(Collectors.toSet());
-        return String.join(" *** ", uniqueAccountNames);
+        return refJournalEntry.getAccount().getName() + " *** " + String.join(" *** ", uniqueAccountNames);
     }
 
     private Integer getMaxEntry(Transaction transaction) {
