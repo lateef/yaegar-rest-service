@@ -2,7 +2,7 @@ package com.yaegar.yaegarrestservice.controller;
 
 import com.yaegar.yaegarrestservice.model.*;
 import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
-import com.yaegar.yaegarrestservice.service.InvoiceService;
+import com.yaegar.yaegarrestservice.service.PurchaseInvoiceService;
 import com.yaegar.yaegarrestservice.service.PurchaseOrderService;
 import com.yaegar.yaegarrestservice.service.SupplierService;
 import com.yaegar.yaegarrestservice.service.TransactionService;
@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.PREPAYMENT;
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.PURCHASES;
-import static com.yaegar.yaegarrestservice.model.enums.InvoiceType.PURCHASE;
 import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID_IN_ADVANCE;
 import static java.util.Collections.singletonMap;
 
@@ -27,20 +26,20 @@ public class PurchaseOrderController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PurchaseOrderController.class);
 
     private final DateTimeProvider dateTimeProvider;
-    private final InvoiceService invoiceService;
+    private final PurchaseInvoiceService purchaseInvoiceService;
     private final PurchaseOrderService purchaseOrderService;
     private final SupplierService supplierService;
     private final TransactionService transactionService;
 
     public PurchaseOrderController(
             DateTimeProvider dateTimeProvider,
-            InvoiceService invoiceService,
+            PurchaseInvoiceService purchaseInvoiceService,
             PurchaseOrderService purchaseOrderService,
             SupplierService supplierService,
             TransactionService transactionService
     ) {
         this.dateTimeProvider = dateTimeProvider;
-        this.invoiceService = invoiceService;
+        this.purchaseInvoiceService = purchaseInvoiceService;
         this.purchaseOrderService = purchaseOrderService;
         this.supplierService = supplierService;
         this.transactionService = transactionService;
@@ -52,11 +51,11 @@ public class PurchaseOrderController {
                 .orElseThrow(NullPointerException::new);
         purchaseOrder.setSupplier(supplier);
 
-        final List<LineItem> lineItems = purchaseOrderService.sortLineItemsIntoOrderedList(purchaseOrder.getLineItems());
-        final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(lineItems);
+        final List<PurchaseOrderLineItem> lineItems = purchaseOrderService.sortOrderLineItemsIntoOrderedList(purchaseOrder.getLineItems());
+        final Set<PurchaseOrderLineItem> lineItems1 = purchaseOrderService.validateOrderLineItems(lineItems);
         purchaseOrder.setLineItems(lineItems1);
 
-        purchaseOrder.setTotalPrice(purchaseOrderService.sumLineItemsSubTotal(lineItems1));
+        purchaseOrder.setTotalPrice(purchaseOrderService.sumLineOrderItemsSubTotal(lineItems1));
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(purchaseOrder);
         return ResponseEntity.ok().body(singletonMap("success", purchaseOrder1));
     }
@@ -92,15 +91,15 @@ public class PurchaseOrderController {
                 .getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        final Set<Invoice> invoices = processInvoices(purchaseOrder);
+        final Set<PurchaseInvoice> invoices = processInvoices(purchaseOrder);
 
-        final List<Invoice> invoices1 = invoiceService.saveAll(invoices);
+        final List<PurchaseInvoice> invoices1 = purchaseInvoiceService.saveAll(invoices);
 
         savedPurchaseOrder.setInvoices(new HashSet<>(invoices1));
 
-        final Transaction transaction = transactionService.computeInvoicesTransaction(
+        final Transaction transaction = transactionService.computePurchaseInvoicesTransaction(
                 purchaseOrder.getTransaction(),
-                invoiceService.sortInvoicesByDate(savedPurchaseOrder.getInvoices()),
+                purchaseInvoiceService.sortInvoicesByDate(savedPurchaseOrder.getInvoices()),
                 purchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts(),
                 PURCHASES,
                 PREPAYMENT,
@@ -111,12 +110,12 @@ public class PurchaseOrderController {
         savedPurchaseOrder.setTransaction(transaction1);
 
         //TODO this should factor in delivery note if available
-        invoiceService.computeInventory(savedPurchaseOrder.getInvoices());
+        purchaseInvoiceService.computeInventory(savedPurchaseOrder.getInvoices());
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder);
         return ResponseEntity.ok().body(singletonMap("success", purchaseOrder1));
     }
 
-    private Set<Invoice> processInvoices(PurchaseOrder purchaseOrder) {
+    private Set<PurchaseInvoice> processInvoices(PurchaseOrder purchaseOrder) {
         return purchaseOrder.getInvoices()
                     .stream()
                     .map(invoice -> {
@@ -125,15 +124,15 @@ public class PurchaseOrderController {
                         }
                         return invoice;
                     })
-                    .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(Invoice::getCreatedDatetime))))
+                    .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PurchaseInvoice::getCreatedDatetime))))
                     .stream()
                     .map(invoice -> {
-                        final List<LineItem> lineItems = purchaseOrderService.sortLineItemsIntoOrderedList(invoice.getLineItems());
-                        final Set<LineItem> lineItems1 = purchaseOrderService.validateLineItems(
+                        final List<PurchaseInvoiceLineItem> lineItems = purchaseOrderService
+                                .sortInvoiceLineItemsIntoOrderedList(invoice.getLineItems());
+                        final Set<PurchaseInvoiceLineItem> lineItems1 = purchaseOrderService.validateInvoiceLineItems(
                                 lineItems);
                         invoice.setLineItems(lineItems1);
-                        invoice.setInvoiceType(PURCHASE);
-                        invoice.setTotalPrice(purchaseOrderService.sumLineItemsSubTotal(lineItems1));
+                        invoice.setTotalPrice(purchaseOrderService.sumLineInvoiceItemsSubTotal(lineItems1));
                         return invoice;
                     })
                     .collect(Collectors.toSet());

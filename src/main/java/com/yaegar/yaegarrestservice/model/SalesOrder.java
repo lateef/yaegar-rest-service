@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 import java.util.Set;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"customer", "lineItems", "transaction", "invoices"})
 @Entity
 @Table
 public class SalesOrder extends AbstractEntity {
@@ -42,8 +42,8 @@ public class SalesOrder extends AbstractEntity {
     private Customer customer;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "line_item_sales_order_id", referencedColumnName = "id")
-    private Set<LineItem> lineItems;
+    @JoinColumn(name = "line_item_id", referencedColumnName = "id")
+    private Set<SalesOrderLineItem> lineItems;
 
     @Column(name = "total_price")
     private BigDecimal totalPrice;
@@ -53,8 +53,8 @@ public class SalesOrder extends AbstractEntity {
     private Transaction transaction;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "invoice_sales_order_id", referencedColumnName = "id")
-    private Set<Invoice> invoices;
+    @JoinColumn(name = "sales_order_id", referencedColumnName = "id")
+    private Set<SalesInvoice> invoices;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "sales_order_event_id", referencedColumnName = "id")

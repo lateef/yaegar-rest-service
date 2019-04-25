@@ -19,10 +19,7 @@ public class PurchaseOrderServiceTest {
 
     @Before
     public void setup() {
-        purchaseOrderService = new PurchaseOrderService(
-                productRepository,
-                purchaseOrderRepository
-        );
+        purchaseOrderService = new PurchaseOrderService(productRepository, purchaseOrderRepository);
     }
 
     @Test

@@ -1,20 +1,28 @@
 package com.yaegar.yaegarrestservice.service;
 
+import com.yaegar.yaegarrestservice.model.SalesOrderLineItem;
+import com.yaegar.yaegarrestservice.model.Product;
+import com.yaegar.yaegarrestservice.model.SalesInvoiceLineItem;
 import com.yaegar.yaegarrestservice.model.SalesOrder;
 import com.yaegar.yaegarrestservice.repository.ProductRepository;
 import com.yaegar.yaegarrestservice.repository.SalesOrderRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static java.math.BigDecimal.ZERO;
 
 @Service
-public class SalesOrderService extends OrderService {
+public class SalesOrderService {
 
-    private SalesOrderRepository salesOrderRepository;
+    private final ProductRepository productRepository;
+    private final SalesOrderRepository salesOrderRepository;
 
     public SalesOrderService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository) {
-        super(productRepository);
+        this.productRepository = productRepository;
         this.salesOrderRepository = salesOrderRepository;
     }
 
@@ -28,5 +36,65 @@ public class SalesOrderService extends OrderService {
 
     public List<SalesOrder> getSalesOrders(Long companyId) {
         return salesOrderRepository.findAllByCustomerPrincipalCompanyId(companyId);
+    }
+
+    public Set<SalesOrderLineItem> validateOrderLineItems(List<SalesOrderLineItem> lineItems) {
+        IntStream.range(0, lineItems.size())
+                .forEach(idx -> {
+                    final SalesOrderLineItem lineItem = lineItems.get(idx);
+                    lineItem.setEntry(idx + 1);
+
+                    Product product = productRepository
+                            .findById(lineItem
+                                    .getProduct()
+                                    .getId())
+                            .orElseThrow(NullPointerException::new);
+
+                    lineItem.setProduct(product);
+                    lineItem.setSubTotal(lineItem.getUnitPrice().multiply(BigDecimal.valueOf(lineItem.getQuantity())));
+                });
+        return new HashSet<>(lineItems);
+    }
+
+    public Set<SalesInvoiceLineItem> validateInvoiceLineItems(List<SalesInvoiceLineItem> lineItems) {
+        IntStream.range(0, lineItems.size())
+                .forEach(idx -> {
+                    final SalesInvoiceLineItem lineItem = lineItems.get(idx);
+                    lineItem.setEntry(idx + 1);
+
+                    Product product = productRepository
+                            .findById(lineItem
+                                    .getProduct()
+                                    .getId())
+                            .orElseThrow(NullPointerException::new);
+
+                    lineItem.setProduct(product);
+                    lineItem.setSubTotal(lineItem.getUnitPrice().multiply(BigDecimal.valueOf(lineItem.getQuantity())));
+                });
+        return new HashSet<>(lineItems);
+    }
+
+    public BigDecimal sumOrderLineItemsSubTotal(Set<SalesOrderLineItem> lineItems) {
+        return lineItems.stream()
+                .map(SalesOrderLineItem::getSubTotal)
+                .reduce(ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal sumInvoiceLineItemsSubTotal(Set<SalesInvoiceLineItem> lineItems) {
+        return lineItems.stream()
+                .map(SalesInvoiceLineItem::getSubTotal)
+                .reduce(ZERO, BigDecimal::add);
+    }
+
+    public List<SalesOrderLineItem> sortOrderLineItemsIntoOrderedList(Set<SalesOrderLineItem> lineItems) {
+        return lineItems.stream()
+                .sorted(Comparator.comparing(SalesOrderLineItem::getEntry))
+                .collect(Collectors.toList());
+    }
+
+    public List<SalesInvoiceLineItem> sortInvoiceLineItemsIntoOrderedList(Set<SalesInvoiceLineItem> lineItems) {
+        return lineItems.stream()
+                .sorted(Comparator.comparing(SalesInvoiceLineItem::getEntry))
+                .collect(Collectors.toList());
     }
 }

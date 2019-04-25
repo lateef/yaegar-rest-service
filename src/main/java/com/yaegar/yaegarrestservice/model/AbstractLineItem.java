@@ -4,30 +4,13 @@ import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
 
+@MappedSuperclass
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Entity
-@Table
-public class LineItem extends AbstractEntity {
-    private static final long serialVersionUID = -6014073973315307273L;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private long id;
-
+public abstract class AbstractLineItem extends AbstractEntity {
     @Column(name = "entry")
     private int entry;
 
