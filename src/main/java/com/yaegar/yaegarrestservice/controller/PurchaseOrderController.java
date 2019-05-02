@@ -12,19 +12,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID_IN_ADVANCE;
+import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.DEBIT;
 import static java.util.Collections.singletonMap;
 
 @RestController
@@ -49,6 +45,7 @@ public class PurchaseOrderController {
         this.transactionService = transactionService;
     }
 
+    @Transactional
     @RequestMapping(value = "/save-purchase-order", method = RequestMethod.POST)
     public ResponseEntity<Map<String, PurchaseOrder>> savePurchaseOrder(@RequestBody final PurchaseOrder purchaseOrder) {
         Supplier supplier = supplierService.findById(purchaseOrder.getSupplier().getId())
@@ -72,54 +69,20 @@ public class PurchaseOrderController {
 
     @Transactional
     @RequestMapping(value = "/save-purchase-order-transaction", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, PurchaseOrder>> saveTransaction(@RequestBody PurchaseOrder purchaseOrder) throws Exception {
+    public ResponseEntity<Map<String, PurchaseOrder>> saveTransaction(@RequestBody PurchaseOrder purchaseOrder) {
         PurchaseOrder savedPurchaseOrder = purchaseOrderService.getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        final Transaction savedTransaction;
-        if (savedPurchaseOrder.getTransaction() != null) {
-            savedTransaction = transactionService.findById(savedPurchaseOrder.getTransaction().getId());
-        } else {
-            savedTransaction = null;
-        }
+        final Transaction transaction = transactionService.computePurchaseOrderPaymentTransaction(
+                purchaseOrder, savedPurchaseOrder
+        );
+        // TODO get and set purchase order state
+        savedPurchaseOrder.setPurchaseOrderState(PAID_IN_ADVANCE);
+        savedPurchaseOrder.setTransaction(transaction);
 
-        if (savedTransaction == null) {
-            final Set<PurchaseOrderLineItem> purchaseOrderLineItems = purchaseOrderService
-                    .validateOrderLineItems(new ArrayList<>(purchaseOrder.getLineItems()));
-            final BigDecimal total = purchaseOrderService.sumLineOrderItemsSubTotal(purchaseOrderLineItems);
-
-            if (purchaseOrder.getTotalPrice().compareTo(total) < 1) {
-                final Transaction transaction = transactionService.computePurchaseOrderPaymentTransaction(
-                        purchaseOrder, savedPurchaseOrder
-                );
-
-                final Transaction transaction1 = transactionService.saveTransaction(transaction);
-                savedPurchaseOrder.setPurchaseOrderState(PAID_IN_ADVANCE);
-                savedPurchaseOrder.setTransaction(transaction1);
-            } else {
-                //TODO create custom exception
-                //TODO  excess should go into surplus account
-                throw new Exception("Amount exceeds total payment exception");
-            }
-        } else {
-
-        }
-
-        /** TODO
-         is there an existing transaction
-         no existing transaction: check amount exceeds total order amount
-         yes exceeds total order: for now throw amount exceed payment exception - later excess should go into surplus account
-         no exceeds total order: add prepayment
-
-         yes existing transaction: check amount exceeds balance
-         yes exceeds total balance: for now throw amount exceed payment exception - later excess should go into surplus account
-         no exceeds total balance: check total value of goods delivered, check total prepayments
-         if outstanding goods delivered, balance purchases/trade creditor and surplus goes to prepayment
-         */
-
-
-        // TODO calculate and set paid up amount on purchase order
-
+        final BigDecimal totalDebitAmount = transactionService.getJournalEntriesTotalForTransactionSide(
+                transaction.getJournalEntries(), DEBIT);
+        savedPurchaseOrder.setPaid(totalDebitAmount);
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder);
         return ResponseEntity.ok().body(singletonMap("success", purchaseOrder1));
     }

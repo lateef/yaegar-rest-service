@@ -313,7 +313,6 @@ create table purchase_order
   transaction_id bigint null,
   total_price decimal(19,2) null,
   paid decimal(19,2) null,
-  paid_amount      decimal(19,2) null,
   description        varchar(1000) null,
   purchase_order_state varchar(50) not null,
   created_by       bigint null,

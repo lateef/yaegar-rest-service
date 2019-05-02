@@ -162,7 +162,7 @@ public class PurchaseInvoiceService {
                 .collect(Collectors.toList());
     }
 
-    public List<PurchaseInvoice> filterUnSavedInvoices(Set<PurchaseInvoice> invoices) {
+    public List<PurchaseInvoice> filterUnsavedInvoices(Set<PurchaseInvoice> invoices) {
         return invoices.stream()
                 .filter(invoice -> invoice.getId() == null)
                 .collect(Collectors.toList());
