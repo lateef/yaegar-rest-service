@@ -1,6 +1,7 @@
 package com.yaegar.yaegarrestservice.model.enums;
 
 public enum AccountCategory {
+    CASH("CASH"),
     PRODUCT("PRODUCT"),
     SERVICE("SERVICE"),
     PRODUCT_DISCOUNT("PRODUCT DISCOUNT"),

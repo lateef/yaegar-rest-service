@@ -73,7 +73,20 @@ public class SalesOrderController {
                 .getSalesOrder(salesOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        final Transaction transaction = transactionService.computeSalesOrderPaymentInArrearsTransaction(
+        /** TODO
+         is there an existing transaction
+         no existing transaction: check amount exceeds total order
+         yes exceeds total order: for now throw amount exceed payment exception - later excess should go into surplus account
+         no exceeds total order: add prepayment
+
+         yes existing transaction: check amount exceeds balance
+         yes exceeds total balance: for now throw amount exceed payment exception - later excess should go into surplus account
+         no exceeds total balance: check total value of goods delivered, check total prepayments
+         if outstanding goods delivered, balance purchases and surplus goes to prepayment
+         */
+
+
+        final Transaction transaction = transactionService.computeSalesOrderPaymentTransaction(
                 salesOrder, savedSalesOrder
         );
 

@@ -312,6 +312,7 @@ create table purchase_order
   supplier_id  bigint null,
   transaction_id bigint null,
   total_price decimal(19,2) null,
+  paid decimal(19,2) null,
   paid_amount      decimal(19,2) null,
   description        varchar(1000) null,
   purchase_order_state varchar(50) not null,
@@ -336,6 +337,29 @@ create table purchase_invoice
   delivery_datetime datetime null,
   created_by       bigint null,
   updated_by       bigint null
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table sales_order
+(
+  id bigint auto_increment primary key,
+  created_datetime datetime null,
+  updated_datetime datetime null,
+  number       bigint null,
+  company_id  bigint null,
+  customer_id  bigint null,
+  transaction_id   bigint null,
+  total_price decimal(19,2) null,
+  paid decimal(19,2) null,
+  received_amount    decimal(19,2) null,
+  description        varchar(1000) null,
+  sales_order_state varchar(50) not null,
+  delivery_datetime datetime null,
+  created_by       bigint null,
+  updated_by       bigint null,
+  constraint FK_sales_order_customer
+    foreign key (customer_id) references customer (id),
+  constraint FK_sales_order_transaction
+    foreign key (transaction_id) references transaction (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table sales_invoice
@@ -363,28 +387,6 @@ create table purchase_order_event
   description        varchar(1000) null,
   created_by       bigint null,
   updated_by       bigint null
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-create table sales_order
-(
-  id bigint auto_increment primary key,
-  created_datetime datetime null,
-  updated_datetime datetime null,
-  number       bigint null,
-  company_id  bigint null,
-  customer_id  bigint null,
-  transaction_id   bigint null,
-  total_price decimal(19,2) null,
-  received_amount    decimal(19,2) null,
-  description        varchar(1000) null,
-  sales_order_state varchar(50) not null,
-  delivery_datetime datetime null,
-  created_by       bigint null,
-  updated_by       bigint null,
-  constraint FK_sales_order_customer
-    foreign key (customer_id) references customer (id),
-  constraint FK_sales_order_transaction
-    foreign key (transaction_id) references transaction (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table sales_order_event
