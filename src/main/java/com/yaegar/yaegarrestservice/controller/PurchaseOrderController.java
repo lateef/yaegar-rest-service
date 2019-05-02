@@ -1,7 +1,9 @@
 package com.yaegar.yaegarrestservice.controller;
 
-import com.yaegar.yaegarrestservice.model.*;
-import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
+import com.yaegar.yaegarrestservice.model.PurchaseOrder;
+import com.yaegar.yaegarrestservice.model.PurchaseOrderLineItem;
+import com.yaegar.yaegarrestservice.model.Supplier;
+import com.yaegar.yaegarrestservice.model.Transaction;
 import com.yaegar.yaegarrestservice.service.PurchaseInvoiceService;
 import com.yaegar.yaegarrestservice.service.PurchaseOrderService;
 import com.yaegar.yaegarrestservice.service.SupplierService;
@@ -10,11 +12,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID_IN_ADVANCE;
 import static java.util.Collections.singletonMap;
@@ -24,20 +32,17 @@ import static java.util.Collections.singletonMap;
 public class PurchaseOrderController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PurchaseOrderController.class);
 
-    private final DateTimeProvider dateTimeProvider;
     private final PurchaseInvoiceService purchaseInvoiceService;
     private final PurchaseOrderService purchaseOrderService;
     private final SupplierService supplierService;
     private final TransactionService transactionService;
 
     public PurchaseOrderController(
-            DateTimeProvider dateTimeProvider,
             PurchaseInvoiceService purchaseInvoiceService,
             PurchaseOrderService purchaseOrderService,
             SupplierService supplierService,
             TransactionService transactionService
     ) {
-        this.dateTimeProvider = dateTimeProvider;
         this.purchaseInvoiceService = purchaseInvoiceService;
         this.purchaseOrderService = purchaseOrderService;
         this.supplierService = supplierService;
@@ -125,66 +130,14 @@ public class PurchaseOrderController {
         PurchaseOrder savedPurchaseOrder = purchaseOrderService.getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        final Transaction savedTransaction;
-        if (savedPurchaseOrder.getTransaction() != null) {
-            savedTransaction = transactionService.findById(savedPurchaseOrder.getTransaction().getId());
-        } else {
-            savedTransaction = null;
-        }
+        final Transaction transaction = transactionService.computePurchaseInvoicesTransaction(purchaseOrder,
+                savedPurchaseOrder);
+        savedPurchaseOrder.setTransaction(transaction);
 
-        if (savedTransaction == null) {
-            final Set<PurchaseInvoice> invoices = processInvoices(purchaseOrder);
-            final List<PurchaseInvoice> invoices1 = purchaseInvoiceService.saveAll(invoices);
-            savedPurchaseOrder.setInvoices(new HashSet<>(invoices1));
+        //TODO this should factor in delivery note if available
+        purchaseInvoiceService.computeInventory(savedPurchaseOrder.getInvoices());
 
-            final Transaction transaction = transactionService.computePurchaseInvoicesTransaction(purchaseOrder,
-                    savedPurchaseOrder);
-
-            final Transaction transaction1 = transactionService.saveTransaction(transaction);
-            savedPurchaseOrder.setTransaction(transaction1);
-
-            //TODO this should factor in delivery note if available
-            purchaseInvoiceService.computeInventory(savedPurchaseOrder.getInvoices());
-
-        } else {
-
-        }
-
-        /** TODO
-         is there an existing transaction
-         no existing transaction: check order exceeds total order
-         yes exceeds total order: for now throw amount exceed order exception - later excess should go into surplus order
-         no exceeds total order: add prepayment
-
-         yes existing transaction: check order exceeds order balance
-         yes exceeds total order balance: for now throw amount exceed payment exception - later excess should go into surplus order
-         no exceeds total order balance: check total prepayments, check total value of goods delivered
-         if outstanding prepayment, balance prepayment and surplus goes to purchases/trade creditors
-         */
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder);
         return ResponseEntity.ok().body(singletonMap("success", purchaseOrder1));
-    }
-
-    private Set<PurchaseInvoice> processInvoices(PurchaseOrder purchaseOrder) {
-        return purchaseOrder.getInvoices()
-                .stream()
-                .map(invoice -> {
-                    if (Objects.isNull(invoice.getCreatedDatetime())) {
-                        invoice.setCreatedDatetime(dateTimeProvider.now());
-                    }
-                    return invoice;
-                })
-                .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PurchaseInvoice::getCreatedDatetime))))
-                .stream()
-                .map(invoice -> {
-                    final List<PurchaseInvoiceLineItem> lineItems = purchaseOrderService
-                            .sortInvoiceLineItemsIntoOrderedList(invoice.getLineItems());
-                    final Set<PurchaseInvoiceLineItem> lineItems1 = purchaseOrderService.validateInvoiceLineItems(
-                            lineItems);
-                    invoice.setLineItems(lineItems1);
-                    invoice.setTotalPrice(purchaseOrderService.sumLineInvoiceItemsSubTotal(lineItems1));
-                    return invoice;
-                })
-                .collect(Collectors.toSet());
     }
 }

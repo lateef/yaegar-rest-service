@@ -84,14 +84,36 @@ public class TransactionService {
 
     public Transaction computePurchaseInvoicesTransaction(PurchaseOrder purchaseOrder, PurchaseOrder savedPurchaseOrder) {
         final Transaction transaction = purchaseOrder.getTransaction();
+        final Transaction savedTransaction = savedPurchaseOrder.getTransaction();
         transaction.setTransactionTypeId(savedPurchaseOrder.getId());
         final ChartOfAccounts chartOfAccounts = savedPurchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts();
-
-        final Account tradeCreditorsAccount = getAccount(chartOfAccounts, TRADE_CREDITORS, CURRENT_LIABILITIES);
-        final Account purchasesAccount = getAccount(chartOfAccounts, PURCHASES, EXPENSES);
         final AtomicInteger maxEntry = getMaxEntry(transaction);
+        final List<PurchaseInvoice> savedPurchaseInvoices = purchaseInvoiceService.filterSavedInvoices(purchaseOrder.getInvoices());
+        final List<PurchaseInvoice> unSavedPurchaseInvoices = purchaseInvoiceService.filterUnSavedInvoices(purchaseOrder.getInvoices());
 
-        final List<PurchaseInvoice> invoices = purchaseInvoiceService.sortInvoicesByDate(savedPurchaseOrder.getInvoices());
+
+        /** TODO
+         is there an existing transaction
+         no existing transaction: check order exceeds total order
+         yes exceeds total order: for now throw amount exceed order exception - later excess should go into surplus order
+         no exceeds total order: add prepayment
+
+         yes existing transaction: check order exceeds order balance
+         yes exceeds total order balance: for now throw amount exceed payment exception - later excess should go into surplus order
+         no exceeds total order balance: check total prepayments, check total value of goods delivered
+         if outstanding prepayment, balance prepayment and surplus goes to purchases/trade creditors
+         */
+
+
+        if (savedTransaction == null) {
+            final Account tradeCreditorsAccount = getAccount(chartOfAccounts, TRADE_CREDITORS, CURRENT_LIABILITIES);
+            final Account purchasesAccount = getAccount(chartOfAccounts, PURCHASES, EXPENSES);
+
+            final List<PurchaseInvoice> invoices = purchaseInvoiceService.processInvoices(unSavedPurchaseInvoices);
+            final List<PurchaseInvoice> invoices1 = purchaseInvoiceService.saveAll(invoices);
+            savedPurchaseOrder.setInvoices(new HashSet<>(invoices1));
+
+            final List<PurchaseInvoice> invoices2 = purchaseInvoiceService.sortInvoicesByDate(savedPurchaseOrder.getInvoices());
 
 
 //        final AccountType debitAccountType = PURCHASES;
@@ -121,25 +143,50 @@ public class TransactionService {
 //        ).orElseThrow(NullPointerException::new);
 
 
-        IntStream.range(0, invoices.size())
-                .forEach(idx -> {
-                    final List<PurchaseInvoiceLineItem> lineItems = purchaseOrderService.sortInvoiceLineItemsIntoOrderedList(
-                            invoices.get(idx).getLineItems());
-                    IntStream.range(0, lineItems.size())
-                            .forEach(idx1 -> {
-                                JournalEntry purchasesJournalEntry = createJournalEntry(
-                                        purchasesAccount, lineItems.get(idx1).getSubTotal(), DEBIT, maxEntry, "positive"
-                                );
-                                maxEntry.getAndIncrement();
-                                transaction.getJournalEntries().add(purchasesJournalEntry);
-                            });
-                });
+            IntStream.range(0, invoices2.size())
+                    .forEach(idx -> {
+                        final List<PurchaseInvoiceLineItem> lineItems = getSortedPurchaseInvoiceLineItems(invoices2, idx);
+                        saveJournalEntryToTransaction(transaction, purchasesAccount, maxEntry, lineItems, "positive");
+                    });
 
-        BigDecimal totalDebitTradeCreditors = getJournalEntriesTotalForAccountAndTransactionSide(transaction.getJournalEntries(), tradeCreditorsAccount, DEBIT);
-        JournalEntry tradeCreditorsJournalEntry = createJournalEntry(tradeCreditorsAccount, totalDebitTradeCreditors, CREDIT, maxEntry, "negative");
-        maxEntry.getAndIncrement();
-        transaction.getJournalEntries().add(tradeCreditorsJournalEntry);
-        return transaction;
+            final BigDecimal totalDebitTradeCreditors = getJournalEntriesTotalForAccountAndTransactionSide(transaction.getJournalEntries(), tradeCreditorsAccount, DEBIT);
+            final JournalEntry tradeCreditorsJournalEntry = createJournalEntry(tradeCreditorsAccount, totalDebitTradeCreditors, CREDIT, maxEntry, "negative");
+            maxEntry.getAndIncrement();
+            transaction.getJournalEntries().add(tradeCreditorsJournalEntry);
+        } else {
+            final Account prepaymentsAccount = getAccount(chartOfAccounts, PREPAYMENT, CASH_AND_CASH_EQUIVALENTS);
+            BigDecimal totalDebitPrepayments = getJournalEntriesTotalForAccountAndTransactionSide(transaction.getJournalEntries(), prepaymentsAccount, DEBIT);
+
+            if (totalDebitPrepayments.compareTo(ZERO) > 0) {//we have some money paid upfront
+                final BigDecimal totalInvoiceOrder = purchaseInvoiceService.sumTotal(unSavedPurchaseInvoices);
+
+                if (totalDebitPrepayments.compareTo(totalInvoiceOrder) > 0) {
+                    JournalEntry prepaymentJournalEntry = createJournalEntry(prepaymentsAccount, totalInvoiceOrder, CREDIT, maxEntry, "negative");
+
+                }
+                //deduct prepayments with total of order purchase
+                //if order purchase is less than or equal prepayment no further work
+                //if order purchase is greater than prepayment balance should go to trade creditors
+            } else {
+
+            }
+        }
+
+        return saveTransaction(transaction);
+    }
+
+    private void saveJournalEntryToTransaction(Transaction transaction, Account account, AtomicInteger maxEntry, List<PurchaseInvoiceLineItem> lineItems, String sign) {
+        IntStream.range(0, lineItems.size())
+                .forEach(idx1 -> {
+                    JournalEntry journalEntry = createJournalEntry(account, lineItems.get(idx1).getSubTotal(), DEBIT, maxEntry, sign);
+                    maxEntry.getAndIncrement();
+                    transaction.getJournalEntries().add(journalEntry);
+                });
+    }
+
+    private List<PurchaseInvoiceLineItem> getSortedPurchaseInvoiceLineItems(List<PurchaseInvoice> invoices, int index) {
+        return purchaseInvoiceService.sortInvoiceLineItemsIntoOrderedList(
+                invoices.get(index).getLineItems());
     }
 
     private Account getAccount(ChartOfAccounts chartOfAccounts, AccountType tradeCreditors, AccountType currentLiabilities) {
