@@ -5,11 +5,13 @@ import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
 import com.yaegar.yaegarrestservice.model.enums.TransactionSide;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@ToString(exclude = {"transaction"})
 @Data
 @EqualsAndHashCode(callSuper = true, exclude = "transaction")
 @Entity

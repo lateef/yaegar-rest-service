@@ -48,10 +48,10 @@ public class AccountService {
     }
 
     public Optional<Account> findByChartOfAccountsAndNameAndAccountTypeAndAccountCategory(
-            ChartOfAccounts chartOfAccounts, String name, AccountType accountType, AccountCategory accountCategory
+            ChartOfAccounts chartOfAccounts, String accountName, AccountType accountType, AccountCategory accountCategory
     ) {
         return accountRepository.findByChartOfAccountsAndNameAndAccountTypeAndAccountCategory(
-                chartOfAccounts, name, accountType, accountCategory);
+                chartOfAccounts, accountName, accountType, accountCategory);
     }
 
     public List<Account> findByParentId(Long parentId) {

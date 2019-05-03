@@ -59,45 +59,15 @@ public class PurchaseOrderService {
         return new HashSet<>(lineItems);
     }
 
-    public Set<PurchaseInvoiceLineItem> validateInvoiceLineItems(List<PurchaseInvoiceLineItem> lineItems) {
-        IntStream.range(0, lineItems.size())
-                .forEach(idx -> {
-                    final PurchaseInvoiceLineItem lineItem = lineItems.get(idx);
-                    lineItem.setEntry(idx + 1);
-
-                    Product product = productRepository
-                            .findById(lineItem
-                                    .getProduct()
-                                    .getId())
-                            .orElseThrow(NullPointerException::new);
-
-                    lineItem.setProduct(product);
-                    lineItem.setSubTotal(lineItem.getUnitPrice().multiply(BigDecimal.valueOf(lineItem.getQuantity())));
-                });
-        return new HashSet<>(lineItems);
-    }
-
     public BigDecimal sumLineOrderItemsSubTotal(Set<PurchaseOrderLineItem> lineItems) {
         return lineItems.stream()
                 .map(PurchaseOrderLineItem::getSubTotal)
                 .reduce(ZERO, BigDecimal::add);
     }
 
-    public BigDecimal sumLineInvoiceItemsSubTotal(Set<PurchaseInvoiceLineItem> lineItems) {
-        return lineItems.stream()
-                .map(PurchaseInvoiceLineItem::getSubTotal)
-                .reduce(ZERO, BigDecimal::add);
-    }
-
     public List<PurchaseOrderLineItem> sortOrderLineItemsIntoOrderedList(Set<PurchaseOrderLineItem> lineItems) {
         return lineItems.stream()
                 .sorted(Comparator.comparing(PurchaseOrderLineItem::getEntry))
-                .collect(Collectors.toList());
-    }
-
-    public List<PurchaseInvoiceLineItem> sortInvoiceLineItemsIntoOrderedList(Set<PurchaseInvoiceLineItem> lineItems) {
-        return lineItems.stream()
-                .sorted(Comparator.comparing(PurchaseInvoiceLineItem::getEntry))
                 .collect(Collectors.toList());
     }
 }

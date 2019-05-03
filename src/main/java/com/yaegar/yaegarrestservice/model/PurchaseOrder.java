@@ -48,6 +48,9 @@ public class PurchaseOrder extends AbstractEntity {
     @Column(name = "total_price")
     private BigDecimal totalPrice;
 
+    @Column(name = "paid")
+    private BigDecimal paid;
+
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "transaction_id", referencedColumnName = "id")
     private Transaction transaction;
