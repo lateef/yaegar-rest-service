@@ -60,39 +60,36 @@ public class TransactionService {
     public Transaction computePurchaseOrderPaymentTransaction(PurchaseOrder purchaseOrder, PurchaseOrder savedPurchaseOrder) {
         final Transaction transaction = purchaseOrder.getTransaction();
         final Transaction savedTransaction = savedPurchaseOrder.getTransaction();
-        final Transaction transaction1;
         transaction.setTransactionTypeId(savedPurchaseOrder.getId());
         final ChartOfAccounts chartOfAccounts = savedPurchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts();
-        final AtomicInteger maxEntry = getMaxEntry(transaction);
-        final List<PurchaseInvoice> savedPurchaseInvoices = purchaseInvoiceService.filterSavedInvoices(purchaseOrder.getInvoices());
-        final List<PurchaseInvoice> unsavedPurchaseInvoices = purchaseInvoiceService.filterUnsavedInvoices(purchaseOrder.getInvoices());
-        final List<JournalEntry> savedJournalEntries = filterSavedJournalEntries(transaction);
-        final List<JournalEntry> unsavedJournalEntries = filterUnsavedJournalEntries(transaction);
-
+        final Account tradeCreditorsAccount = getAccount(chartOfAccounts, TRADE_CREDITORS.getType(), CURRENT_LIABILITIES);
         final Account prepaymentAccount = getAccount(chartOfAccounts, PREPAYMENT.getType(), CASH_AND_CASH_EQUIVALENTS);
-        final BigDecimal totalCredit = getJournalEntriesTotalForTransactionSide(new HashSet<>(unsavedJournalEntries), CREDIT);
+        final AtomicInteger maxEntry = getMaxEntry(transaction);
 
-        if (!totalCredit.equals(ZERO)) {
-            JournalEntry prepaymentJournalEntry = createJournalEntry(prepaymentAccount, totalCredit, DEBIT, maxEntry, "positive");
-            transaction.getJournalEntries().add(prepaymentJournalEntry);
-            transaction1 = saveTransaction(transaction);
-        } else {
-            transaction1 = transaction;
-            LOGGER.warn("Prepayment cannot be zero {}", transaction);
+        final List<JournalEntry> unsavedJournalEntries = filterUnsavedJournalEntries(transaction);
+        BigDecimal totalPrepayment = getJournalEntriesTotalForTransactionSide(new HashSet<>(unsavedJournalEntries), CREDIT);
+
+        final BigDecimal outstandingTradeCreditAmount = getJournalEntriesTotal(savedTransaction.getJournalEntries());
+
+        if (outstandingTradeCreditAmount.compareTo(ZERO) > 0) {
+            BigDecimal tradeCreditRedeemedAmount;
+            if (outstandingTradeCreditAmount.compareTo(totalPrepayment) < 0) {
+                tradeCreditRedeemedAmount = outstandingTradeCreditAmount;
+                totalPrepayment = totalPrepayment.subtract(outstandingTradeCreditAmount);
+            } else if (outstandingTradeCreditAmount.compareTo(totalPrepayment) > 0) {
+                tradeCreditRedeemedAmount = totalPrepayment;
+            } else {
+                tradeCreditRedeemedAmount = outstandingTradeCreditAmount;
+                totalPrepayment = totalPrepayment.subtract(outstandingTradeCreditAmount);
+            }
+
+            JournalEntry tradeCreditorsJournalEntry = createJournalEntry(tradeCreditorsAccount, tradeCreditRedeemedAmount, DEBIT, maxEntry, "negative");
+            transaction.getJournalEntries().add(tradeCreditorsJournalEntry);
         }
-        return transaction1;
-        /** TODO
-         is there an existing transaction
-         no existing transaction: check amount exceeds total order amount
-         yes exceeds total order: for now throw amount exceed payment exception - later excess should go into surplus account
-         no exceeds total order: add prepayment
 
-         yes existing transaction: check amount exceeds balance
-         yes exceeds total balance: for now throw amount exceed payment exception - later excess should go into surplus account
-         no exceeds total balance: check total value of goods delivered, check total prepayments
-         if outstanding goods delivered, balance purchases/trade creditor and surplus goes to prepayment
-         */
-
+        JournalEntry prepaymentJournalEntry = createJournalEntry(prepaymentAccount, totalPrepayment, DEBIT, maxEntry, "positive");
+        transaction.getJournalEntries().add(prepaymentJournalEntry);
+        return saveTransaction(transaction);
     }
 
     public Transaction computePurchaseInvoicesTransaction(PurchaseOrder purchaseOrder, PurchaseOrder savedPurchaseOrder) {
@@ -271,6 +268,7 @@ public class TransactionService {
     public Transaction saveTransaction(Transaction transaction) {
         final Set<JournalEntry> journalEntries = transaction.getJournalEntries()
                 .stream()
+                .filter(journalEntry -> !journalEntry.getAmount().equals(ZERO))
                 .map(journalEntry -> {
                     Account account = accountService
                             .findById(journalEntry.getAccount().getId())
@@ -301,14 +299,6 @@ public class TransactionService {
 
         transaction1.setJournalEntries(new HashSet<>(journalEntries2));
         return transactionRepository.save(transaction1);
-    }
-
-    public BigDecimal getJournalEntriesTotalForTransactionSide(Set<JournalEntry> journalEntries, TransactionSide transactionSide) {
-        return journalEntries
-                .stream()
-                .filter(journalEntry -> journalEntry.getTransactionSide().equals(transactionSide))
-                .map(JournalEntry::getAmount)
-                .reduce(ZERO, BigDecimal::add);
     }
 
     private void validateAndSetDescription(JournalEntry journalEntry, String description) {
@@ -407,6 +397,21 @@ public class TransactionService {
                 .max(Integer::compareTo)
                 .map(AtomicInteger::new)
                 .orElseThrow(NullPointerException::new);
+    }
+
+    public BigDecimal getJournalEntriesTotal(Set<JournalEntry> journalEntries) {
+        return journalEntries
+                .stream()
+                .map(JournalEntry::getAmount)
+                .reduce(ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getJournalEntriesTotalForTransactionSide(Set<JournalEntry> journalEntries, TransactionSide transactionSide) {
+        return journalEntries
+                .stream()
+                .filter(journalEntry -> journalEntry.getTransactionSide().equals(transactionSide))
+                .map(JournalEntry::getAmount)
+                .reduce(ZERO, BigDecimal::add);
     }
 
     private BigDecimal getJournalEntriesTotalForAccountAndTransactionSide(Set<JournalEntry> journalEntries, Account account, TransactionSide transactionSide) {

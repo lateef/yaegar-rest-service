@@ -12,7 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -21,6 +25,7 @@ import java.util.Set;
 
 import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID_IN_ADVANCE;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.DEBIT;
+import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.singletonMap;
 
 @RestController
@@ -57,6 +62,7 @@ public class PurchaseOrderController {
         purchaseOrder.setLineItems(lineItems1);
 
         purchaseOrder.setTotalPrice(purchaseOrderService.sumLineOrderItemsSubTotal(lineItems1));
+        purchaseOrder.setPaid(ZERO);
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(purchaseOrder);
         return ResponseEntity.ok().body(singletonMap("success", purchaseOrder1));
     }
