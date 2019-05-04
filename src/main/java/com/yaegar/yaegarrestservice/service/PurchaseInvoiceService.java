@@ -134,7 +134,7 @@ public class PurchaseInvoiceService {
                 .collect(Collectors.toList());
     }
 
-    public List<PurchaseInvoice> processInvoices(List<PurchaseInvoice> invoices) {
+    public List<PurchaseInvoice> processInvoices(Set<PurchaseInvoice> invoices) {
         return invoices.stream()
                 .map(invoice -> {
                     if (Objects.isNull(invoice.getCreatedDatetime())) {

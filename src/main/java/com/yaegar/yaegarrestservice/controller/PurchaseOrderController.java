@@ -1,9 +1,6 @@
 package com.yaegar.yaegarrestservice.controller;
 
-import com.yaegar.yaegarrestservice.model.PurchaseOrder;
-import com.yaegar.yaegarrestservice.model.PurchaseOrderLineItem;
-import com.yaegar.yaegarrestservice.model.Supplier;
-import com.yaegar.yaegarrestservice.model.Transaction;
+import com.yaegar.yaegarrestservice.model.*;
 import com.yaegar.yaegarrestservice.service.PurchaseInvoiceService;
 import com.yaegar.yaegarrestservice.service.PurchaseOrderService;
 import com.yaegar.yaegarrestservice.service.SupplierService;
@@ -19,10 +16,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.GOODS_RECEIVED;
 import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID_IN_ADVANCE;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.DEBIT;
 import static java.math.BigDecimal.ZERO;
@@ -79,9 +78,8 @@ public class PurchaseOrderController {
         PurchaseOrder savedPurchaseOrder = purchaseOrderService.getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        final Transaction transaction = transactionService.computePurchaseOrderPaymentTransaction(
-                purchaseOrder, savedPurchaseOrder
-        );
+        final Transaction transaction = transactionService.computePurchaseOrderPaymentTransaction(purchaseOrder,
+                savedPurchaseOrder);
         // TODO get and set purchase order state
         savedPurchaseOrder.setPurchaseOrderState(PAID_IN_ADVANCE);
         savedPurchaseOrder.setTransaction(transaction);
@@ -99,14 +97,21 @@ public class PurchaseOrderController {
         PurchaseOrder savedPurchaseOrder = purchaseOrderService.getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
+        final List<PurchaseInvoice> purchaseInvoices = purchaseInvoiceService.processInvoices(purchaseOrder.getInvoices());
+        savedPurchaseOrder.setInvoices(new HashSet<>(purchaseInvoices));
+
         final Transaction transaction = transactionService.computePurchaseInvoicesTransaction(purchaseOrder,
                 savedPurchaseOrder);
+        // TODO get and set purchase order state
+        savedPurchaseOrder.setPurchaseOrderState(GOODS_RECEIVED);
         savedPurchaseOrder.setTransaction(transaction);
+        final BigDecimal totalDebitAmount = transactionService.getJournalEntriesTotalForTransactionSide(
+                transaction.getJournalEntries(), DEBIT);
+        savedPurchaseOrder.setPaid(totalDebitAmount);
+        PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder);
 
         //TODO this should factor in delivery note if available
         purchaseInvoiceService.computeInventory(savedPurchaseOrder.getInvoices());
-
-        PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder);
         return ResponseEntity.ok().body(singletonMap("success", purchaseOrder1));
     }
 }
