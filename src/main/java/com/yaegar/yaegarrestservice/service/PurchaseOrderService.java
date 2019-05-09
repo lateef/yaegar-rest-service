@@ -1,13 +1,12 @@
 package com.yaegar.yaegarrestservice.service;
 
 import com.yaegar.yaegarrestservice.model.Product;
-import com.yaegar.yaegarrestservice.model.PurchaseInvoiceLineItem;
 import com.yaegar.yaegarrestservice.model.PurchaseOrder;
 import com.yaegar.yaegarrestservice.model.PurchaseOrderLineItem;
 import com.yaegar.yaegarrestservice.repository.ProductRepository;
 import com.yaegar.yaegarrestservice.repository.PurchaseOrderRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,17 +16,12 @@ import java.util.stream.IntStream;
 
 import static java.math.BigDecimal.ZERO;
 
+@Slf4j
+@RequiredArgsConstructor
 @Service
 public class PurchaseOrderService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PurchaseOrderService.class);
-
     private final ProductRepository productRepository;
     private final PurchaseOrderRepository purchaseOrderRepository;
-
-    public PurchaseOrderService(ProductRepository productRepository, PurchaseOrderRepository purchaseOrderRepository) {
-        this.productRepository = productRepository;
-        this.purchaseOrderRepository = purchaseOrderRepository;
-    }
 
     public PurchaseOrder savePurchaseOrder(PurchaseOrder purchaseOrder) {
         return purchaseOrderRepository.save(purchaseOrder);
