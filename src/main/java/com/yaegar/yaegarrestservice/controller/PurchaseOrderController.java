@@ -5,15 +5,11 @@ import com.yaegar.yaegarrestservice.service.PurchaseInvoiceService;
 import com.yaegar.yaegarrestservice.service.PurchaseOrderService;
 import com.yaegar.yaegarrestservice.service.SupplierService;
 import com.yaegar.yaegarrestservice.service.TransactionService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -21,33 +17,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.CASH;
 import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.GOODS_RECEIVED;
 import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID_IN_ADVANCE;
-import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.DEBIT;
 import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.singletonMap;
 
+@Slf4j
+@RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "/secure-api")
 public class PurchaseOrderController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PurchaseOrderController.class);
-
     private final PurchaseInvoiceService purchaseInvoiceService;
     private final PurchaseOrderService purchaseOrderService;
     private final SupplierService supplierService;
     private final TransactionService transactionService;
-
-    public PurchaseOrderController(
-            PurchaseInvoiceService purchaseInvoiceService,
-            PurchaseOrderService purchaseOrderService,
-            SupplierService supplierService,
-            TransactionService transactionService
-    ) {
-        this.purchaseInvoiceService = purchaseInvoiceService;
-        this.purchaseOrderService = purchaseOrderService;
-        this.supplierService = supplierService;
-        this.transactionService = transactionService;
-    }
 
     @Transactional
     @RequestMapping(value = "/save-purchase-order", method = RequestMethod.POST)
@@ -84,9 +68,9 @@ public class PurchaseOrderController {
         savedPurchaseOrder.setPurchaseOrderState(PAID_IN_ADVANCE);
         savedPurchaseOrder.setTransaction(transaction);
 
-        final BigDecimal totalDebitAmount = transactionService.getJournalEntriesTotalForTransactionSide(
-                transaction.getJournalEntries(), DEBIT);
-        savedPurchaseOrder.setPaid(totalDebitAmount);
+        final List<JournalEntry> journalEntries = transactionService.filterJournalEntriesByAccountCategory(transaction.getJournalEntries(), CASH);
+        final BigDecimal totalDebitAmount = transactionService.sumJournalEntriesAmount(journalEntries);
+        savedPurchaseOrder.setPaid(totalDebitAmount.abs());
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder);
         return ResponseEntity.ok().body(singletonMap("success", purchaseOrder1));
     }
@@ -105,9 +89,9 @@ public class PurchaseOrderController {
         // TODO get and set purchase order state
         savedPurchaseOrder.setPurchaseOrderState(GOODS_RECEIVED);
         savedPurchaseOrder.setTransaction(transaction);
-        final BigDecimal totalDebitAmount = transactionService.getJournalEntriesTotalForTransactionSide(
-                transaction.getJournalEntries(), DEBIT);
-        savedPurchaseOrder.setPaid(totalDebitAmount);
+        final List<JournalEntry> journalEntries = transactionService.filterJournalEntriesByAccountCategory(transaction.getJournalEntries(), CASH);
+        final BigDecimal totalDebitAmount = transactionService.sumJournalEntriesAmount(journalEntries);
+        savedPurchaseOrder.setPaid(totalDebitAmount.abs());
         PurchaseOrder purchaseOrder1 = purchaseOrderService.savePurchaseOrder(savedPurchaseOrder);
 
         //TODO this should factor in delivery note if available

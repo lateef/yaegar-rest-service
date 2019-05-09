@@ -1,37 +1,31 @@
 package com.yaegar.yaegarrestservice.service;
 
-import com.yaegar.yaegarrestservice.model.SalesInvoice;
-import com.yaegar.yaegarrestservice.model.Stock;
-import com.yaegar.yaegarrestservice.model.StockTransaction;
-import com.yaegar.yaegarrestservice.repository.SalesInvoiceRepository;
+import com.yaegar.yaegarrestservice.model.*;
+import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
+import com.yaegar.yaegarrestservice.repository.ProductRepository;
 import com.yaegar.yaegarrestservice.repository.StockRepository;
 import com.yaegar.yaegarrestservice.repository.StockTransactionRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static java.math.BigDecimal.ZERO;
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toCollection;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class SalesInvoiceService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SalesInvoiceService.class);
-
-    private final SalesInvoiceRepository salesInvoiceRepository;
+    private final DateTimeProvider dateTimeProvider;
+    private final ProductRepository productRepository;
     private final StockRepository stockRepository;
     private final StockTransactionRepository stockTransactionRepository;
-
-    public SalesInvoiceService(SalesInvoiceRepository salesInvoiceRepository, StockRepository stockRepository, StockTransactionRepository stockTransactionRepository) {
-        this.salesInvoiceRepository = salesInvoiceRepository;
-        this.stockRepository = stockRepository;
-        this.stockTransactionRepository = stockTransactionRepository;
-    }
-
-    public List<SalesInvoice> saveAll(Set<SalesInvoice> salesInvoices) {
-        return salesInvoiceRepository.saveAll(salesInvoices);
-    }
 
     public void computeInventory(Set<SalesInvoice> invoices) {
         invoices
@@ -76,10 +70,55 @@ public class SalesInvoiceService {
                 });
     }
 
-    public List<SalesInvoice> sortInvoicesByDate(Set<SalesInvoice> salesInvoices) {
-        return salesInvoices
+    public List<SalesInvoice> processInvoices(Set<SalesInvoice> invoices) {
+        return invoices.stream()
+                .map(invoice -> {
+                    if (Objects.isNull(invoice.getCreatedDatetime())) {
+                        invoice.setCreatedDatetime(dateTimeProvider.now());
+                    }
+                    return invoice;
+                })
+                .collect(toCollection(() -> new TreeSet<>(comparing(SalesInvoice::getCreatedDatetime))))
                 .stream()
-                .sorted(Comparator.comparing(SalesInvoice::getCreatedDatetime))
+                .map(this::sortValidateAndSumSubTotal)
+                .collect(Collectors.toList());
+    }
+
+    private SalesInvoice sortValidateAndSumSubTotal(SalesInvoice invoice) {
+        final List<SalesInvoiceLineItem> lineItems = sortInvoiceLineItemsIntoOrderedList(invoice.getLineItems());
+        final Set<SalesInvoiceLineItem> lineItems1 = validateInvoiceLineItems(lineItems);
+        invoice.setLineItems(lineItems1);
+        invoice.setTotalPrice(sumLineInvoiceItemsSubTotal(lineItems1));
+        return invoice;
+    }
+
+    public Set<SalesInvoiceLineItem> validateInvoiceLineItems(List<SalesInvoiceLineItem> lineItems) {
+        IntStream.range(0, lineItems.size())
+                .forEach(idx -> {
+                    final SalesInvoiceLineItem lineItem = lineItems.get(idx);
+                    lineItem.setEntry(idx + 1);
+
+                    Product product = productRepository
+                            .findById(lineItem
+                                    .getProduct()
+                                    .getId())
+                            .orElseThrow(NullPointerException::new);
+
+                    lineItem.setProduct(product);
+                    lineItem.setSubTotal(lineItem.getUnitPrice().multiply(BigDecimal.valueOf(lineItem.getQuantity())));
+                });
+        return new HashSet<>(lineItems);
+    }
+
+    public BigDecimal sumLineInvoiceItemsSubTotal(Set<SalesInvoiceLineItem> lineItems) {
+        return lineItems.stream()
+                .map(SalesInvoiceLineItem::getSubTotal)
+                .reduce(ZERO, BigDecimal::add);
+    }
+
+    public List<SalesInvoiceLineItem> sortInvoiceLineItemsIntoOrderedList(Set<SalesInvoiceLineItem> lineItems) {
+        return lineItems.stream()
+                .sorted(Comparator.comparing(SalesInvoiceLineItem::getEntry))
                 .collect(Collectors.toList());
     }
 }

@@ -10,8 +10,8 @@ import com.yaegar.yaegarrestservice.repository.ProductRepository;
 import com.yaegar.yaegarrestservice.repository.PurchaseInvoiceRepository;
 import com.yaegar.yaegarrestservice.repository.StockRepository;
 import com.yaegar.yaegarrestservice.repository.StockTransactionRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -28,27 +28,15 @@ import static java.math.BigDecimal.ZERO;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class PurchaseInvoiceService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PurchaseInvoiceService.class);
-
     private final DateTimeProvider dateTimeProvider;
     private final ProductRepository productRepository;
     private final PurchaseInvoiceRepository purchaseInvoiceRepository;
     private final StockRepository stockRepository;
     private final StockTransactionRepository stockTransactionRepository;
-
-    public PurchaseInvoiceService(DateTimeProvider dateTimeProvider,
-                                  ProductRepository productRepository,
-                                  PurchaseInvoiceRepository purchaseInvoiceRepository,
-                                  StockRepository stockRepository,
-                                  StockTransactionRepository stockTransactionRepository) {
-        this.dateTimeProvider = dateTimeProvider;
-        this.productRepository = productRepository;
-        this.purchaseInvoiceRepository = purchaseInvoiceRepository;
-        this.stockRepository = stockRepository;
-        this.stockTransactionRepository = stockTransactionRepository;
-    }
 
     public List<PurchaseInvoice> saveAll(List<PurchaseInvoice> invoices) {
         return purchaseInvoiceRepository.saveAll(invoices);
@@ -104,6 +92,28 @@ public class PurchaseInvoiceService {
                 .collect(Collectors.toList());
     }
 
+    public List<PurchaseInvoice> processInvoices(Set<PurchaseInvoice> invoices) {
+        return invoices.stream()
+                .map(invoice -> {
+                    if (Objects.isNull(invoice.getCreatedDatetime())) {
+                        invoice.setCreatedDatetime(dateTimeProvider.now());
+                    }
+                    return invoice;
+                })
+                .collect(toCollection(() -> new TreeSet<>(comparing(PurchaseInvoice::getCreatedDatetime))))
+                .stream()
+                .map(this::sortValidateAndSumSubTotal)
+                .collect(Collectors.toList());
+    }
+
+    private PurchaseInvoice sortValidateAndSumSubTotal(PurchaseInvoice invoice) {
+        final List<PurchaseInvoiceLineItem> lineItems = sortInvoiceLineItemsIntoOrderedList(invoice.getLineItems());
+        final Set<PurchaseInvoiceLineItem> lineItems1 = validateInvoiceLineItems(lineItems);
+        invoice.setLineItems(lineItems1);
+        invoice.setTotalPrice(sumLineInvoiceItemsSubTotal(lineItems1));
+        return invoice;
+    }
+
     public Set<PurchaseInvoiceLineItem> validateInvoiceLineItems(List<PurchaseInvoiceLineItem> lineItems) {
         IntStream.range(0, lineItems.size())
                 .forEach(idx -> {
@@ -132,28 +142,6 @@ public class PurchaseInvoiceService {
         return lineItems.stream()
                 .sorted(Comparator.comparing(PurchaseInvoiceLineItem::getEntry))
                 .collect(Collectors.toList());
-    }
-
-    public List<PurchaseInvoice> processInvoices(Set<PurchaseInvoice> invoices) {
-        return invoices.stream()
-                .map(invoice -> {
-                    if (Objects.isNull(invoice.getCreatedDatetime())) {
-                        invoice.setCreatedDatetime(dateTimeProvider.now());
-                    }
-                    return invoice;
-                })
-                .collect(toCollection(() -> new TreeSet<>(comparing(PurchaseInvoice::getCreatedDatetime))))
-                .stream()
-                .map(this::sortValidateAndSumSubTotal)
-                .collect(Collectors.toList());
-    }
-
-    private PurchaseInvoice sortValidateAndSumSubTotal(PurchaseInvoice invoice) {
-        final List<PurchaseInvoiceLineItem> lineItems = sortInvoiceLineItemsIntoOrderedList(invoice.getLineItems());
-        final Set<PurchaseInvoiceLineItem> lineItems1 = validateInvoiceLineItems(lineItems);
-        invoice.setLineItems(lineItems1);
-        invoice.setTotalPrice(sumLineInvoiceItemsSubTotal(lineItems1));
-        return invoice;
     }
 
     public List<PurchaseInvoice> filterSavedInvoices(Set<PurchaseInvoice> invoices) {

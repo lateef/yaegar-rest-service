@@ -1,51 +1,40 @@
 package com.yaegar.yaegarrestservice.controller;
 
 import com.yaegar.yaegarrestservice.model.*;
-import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
 import com.yaegar.yaegarrestservice.service.CustomerService;
 import com.yaegar.yaegarrestservice.service.SalesInvoiceService;
 import com.yaegar.yaegarrestservice.service.SalesOrderService;
 import com.yaegar.yaegarrestservice.service.TransactionService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import static com.yaegar.yaegarrestservice.model.enums.AccountType.SALES_INCOME;
-import static com.yaegar.yaegarrestservice.model.enums.AccountType.TRADE_DEBTORS;
+import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.CASH;
+import static com.yaegar.yaegarrestservice.model.enums.SalesOrderState.GOODS_DELIVERED;
 import static com.yaegar.yaegarrestservice.model.enums.SalesOrderState.PAID_IN_ADVANCE;
+import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.singletonMap;
 
+@Slf4j
+@RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "/secure-api")
 public class SalesOrderController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SalesOrderController.class);
-
     private final CustomerService customerService;
-    private final DateTimeProvider dateTimeProvider;
     private final SalesInvoiceService salesInvoiceService;
     private final SalesOrderService salesOrderService;
     private final TransactionService transactionService;
 
-    public SalesOrderController(
-            DateTimeProvider dateTimeProvider,
-            SalesInvoiceService salesInvoiceService,
-            SalesOrderService salesOrderService,
-            CustomerService customerService,
-            TransactionService transactionService
-    ) {
-        this.dateTimeProvider = dateTimeProvider;
-        this.salesInvoiceService = salesInvoiceService;
-        this.salesOrderService = salesOrderService;
-        this.customerService = customerService;
-        this.transactionService = transactionService;
-    }
-
-    @RequestMapping(value = {"/add-sales-order", "/save-sales-order"}, method = RequestMethod.POST)
+    @Transactional
+    @RequestMapping(value = "/save-sales-order", method = RequestMethod.POST)
     public ResponseEntity<Map<String, SalesOrder>> addSalesOrder(@RequestBody final SalesOrder salesOrder) {
         Customer customer = customerService.findById(salesOrder.getCustomer().getId())
                 .orElseThrow(NullPointerException::new);
@@ -56,6 +45,7 @@ public class SalesOrderController {
         salesOrder.setLineItems(lineItems1);
 
         salesOrder.setTotalPrice(salesOrderService.sumOrderLineItemsSubTotal(lineItems1));
+        salesOrder.setPaid(ZERO);
         SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(salesOrder);
         return ResponseEntity.ok().body(singletonMap("success", salesOrder1));
     }
@@ -69,30 +59,18 @@ public class SalesOrderController {
     @Transactional
     @RequestMapping(value = "/save-sales-order-transaction", method = RequestMethod.POST)
     public ResponseEntity<Map<String, SalesOrder>> saveTransaction(@RequestBody SalesOrder salesOrder) {
-        SalesOrder savedSalesOrder = salesOrderService
-                .getSalesOrder(salesOrder.getId())
+        SalesOrder savedSalesOrder = salesOrderService.getSalesOrder(salesOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        /** TODO
-         is there an existing transaction
-         no existing transaction: check amount exceeds total order
-         yes exceeds total order: for now throw amount exceed payment exception - later excess should go into surplus account
-         no exceeds total order: add prepayment
+        final Transaction transaction = transactionService.computeSalesOrderPaymentTransaction(salesOrder, savedSalesOrder);
 
-         yes existing transaction: check amount exceeds balance
-         yes exceeds total balance: for now throw amount exceed payment exception - later excess should go into surplus account
-         no exceeds total balance: check total value of goods delivered, check total prepayments
-         if outstanding goods delivered, balance purchases and surplus goes to prepayment
-         */
-
-
-        final Transaction transaction = transactionService.computeSalesOrderPaymentTransaction(
-                salesOrder, savedSalesOrder
-        );
-
-        final Transaction transaction1 = transactionService.saveTransaction(transaction);
+        // TODO get and set purchase order state
         savedSalesOrder.setSalesOrderState(PAID_IN_ADVANCE);
-        savedSalesOrder.setTransaction(transaction1);
+        savedSalesOrder.setTransaction(transaction);
+
+        final List<JournalEntry> journalEntries = transactionService.filterJournalEntriesByAccountCategory(transaction.getJournalEntries(), CASH);
+        final BigDecimal totalDebitAmount = transactionService.sumJournalEntriesAmount(journalEntries);
+        savedSalesOrder.setPaid(totalDebitAmount);
         SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(savedSalesOrder);
         return ResponseEntity.ok().body(singletonMap("success", salesOrder1));
     }
@@ -100,54 +78,23 @@ public class SalesOrderController {
     @Transactional
     @RequestMapping(value = "/save-sales-order-invoices", method = RequestMethod.POST)
     public ResponseEntity<Map<String, SalesOrder>> saveInvoices(@RequestBody SalesOrder salesOrder) {
-        SalesOrder savedSalesOrder = salesOrderService
-                .getSalesOrder(salesOrder.getId())
+        SalesOrder savedSalesOrder = salesOrderService.getSalesOrder(salesOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        final Set<SalesInvoice> salesInvoices = processInvoices(salesOrder);
+        final List<SalesInvoice> salesInvoices = salesInvoiceService.processInvoices(salesOrder.getInvoices());
+        savedSalesOrder.setInvoices(new HashSet<>(salesInvoices));
 
-        final List<SalesInvoice> salesInvoices1 = salesInvoiceService.saveAll(salesInvoices);
-
-        savedSalesOrder.setInvoices(new HashSet<>(salesInvoices1));
-
-        final Transaction transaction = transactionService.computeSalesInvoicesTransaction(
-                salesOrder.getTransaction(),
-                salesInvoiceService.sortInvoicesByDate(savedSalesOrder.getInvoices()),
-                salesOrder.getCustomer().getPrincipalCompany().getChartOfAccounts(),
-                SALES_INCOME,
-                TRADE_DEBTORS,
-                savedSalesOrder.getId()
-        );
-
-        final Transaction transaction1 = transactionService.saveTransaction(transaction);
-        savedSalesOrder.setTransaction(transaction1);
+        final Transaction transaction = transactionService.computeSalesInvoicesTransaction(salesOrder, savedSalesOrder);
+        // TODO get and set sales order state
+        savedSalesOrder.setSalesOrderState(GOODS_DELIVERED);
+        savedSalesOrder.setTransaction(transaction);
+        final List<JournalEntry> journalEntries = transactionService.filterJournalEntriesByAccountCategory(transaction.getJournalEntries(), CASH);
+        final BigDecimal totalDebitAmount = transactionService.sumJournalEntriesAmount(journalEntries);
+        savedSalesOrder.setPaid(totalDebitAmount.abs());
+        SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(savedSalesOrder);
 
         //TODO this should factor in delivery note if available
         salesInvoiceService.computeInventory(savedSalesOrder.getInvoices());
-        SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(savedSalesOrder);
         return ResponseEntity.ok().body(singletonMap("success", salesOrder1));
-    }
-
-    private Set<SalesInvoice> processInvoices(@RequestBody SalesOrder salesOrder) {
-        return salesOrder.getInvoices()
-                    .stream()
-                    .map(salesInvoice -> {
-                        if (Objects.isNull(salesInvoice.getCreatedDatetime())) {
-                            salesInvoice.setCreatedDatetime(dateTimeProvider.now());
-                        }
-                        return salesInvoice;
-                    })
-                    .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(SalesInvoice::getCreatedDatetime))))
-                    .stream()
-                    .map(salesInvoice -> {
-                        final List<SalesInvoiceLineItem> lineItems = salesOrderService.sortInvoiceLineItemsIntoOrderedList(salesInvoice.getLineItems());
-                        final Set<SalesInvoiceLineItem> lineItems1 = salesOrderService.validateInvoiceLineItems(
-                                lineItems);
-                        salesInvoice.setLineItems(lineItems1);
-
-                        salesInvoice.setTotalPrice(salesOrderService.sumInvoiceLineItemsSubTotal(lineItems1));
-                        return salesInvoice;
-                    })
-                    .collect(Collectors.toSet());
     }
 }
