@@ -1,25 +1,20 @@
 package com.yaegar.yaegarrestservice.service;
 
 import com.yaegar.yaegarrestservice.model.Customer;
-import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.repository.CustomerRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
+@RequiredArgsConstructor
 @Service
 public class CustomerService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CustomerService.class);
-
-    private CustomerRepository customerRepository;
-
-    public CustomerService(CustomerRepository customerRepository) {
-        this.customerRepository = customerRepository;
-    }
+    private final CustomerRepository customerRepository;
 
     public Optional<Customer> findById(Long id) {
         return customerRepository.findById(id);

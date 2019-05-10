@@ -1,43 +1,45 @@
 package com.yaegar.yaegarrestservice.service;
 
-import com.yaegar.yaegarrestservice.model.*;
+import com.yaegar.yaegarrestservice.model.Account;
+import com.yaegar.yaegarrestservice.model.ChartOfAccounts;
+import com.yaegar.yaegarrestservice.model.Company;
+import com.yaegar.yaegarrestservice.model.JournalEntry;
+import com.yaegar.yaegarrestservice.model.Stock;
 import com.yaegar.yaegarrestservice.model.enums.AccountCategory;
 import com.yaegar.yaegarrestservice.model.enums.AccountType;
 import com.yaegar.yaegarrestservice.repository.AccountRepository;
 import com.yaegar.yaegarrestservice.repository.JournalEntryRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.PRODUCT;
 import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.PRODUCT_DISCOUNT;
-import static com.yaegar.yaegarrestservice.model.enums.AccountType.*;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.ASSETS;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.EQUITY;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.EXPENSES;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.INCOME_REVENUE;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.LIABILITIES;
 import static java.math.BigDecimal.ZERO;
 import static java.util.Arrays.asList;
 
+@Slf4j
+@RequiredArgsConstructor
 @Service
 public class AccountService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccountService.class);
-
     public static final List<AccountType> ROOT_ACCOUNT_TYPES = asList(ASSETS, LIABILITIES, EQUITY, INCOME_REVENUE, EXPENSES);
 
-    private AccountRepository accountRepository;
-    private CompanyService companyService;
-    private JournalEntryRepository journalEntryRepository;
-
-    public AccountService(
-            AccountRepository accountRepository,
-            CompanyService companyService,
-            JournalEntryRepository journalEntryRepository
-    ) {
-        this.accountRepository = accountRepository;
-        this.companyService = companyService;
-        this.journalEntryRepository = journalEntryRepository;
-    }
+    private final AccountRepository accountRepository;
+    private final CompanyService companyService;
+    private final JournalEntryRepository journalEntryRepository;
 
     public Account save(Account account) {
         return accountRepository.save(account);

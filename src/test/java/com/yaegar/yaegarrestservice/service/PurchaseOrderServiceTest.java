@@ -12,6 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class PurchaseOrderServiceTest {
     @MockBean
     private ProductRepository productRepository;
+
     @MockBean
     private PurchaseOrderRepository purchaseOrderRepository;
 

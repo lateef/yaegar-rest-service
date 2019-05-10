@@ -3,29 +3,21 @@ package com.yaegar.yaegarrestservice.service;
 import com.yaegar.yaegarrestservice.config.ConfigHolder;
 import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * @author Lateef Adeniji-Adele
- */
+@Slf4j
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Service("userDetailsService")
 public class UserDetailsServiceImpl implements UserDetailsService {
-
-    private ConfigHolder configHolder;
-
-    private UserRepository userRepository;
-
-    @Autowired
-    public UserDetailsServiceImpl(ConfigHolder configHolder, UserRepository userRepository) {
-        this.configHolder = configHolder;
-        this.userRepository = userRepository;
-    }
+    private final ConfigHolder configHolder;
+    private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String phoneNumber) throws UsernameNotFoundException {

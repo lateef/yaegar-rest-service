@@ -3,6 +3,7 @@ package com.yaegar.yaegarrestservice.model;
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -18,12 +19,19 @@ import javax.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "subscription",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "subscription_plan_id", "subscription_start_datetime", "subscription_end_datetime"})})
 public class Subscription extends AbstractEntity {
     private static final long serialVersionUID = 5787253836029321100L;
+
+    public Subscription(User user, SubscriptionPlan subscriptionPlan, LocalDateTime subscriptionStartDatetime) {
+        this.user = user;
+        this.subscriptionPlan = subscriptionPlan;
+        this.subscriptionStartDatetime = subscriptionStartDatetime;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

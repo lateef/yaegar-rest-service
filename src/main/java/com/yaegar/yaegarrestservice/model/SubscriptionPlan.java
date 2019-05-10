@@ -20,13 +20,14 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Entity
 @Table(name = "subscription_plan",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "credits_per_month", "price_per_month", "price_per_year", "currencyCode"})})
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "credits_per_month", "duration", "price_per_month", "price_per_year", "currencyCode"})})
 public class SubscriptionPlan extends AbstractEntity {
     private static final long serialVersionUID = 6096630639646459517L;
 
-    public SubscriptionPlan(@Length(max = 256) String name, int creditsPerMonth, BigDecimal pricePerMonth, BigDecimal pricePerYear, String currencyCode) {
+    public SubscriptionPlan(@Length(max = 256) String name, int creditsPerMonth, int duration, BigDecimal pricePerMonth, BigDecimal pricePerYear, String currencyCode) {
         this.name = name;
         this.creditsPerMonth = creditsPerMonth;
+        this.duration = duration;
         this.pricePerMonth = pricePerMonth;
         this.pricePerYear = pricePerYear;
         this.currencyCode = currencyCode;
@@ -46,6 +47,12 @@ public class SubscriptionPlan extends AbstractEntity {
      */
     @Column(name = "credits_per_month", nullable = false)
     private int creditsPerMonth;
+
+    /**
+     * duration represent the number of months
+     */
+    @Column(name = "duration", nullable = false)
+    private int duration;
 
     @Column(name = "price_per_month", nullable = false)
     private BigDecimal pricePerMonth;

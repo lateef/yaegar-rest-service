@@ -2,23 +2,19 @@ package com.yaegar.yaegarrestservice.service;
 
 import com.yaegar.yaegarrestservice.model.Supplier;
 import com.yaegar.yaegarrestservice.repository.SupplierRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
+@RequiredArgsConstructor
 @Service
 public class SupplierService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SupplierService.class);
-
-    private SupplierRepository supplierRepository;
-
-    public SupplierService(SupplierRepository supplierRepository) {
-        this.supplierRepository = supplierRepository;
-    }
+    private final SupplierRepository supplierRepository;
 
     public Optional<Supplier> findById(Long id) {
         return supplierRepository.findById(id);

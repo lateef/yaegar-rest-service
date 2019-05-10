@@ -6,6 +6,8 @@ import com.yaegar.yaegarrestservice.model.SalesInvoiceLineItem;
 import com.yaegar.yaegarrestservice.model.SalesOrder;
 import com.yaegar.yaegarrestservice.repository.ProductRepository;
 import com.yaegar.yaegarrestservice.repository.SalesOrderRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -15,16 +17,13 @@ import java.util.stream.IntStream;
 
 import static java.math.BigDecimal.ZERO;
 
+@Slf4j
+@RequiredArgsConstructor
 @Service
 public class SalesOrderService {
 
     private final ProductRepository productRepository;
     private final SalesOrderRepository salesOrderRepository;
-
-    public SalesOrderService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository) {
-        this.productRepository = productRepository;
-        this.salesOrderRepository = salesOrderRepository;
-    }
 
     public SalesOrder saveSalesOrder(SalesOrder savedSalesOrder) {
         return salesOrderRepository.save(savedSalesOrder);

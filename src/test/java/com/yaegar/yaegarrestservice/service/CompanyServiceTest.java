@@ -70,9 +70,10 @@ public class CompanyServiceTest {
         .collect(Collectors.toList()));
         when(roleRepository.save(ArgumentMatchers.any())).thenReturn(new Role());
 
-        //when
         User user = new User();
         user.setRoles(new HashSet<>());
+
+        //when
         Company actualCompany = companyService.addCompany(company, user);
 
         //then
