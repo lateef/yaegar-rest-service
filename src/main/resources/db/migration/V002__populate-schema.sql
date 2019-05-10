@@ -246,3 +246,5 @@ INSERT INTO country (name, full_name, code, continent_code, iso3) VALUES ('Weste
 INSERT INTO country (name, full_name, code, continent_code, iso3) VALUES ('Yemen', 'Yemen', 'YE', 'AS', 'YEM');
 INSERT INTO country (name, full_name, code, continent_code, iso3) VALUES ('Zambia', 'Republic of Zambia', 'ZM', 'AF', 'ZMB');
 INSERT INTO country (name, full_name, code, continent_code, iso3) VALUES ('Zimbabwe', 'Republic of Zimbabwe', 'ZW', 'AF', 'ZWE');
+
+INSERT INTO subscription_plan (name, credits_per_month, price_per_month, price_per_year, currencyCode) VALUES ('Free (1 month)', 1, 0, 0, 'NGN');

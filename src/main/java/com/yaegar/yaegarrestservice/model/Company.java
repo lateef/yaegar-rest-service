@@ -22,6 +22,10 @@ import java.util.Set;
 public class Company extends AbstractEntity {
     private static final long serialVersionUID = -2248566160300140508L;
 
+    public Company(@Length(max = 256) String name) {
+        this.name = name;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -53,8 +57,4 @@ public class Company extends AbstractEntity {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinColumn(name = "location_company_id", referencedColumnName = "id")
     private List<Location> locations;
-
-    public Company(@Length(max = 256) String name) {
-        this.name = name;
-    }
 }
