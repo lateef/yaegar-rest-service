@@ -528,11 +528,11 @@ create table subscription_plan
   duration int not null,
   price_per_month decimal(19,2) not null,
   price_per_year decimal(19,2) not null,
-  currencyCode varchar(3) not null,
+  currency_code varchar(3) not null,
   created_by       bigint null,
   updated_by       bigint null,
   constraint UK_subscription_plan
-    unique (name, credits_per_month, duration, price_per_month, price_per_year, currencyCode)
+    unique (name, credits_per_month, duration, price_per_month, price_per_year, currency_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 create table subscription

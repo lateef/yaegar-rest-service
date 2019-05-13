@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Entity
 @Table(name = "subscription_plan",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "credits_per_month", "duration", "price_per_month", "price_per_year", "currencyCode"})})
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "credits_per_month", "duration", "price_per_month", "price_per_year", "currency_code"})})
 public class SubscriptionPlan extends AbstractEntity {
     private static final long serialVersionUID = 6096630639646459517L;
 
@@ -61,6 +61,6 @@ public class SubscriptionPlan extends AbstractEntity {
     private BigDecimal pricePerYear;
 
     @Length(max = 3)
-    @Column(name = "currencyCode", nullable = false, length = 3)
+    @Column(name = "currency_code", nullable = false, length = 3)
     private String currencyCode;
 }
