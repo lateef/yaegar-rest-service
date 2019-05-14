@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -48,7 +49,7 @@ public class JwtTokenValidator {
 
             u = new JwtUserDto();
             u.setUsername(body.getSubject());
-            u.setId(Long.parseLong((String) body.get("userId")));
+            u.setId(UUID.fromString((String) body.get("userId")));
             u.setRole((String) body.get("role"));
             Map<String, Integer> rMap = (Map<String, Integer>) body.get("refreshToken");
             Map<String, Integer> eMap = (Map<String, Integer>) body.get("expireToken");
@@ -77,7 +78,7 @@ public class JwtTokenValidator {
 
     private Integer getIntegerFromMap(Supplier<Stream<Map.Entry<String, Integer>>> streamSupplier, String name) {
         return streamSupplier.get()
-                    .filter(e -> e.getKey().equals(name))
-                    .findFirst().orElse(null).getValue();
+                .filter(e -> e.getKey().equals(name))
+                .findFirst().orElse(null).getValue();
     }
 }

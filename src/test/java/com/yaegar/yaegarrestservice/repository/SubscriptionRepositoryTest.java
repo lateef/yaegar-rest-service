@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
 import static java.math.BigDecimal.ZERO;
@@ -44,7 +45,7 @@ public class SubscriptionRepositoryTest {
         entityManager.flush();
 
         //when
-        Subscription actualSubscription = subscriptionRepository.findById(1L).get();
+        Subscription actualSubscription = subscriptionRepository.findById(expectedSubscription.getId()).get();
 
         //then
         assertThat(actualSubscription, sameBeanAs(expectedSubscription));

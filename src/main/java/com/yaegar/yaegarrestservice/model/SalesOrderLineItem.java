@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
+import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -13,7 +14,7 @@ public class SalesOrderLineItem extends AbstractLineItem {
     private static final long serialVersionUID = -3349984764721381940L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id")
-    private long id;
+    private UUID id;
 }

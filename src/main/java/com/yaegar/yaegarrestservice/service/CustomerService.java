@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -16,7 +17,7 @@ import java.util.Optional;
 public class CustomerService {
     private final CustomerRepository customerRepository;
 
-    public Optional<Customer> findById(Long id) {
+    public Optional<Customer> findById(UUID id) {
         return customerRepository.findById(id);
     }
 
@@ -27,7 +28,7 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
-    public List<Customer> getCustomersByPrincipalCompanyId(Long principalCompanyId) {
+    public List<Customer> getCustomersByPrincipalCompanyId(UUID principalCompanyId) {
         return customerRepository.findByPrincipalCompanyId(principalCompanyId);
     }
 }

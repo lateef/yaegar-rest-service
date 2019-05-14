@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -16,9 +17,9 @@ public class ChartOfAccounts extends AbstractEntity {
     private static final long serialVersionUID = -6037621583103591891L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id")
-    private Long id;
+    private UUID id;
 
     @OneToMany(mappedBy = "chartOfAccounts", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Account> accounts;

@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Set;
+import java.util.UUID;
 
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
 import static java.util.Collections.singleton;
@@ -33,7 +34,7 @@ public class CompanyRepositoryTest {
         entityManager.flush();
 
         //when
-        Company actualCompany = companyRepository.findById(1L).get();
+        Company actualCompany = companyRepository.findById(expectedCompany.getId()).get();
 
         //then
         assertThat(actualCompany, sameBeanAs(expectedCompany));

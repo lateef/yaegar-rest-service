@@ -9,6 +9,7 @@ import org.hibernate.validator.constraints.Length;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -17,9 +18,9 @@ public class Product extends AbstractEntity {
     private static final long serialVersionUID = 9131433206492217756L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id")
-    private Long id;
+    private UUID id;
 
     @Length(max = 128)
     @Column(name = "name", nullable = false, length = 128)
@@ -37,7 +38,7 @@ public class Product extends AbstractEntity {
     private Set<ProductVariant> productVariants;
 
     @Column(name = "company_id")
-    private Long companyId;
+    private UUID companyId;
 
     @Column(name = "gtin_type", length = 7)
     @Enumerated(value = EnumType.STRING)

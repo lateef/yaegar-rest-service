@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -17,7 +18,7 @@ import java.util.Optional;
 public class JournalEntryService {
     private final JournalEntryRepository journalEntryRepository;
 
-    public Optional<JournalEntry> findById(Long id) {
+    public Optional<JournalEntry> findById(UUID id) {
         return journalEntryRepository.findById(id);
     }
 

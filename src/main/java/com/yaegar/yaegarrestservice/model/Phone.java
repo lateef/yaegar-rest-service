@@ -19,6 +19,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 import java.util.Objects;
+import java.util.UUID;
 
 @ToString
 @Getter
@@ -30,9 +31,9 @@ public class Phone extends AbstractEntity {
     private static final long serialVersionUID = -7901958678943948605L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id")
-    private Long id;
+    private UUID id;
 
     @NotEmpty
     @JsonProperty("callingCode")

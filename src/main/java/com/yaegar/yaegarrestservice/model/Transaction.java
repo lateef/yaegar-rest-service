@@ -17,6 +17,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true, exclude = "accounts")
@@ -25,9 +26,9 @@ public class Transaction extends AbstractEntity {
     private static final long serialVersionUID = -6306868349093193363L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id")
-    private Long id;
+    private UUID id;
 
     @OneToMany(mappedBy = "transaction", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<JournalEntry> journalEntries;
@@ -37,7 +38,7 @@ public class Transaction extends AbstractEntity {
     private TransactionType transactionType;
 
     @Column(name = "transaction_type_id")
-    private Long transactionTypeId;
+    private UUID transactionTypeId;
 
     @Transient
     private Set<Account> accounts;

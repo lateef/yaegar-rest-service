@@ -12,6 +12,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static java.util.Collections.singletonMap;
 
@@ -33,7 +34,7 @@ public class AccountController {
     }
 
     @RequestMapping(value = "/get-leaf-accounts", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, List<Account>>> getLeafAccounts(@RequestParam final Long chartOfAccountsId, Principal principal, ModelMap model) {
+    public ResponseEntity<Map<String, List<Account>>> getLeafAccounts(@RequestParam final UUID chartOfAccountsId, Principal principal, ModelMap model) {
         final User user = (User) model.get("user");
         List<Account> accounts = new ArrayList<>();
         if (companyService.userCanAccessChartOfAccounts(user, chartOfAccountsId)) {
@@ -43,7 +44,7 @@ public class AccountController {
     }
 
     @RequestMapping(value = "/get-account", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Account>> getAccount(@RequestParam final Long accountId) {
+    public ResponseEntity<Map<String, Account>> getAccount(@RequestParam final UUID accountId) {
         final Account account = accountService.findById(accountId)
                 .orElseThrow(NullPointerException::new);//this should be able to return segregated data
         return ResponseEntity.ok().body(singletonMap("success", account));

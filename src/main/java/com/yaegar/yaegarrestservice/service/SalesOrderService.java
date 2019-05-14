@@ -29,11 +29,11 @@ public class SalesOrderService {
         return salesOrderRepository.save(savedSalesOrder);
     }
 
-    public Optional<SalesOrder> getSalesOrder(Long id) {
+    public Optional<SalesOrder> getSalesOrder(UUID id) {
         return salesOrderRepository.findById(id);
     }
 
-    public List<SalesOrder> getSalesOrders(Long companyId) {
+    public List<SalesOrder> getSalesOrders(UUID companyId) {
         return salesOrderRepository.findAllByCustomerPrincipalCompanyId(companyId);
     }
 

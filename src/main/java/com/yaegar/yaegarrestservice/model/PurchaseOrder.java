@@ -21,6 +21,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true, exclude = {"supplier", "lineItems", "transaction", "invoices"})
@@ -30,9 +31,9 @@ public class PurchaseOrder extends AbstractEntity {
     private static final long serialVersionUID = -5218638929994847147L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id")
-    private Long id;
+    private UUID id;
 
     @Column(name = "number")
     private Long number;

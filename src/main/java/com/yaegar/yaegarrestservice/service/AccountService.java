@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.PRODUCT;
@@ -45,7 +46,7 @@ public class AccountService {
         return accountRepository.save(account);
     }
 
-    public Optional<Account> findById(Long id) {
+    public Optional<Account> findById(UUID id) {
         return accountRepository.findById(id);
     }
 
@@ -56,15 +57,15 @@ public class AccountService {
                 chartOfAccounts, accountName, accountType, accountCategory);
     }
 
-    public List<Account> findByParentId(Long parentId) {
+    public List<Account> findByParentId(UUID parentId) {
         return accountRepository.findByParentId(parentId);
     }
 
-    public List<Account> findByParentIdAndAccountType(Long parentId, AccountType accountType) {
+    public List<Account> findByParentIdAndAccountType(UUID parentId, AccountType accountType) {
         return accountRepository.findByParentIdAndAccountType(parentId, accountType);
     }
 
-    public List<Account> findByParentIdAndAccountCategory(Long parentId, AccountCategory accountCategory) {
+    public List<Account> findByParentIdAndAccountCategory(UUID parentId, AccountCategory accountCategory) {
         return accountRepository.findByParentIdAndAccountCategory(parentId, accountCategory);
     }
 
@@ -76,7 +77,7 @@ public class AccountService {
         return addAccount(account.getParentId(), account.getName(), account.getAccountCategory());
     }
 
-    private Account addAccount(Long parentAccountId, String name, AccountCategory accountCategory) {
+    private Account addAccount(UUID parentAccountId, String name, AccountCategory accountCategory) {
         Account parentAccount = findById(parentAccountId)
                 .orElseThrow(NullPointerException::new);
         final AccountType accountTypeFromParentAccount = getAccountTypeFromParentAccount(parentAccount);
@@ -120,7 +121,7 @@ public class AccountService {
         return accountRepository.save(account1);
     }
 
-    public List<Account> getLeafAccounts(Long chartOfAccountsId) {
+    public List<Account> getLeafAccounts(UUID chartOfAccountsId) {
         return accountRepository.findByChartOfAccountsIdAndParentFalse(chartOfAccountsId);
     }
 

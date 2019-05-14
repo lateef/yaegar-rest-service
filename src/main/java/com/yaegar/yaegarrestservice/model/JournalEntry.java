@@ -10,6 +10,7 @@ import lombok.ToString;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @ToString(exclude = {"transaction"})
 @Data
@@ -19,9 +20,9 @@ public class JournalEntry extends AbstractEntity {
     private static final long serialVersionUID = 6340589739131199534L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id")
-    private Long id;
+    private UUID id;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)

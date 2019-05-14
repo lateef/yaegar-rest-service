@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -23,9 +24,9 @@ public class Role implements GrantedAuthority {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id")
-    private long id;
+    private UUID id;
 
     @Column(name = "authority", nullable = false, length = 32, unique = true)
     private String authority;

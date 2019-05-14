@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -38,7 +39,7 @@ public class TransactionService {
     private final JournalEntryRepository journalEntryRepository;
     private final TransactionRepository transactionRepository;
 
-    public Transaction findById(Long transactionId) {
+    public Transaction findById(UUID transactionId) {
         return transactionRepository.findById(transactionId).orElse(null);
     }
 
@@ -232,7 +233,7 @@ public class TransactionService {
         return saveTransaction(transaction);
     }
 
-    public List<Transaction> getAccountTransactions(Long accountId) {
+    public List<Transaction> getAccountTransactions(UUID accountId) {
         return transactionRepository.findByJournalEntriesAccountId(accountId);
     }
 

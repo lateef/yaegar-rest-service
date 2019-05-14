@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 
 import static com.yaegar.yaegarrestservice.model.Role.AUTHORITY_USER;
 import static java.time.Duration.between;
@@ -151,7 +152,7 @@ public class UserService {
         }
     }
 
-    public Optional<User> findById(Long id) {
+    public Optional<User> findById(UUID id) {
         return userRepository.findById(id);
     }
 

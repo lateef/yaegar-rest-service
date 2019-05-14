@@ -12,6 +12,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "account",
@@ -26,9 +27,9 @@ public class Account extends AbstractEntity {
     private static final long serialVersionUID = -9030131623403189315L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id")
-    private Long id;
+    private UUID id;
 
     @Column(name = "code", nullable = false)
     private int code;
@@ -50,7 +51,7 @@ public class Account extends AbstractEntity {
     private ChartOfAccounts chartOfAccounts;
 
     @Column(name = "parent_id")
-    private Long parentId;
+    private UUID parentId;
 
     @Column(name = "parent")
     private boolean parent;

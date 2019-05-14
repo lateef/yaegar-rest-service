@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -16,7 +17,7 @@ import java.util.Optional;
 public class SupplierService {
     private final SupplierRepository supplierRepository;
 
-    public Optional<Supplier> findById(Long id) {
+    public Optional<Supplier> findById(UUID id) {
         return supplierRepository.findById(id);
     }
 
@@ -27,11 +28,11 @@ public class SupplierService {
         return supplierRepository.save(supplier);
     }
 
-    public List<Supplier> getSuppliersByPrincipalCompanyId(Long principalCompanyId) {
+    public List<Supplier> getSuppliersByPrincipalCompanyId(UUID principalCompanyId) {
         return supplierRepository.findByPrincipalCompanyId(principalCompanyId);
     }
 
-    public Supplier getSupplierProductsById(Long supplierId) {
+    public Supplier getSupplierProductsById(UUID supplierId) {
         return supplierRepository.findOneWithProductsById(supplierId);
     }
 }

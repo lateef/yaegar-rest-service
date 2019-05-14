@@ -14,6 +14,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -24,9 +25,9 @@ public class Country extends AbstractEntity {
     private static final long serialVersionUID = -120834228529468074L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id")
-    private Long id;
+    private UUID id;
 
     @Length(max = 55)
     @Column(name = "name", nullable = false, unique = true, length = 55)

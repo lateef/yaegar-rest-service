@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(value = "/secure-api")
@@ -37,7 +38,7 @@ public class CustomerController {
     }
 
     @RequestMapping(value = "/get-customers/{companyId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, List<Customer>>> getCustomers(@PathVariable Long companyId) {
+    public ResponseEntity<Map<String, List<Customer>>> getCustomers(@PathVariable UUID companyId) {
         List<Customer> customers = customerService.getCustomersByPrincipalCompanyId(companyId);
         return ResponseEntity.ok().body(Collections.singletonMap("success", customers));
     }

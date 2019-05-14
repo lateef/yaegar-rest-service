@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,7 +29,7 @@ public class StockService {
     }
 
     @Transactional
-    public Stock addStock(Product product, Long companyStockId, BigDecimal costPrice, BigDecimal sellPrice, String sku, Double quantity, Location location) {
+    public Stock addStock(Product product, UUID companyStockId, BigDecimal costPrice, BigDecimal sellPrice, String sku, Double quantity, Location location) {
         findByProductAndCompanyStockId(product, companyStockId)
                 .ifPresent(e -> {
                     throw new IllegalStateException("Exception:: Stock already exists");
@@ -53,11 +54,11 @@ public class StockService {
         return stockRepository.findByAccountsIn(accounts);
     }
 
-    public List<Stock> findByCompanyStockId(Long companyStockId) {
+    public List<Stock> findByCompanyStockId(UUID companyStockId) {
         return stockRepository.findByCompanyStockId(companyStockId);
     }
 
-    public Optional<Stock> findByProductAndCompanyStockId(Product product, Long companyStockId) {
+    public Optional<Stock> findByProductAndCompanyStockId(Product product, UUID companyStockId) {
         return stockRepository.findByProductAndCompanyStockId(product, companyStockId);
     }
 }

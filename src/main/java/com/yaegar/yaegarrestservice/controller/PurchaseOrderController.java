@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.CASH;
 import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.GOODS_RECEIVED;
@@ -51,7 +52,7 @@ public class PurchaseOrderController {
     }
 
     @RequestMapping(value = "/get-purchase-orders", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, List<PurchaseOrder>>> getPurchaseOrders(@RequestParam final Long companyId) {
+    public ResponseEntity<Map<String, List<PurchaseOrder>>> getPurchaseOrders(@RequestParam final UUID companyId) {
         List<PurchaseOrder> purchaseOrders = purchaseOrderService.getPurchaseOrders(companyId);
         return ResponseEntity.ok().body(singletonMap("success", purchaseOrders));
     }

@@ -8,6 +8,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.UUID;
+
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
 import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertThat;
@@ -29,7 +31,7 @@ public class SubscriptionPlanRepositoryTest {
         entityManager.flush();
 
         //when
-        SubscriptionPlan actualSubscriptionPlan = subscriptionPlanRepository.findById(1L).get();
+        SubscriptionPlan actualSubscriptionPlan = subscriptionPlanRepository.findById(expectedSubscriptionPlan.getId()).get();
 
         //then
         assertThat(actualSubscriptionPlan, sameBeanAs(expectedSubscriptionPlan));

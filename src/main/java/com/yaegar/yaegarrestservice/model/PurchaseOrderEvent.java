@@ -13,6 +13,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -22,9 +23,9 @@ public class PurchaseOrderEvent extends AbstractEntity {
     private static final long serialVersionUID = 7720535667661027391L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id")
-    private Long id;
+    private UUID id;
 
     @Column(name = "purchase_order_event_id", nullable = false)
     private Long purchaseOrderEventId;

@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -23,7 +24,7 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    public Optional<Product> findById(Long id) {
+    public Optional<Product> findById(UUID id) {
         return productRepository.findById(id);
     }
 
@@ -31,7 +32,7 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    public List<Product> findByCompanyId(Long companyId) {
+    public List<Product> findByCompanyId(UUID companyId) {
         return productRepository.findByCompanyId(companyId);
     }
 

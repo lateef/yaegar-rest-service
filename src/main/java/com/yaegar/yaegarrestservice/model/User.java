@@ -23,6 +23,7 @@ import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.yaegar.yaegarrestservice.model.Role.ANONYMOUS_USER;
@@ -35,9 +36,9 @@ public class User extends AbstractEntity {
     private static final long serialVersionUID = 4857310005018510052L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id")
-    private Long id;
+    private UUID id;
 
     @Length(max = 32)
     @Column(name = "first_name", length = 32)

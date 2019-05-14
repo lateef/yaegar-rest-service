@@ -8,6 +8,7 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import java.util.Set;
+import java.util.UUID;
 
 @ToString(exclude = {"principalCompany"})
 @Data
@@ -19,9 +20,9 @@ public class Supplier extends AbstractEntity {
     private static final long serialVersionUID = 4695495638941520513L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "id")
-    private Long id;
+    private UUID id;
 
     @Length(max = 256)
     @Column(name = "name", nullable = false, length = 256)

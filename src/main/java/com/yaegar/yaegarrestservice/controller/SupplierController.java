@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static java.util.Collections.singletonMap;
 
@@ -39,7 +40,7 @@ public class SupplierController {
     }
 
     @RequestMapping(value = "/get-suppliers/{companyId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, List<Supplier>>> getSuppliers(@PathVariable Long companyId) {
+    public ResponseEntity<Map<String, List<Supplier>>> getSuppliers(@PathVariable UUID companyId) {
         List<Supplier> suppliers = supplierService.getSuppliersByPrincipalCompanyId(companyId);
         return ResponseEntity.ok().body(singletonMap("success", suppliers));
     }

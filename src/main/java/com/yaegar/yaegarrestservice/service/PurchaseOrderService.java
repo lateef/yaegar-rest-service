@@ -27,11 +27,11 @@ public class PurchaseOrderService {
         return purchaseOrderRepository.save(purchaseOrder);
     }
 
-    public Optional<PurchaseOrder> getPurchaseOrder(Long id) {
+    public Optional<PurchaseOrder> getPurchaseOrder(UUID id) {
         return purchaseOrderRepository.findById(id);
     }
 
-    public List<PurchaseOrder> getPurchaseOrders(Long companyId) {
+    public List<PurchaseOrder> getPurchaseOrders(UUID companyId) {
         return purchaseOrderRepository.findAllBySupplierPrincipalCompanyId(companyId);
     }
 

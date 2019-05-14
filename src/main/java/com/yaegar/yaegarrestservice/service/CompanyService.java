@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -53,7 +54,7 @@ public class CompanyService {
         return company1;
     }
 
-    public Optional<Company> findById(Long id) {
+    public Optional<Company> findById(UUID id) {
         return companyRepository.findById(id);
     }
 
@@ -61,7 +62,7 @@ public class CompanyService {
         return companyRepository.findByEmployeesIn(employees);
     }
 
-    public boolean userCanAccessChartOfAccounts(User user, Long chartOfAccountsId) {
+    public boolean userCanAccessChartOfAccounts(User user, UUID chartOfAccountsId) {
         List<Company> companies = getCompaniesByEmployeesIn(Collections.singletonList(user));
         return companies.stream()
                 .anyMatch(company -> company.getChartOfAccounts().getId().equals(chartOfAccountsId));
