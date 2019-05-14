@@ -8,10 +8,19 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -28,7 +37,7 @@ public class Account extends AbstractEntity {
 
     @Id
     @GeneratedValue
-    @Column(name = "id")
+    @Column(name = "id", columnDefinition = "BINARY(16)")
     private UUID id;
 
     @Column(name = "code", nullable = false)
@@ -64,9 +73,6 @@ public class Account extends AbstractEntity {
 
     @Column(name = "description", length = 1000)
     private String description;
-
-    @Column(name = "deleted_datetime")
-    private LocalDateTime deletedDateTime;
 
     @Column(name = "day_total")
     private BigDecimal dayTotal;

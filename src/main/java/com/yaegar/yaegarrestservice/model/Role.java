@@ -7,7 +7,6 @@ import org.springframework.security.core.GrantedAuthority;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.UUID;
@@ -25,7 +24,7 @@ public class Role implements GrantedAuthority {
 
     @Id
     @GeneratedValue
-    @Column(name = "id")
+    @Column(name = "id", columnDefinition = "BINARY(16)")
     private UUID id;
 
     @Column(name = "authority", nullable = false, length = 32, unique = true)

@@ -4,7 +4,10 @@ import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.util.UUID;
 
 @Data
@@ -15,7 +18,7 @@ public class ProductVariant extends AbstractEntity {
 
     @Id
     @GeneratedValue
-    @Column(name = "id")
+    @Column(name = "id", columnDefinition = "BINARY(16)")
     private UUID id;
 
     @Column(name = "type", nullable = false)

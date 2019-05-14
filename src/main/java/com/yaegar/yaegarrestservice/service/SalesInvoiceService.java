@@ -73,12 +73,12 @@ public class SalesInvoiceService {
     public List<SalesInvoice> processInvoices(Set<SalesInvoice> invoices) {
         return invoices.stream()
                 .map(invoice -> {
-                    if (Objects.isNull(invoice.getCreatedDatetime())) {
-                        invoice.setCreatedDatetime(dateTimeProvider.now());
+                    if (Objects.isNull(invoice.getCreatedDateTime())) {
+                        invoice.setCreatedDateTime(dateTimeProvider.now());
                     }
                     return invoice;
                 })
-                .collect(toCollection(() -> new TreeSet<>(comparing(SalesInvoice::getCreatedDatetime))))
+                .collect(toCollection(() -> new TreeSet<>(comparing(SalesInvoice::getCreatedDateTime))))
                 .stream()
                 .map(this::sortValidateAndSumSubTotal)
                 .collect(Collectors.toList());

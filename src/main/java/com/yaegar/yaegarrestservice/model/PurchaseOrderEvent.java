@@ -10,7 +10,6 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.UUID;
@@ -24,11 +23,11 @@ public class PurchaseOrderEvent extends AbstractEntity {
 
     @Id
     @GeneratedValue
-    @Column(name = "id")
+    @Column(name = "id", columnDefinition = "BINARY(16)")
     private UUID id;
 
-    @Column(name = "purchase_order_event_id", nullable = false)
-    private Long purchaseOrderEventId;
+    @Column(name = "purchase_order_event_id", columnDefinition = "BINARY(16)", nullable = false)
+    private UUID purchaseOrderEventId;
 
     @Column(name = "purchase_order_state")
     @Enumerated(value = EnumType.STRING)

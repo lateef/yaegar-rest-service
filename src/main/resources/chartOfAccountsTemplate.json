@@ -1,7 +1,7 @@
 [
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 1000000,
     "description": "An item purchased and owned that has monetary value",
     "name": "Assets",
@@ -13,8 +13,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 2000000,
     "description": "A liability is an obligation that arises in the course of doing business to be paid over a period of time",
     "name": "Liabilities",
@@ -26,8 +26,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 3000000,
     "description": "Shareholders' funds",
     "name": "Equity",
@@ -39,8 +39,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 4000000,
     "description": "Income/Revenue from normal business activity",
     "name": "Income/Revenue",
@@ -52,8 +52,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 5000000,
     "description": "Expenses incurred in the business",
     "name": "Expenses",
@@ -65,8 +65,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 1100000,
     "description": "Fixed Assets",
     "name": "Fixed Assets",
@@ -78,8 +78,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 1200000,
     "description": "Current Assets",
     "name": "Current Assets",
@@ -91,8 +91,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 1200001,
     "description": "Trade Debtors/Accounts Receivable",
     "name": "Trade Debtors",
@@ -104,8 +104,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 1210000,
     "description": "Cash And Cash Equivalents",
     "name": "Cash and Cash Equivalents",
@@ -117,8 +117,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 1210001,
     "description": "Prepayment",
     "name": "Prepayment",
@@ -130,8 +130,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 1211000,
     "description": "Cash In Hand",
     "name": "Cash In Hand",
@@ -143,8 +143,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 1212000,
     "description": "Cash at bank",
     "name": "Bank Cash",
@@ -156,8 +156,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 1230000,
     "description": "Marketable Securities",
     "name": "Marketable Securities",
@@ -169,8 +169,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 1230001,
     "description": "Treasury Bills",
     "name": "Treasury Bills",
@@ -182,8 +182,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 2100000,
     "description": "Current Liabilities",
     "name": "Current Liabilities",
@@ -195,8 +195,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 2200000,
     "description": "Non-current Liabilities",
     "name": "Non-current Liabilities",
@@ -208,8 +208,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 2300000,
     "description": "Contingent Liabilities",
     "name": "Contingent Liabilities",
@@ -221,8 +221,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 2100001,
     "description": "Trade Creditors/Accounts Payable",
     "name": "Trade Creditors",
@@ -234,8 +234,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 3000001,
     "description": "Owner's share capital contribution",
     "name": "Owner's Contribution",
@@ -247,8 +247,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 3000002,
     "description": "Owner's share capital distribution",
     "name": "Dividends/Owner's Distribution",
@@ -260,8 +260,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 4100000,
     "description": "Income from sales",
     "name": "Sales Income",
@@ -273,8 +273,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 4200000,
     "description": "Discount on sales",
     "name": "Sales Discount",
@@ -286,8 +286,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 4300000,
     "description": "Return on sales",
     "name": "Sales Return",
@@ -299,8 +299,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 4400000,
     "description": "Income from other sources",
     "name": "Other Income",
@@ -312,8 +312,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 5100000,
     "description": "Costs related to sales or services you provide",
     "name": "Cost Of Sales/Goods",
@@ -325,8 +325,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 5100001,
     "description": "Rent of office/building/warehouse",
     "name": "Rent",
@@ -338,8 +338,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 5100002,
     "description": "Salaries/Wages",
     "name": "Salaries/Wages",
@@ -351,8 +351,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 5100003,
     "description": "Bank Fees/Charges",
     "name": "Bank Fees/Charges",
@@ -364,8 +364,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 5100004,
     "description": "Payroll taxes",
     "name": "Payroll taxes",
@@ -377,8 +377,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 5100005,
     "description": "Other Expenses",
     "name": "Other Expenses",
@@ -390,8 +390,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 5200000,
     "description": "Utilities, Phone Bills, Light Bills etc",
     "name": "Utilities/Bills",
@@ -403,8 +403,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 5300000,
     "description": "Office Supplies etc",
     "name": "Supplies",
@@ -416,8 +416,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 5400000,
     "description": "Cost of purchases",
     "name": "Purchases",
@@ -429,8 +429,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 5500000,
     "description": "Discount on purchases",
     "name": "Purchases Discount",
@@ -442,8 +442,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 5600000,
     "description": "Return on purchases",
     "name": "Purchases Return",
@@ -455,8 +455,8 @@
     "updatedBy": null
   },
   {
-    "createdDatetime": null,
-    "updatedDatetime": null,
+    "createdDateTime": null,
+    "updatedDateTime": null,
     "code": 5700000,
     "description": "Product, commodity or goods",
     "name": "Stock",

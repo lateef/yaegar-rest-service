@@ -88,19 +88,19 @@ public class PurchaseInvoiceService {
     public List<PurchaseInvoice> sortInvoicesByDate(Set<PurchaseInvoice> purchaseInvoices) {
         return purchaseInvoices
                 .stream()
-                .sorted(Comparator.comparing(PurchaseInvoice::getCreatedDatetime))
+                .sorted(Comparator.comparing(PurchaseInvoice::getCreatedDateTime))
                 .collect(Collectors.toList());
     }
 
     public List<PurchaseInvoice> processInvoices(Set<PurchaseInvoice> invoices) {
         return invoices.stream()
                 .map(invoice -> {
-                    if (Objects.isNull(invoice.getCreatedDatetime())) {
-                        invoice.setCreatedDatetime(dateTimeProvider.now());
+                    if (Objects.isNull(invoice.getCreatedDateTime())) {
+                        invoice.setCreatedDateTime(dateTimeProvider.now());
                     }
                     return invoice;
                 })
-                .collect(toCollection(() -> new TreeSet<>(comparing(PurchaseInvoice::getCreatedDatetime))))
+                .collect(toCollection(() -> new TreeSet<>(comparing(PurchaseInvoice::getCreatedDateTime))))
                 .stream()
                 .map(this::sortValidateAndSumSubTotal)
                 .collect(Collectors.toList());
