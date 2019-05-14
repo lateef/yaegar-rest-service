@@ -27,7 +27,7 @@ public class Role implements GrantedAuthority {
     @Column(name = "id", columnDefinition = "BINARY(16)")
     private UUID id;
 
-    @Column(name = "authority", nullable = false, length = 32, unique = true)
+    @Column(name = "authority", nullable = false, length = 68, unique = true)
     private String authority;
 
     public static final String ANONYMOUS_USER = "ANONYMOUS_USER";

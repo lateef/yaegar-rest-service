@@ -7,16 +7,7 @@ import org.hibernate.validator.constraints.Length;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotEmpty;
 import java.util.Collection;
@@ -30,6 +21,7 @@ import static java.util.Collections.singleton;
 @Data
 @EqualsAndHashCode(callSuper = true, exclude = {"phones", "roles"})
 @Entity
+@Table(name="`user`")
 public class User extends AbstractEntity {
     private static final long serialVersionUID = 4857310005018510052L;
 

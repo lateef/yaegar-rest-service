@@ -1,4 +1,4 @@
-version: '3'
+version: '3.1'
 
 services:
   yaegar-rest-service:
@@ -8,17 +8,15 @@ services:
     ports:
       - "8888:8080"
     depends_on:
-      - mariadb
+      - postgresdb
     environment:
-      - app.db.host=mariadb103
+      - app.db.host=postgresdb
 
-  mariadb:
-    image: "mariadb:10.3"
-    container_name: "mariadb103"
+  postgresdb:
+    image: "postgres"
+    container_name: "postgresdb"
     restart: always
     ports:
-    - "3306:3306"
+      - "5432:5432"
     environment:
-      #      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      MYSQL_ROOT_PASSWORD: "secret"
-      MYSQL_ROOT_HOST: '%'
+      POSTGRES_PASSWORD: "secret"

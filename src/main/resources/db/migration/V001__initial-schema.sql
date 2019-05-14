@@ -1,7 +1,7 @@
 create table role
 (
   id uuid not null,
-  authority         varchar(32) not null,
+  authority         varchar(68) not null,
   primary key (id),
   constraint UK_role1
     unique (authority)
