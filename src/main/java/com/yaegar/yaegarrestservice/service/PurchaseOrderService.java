@@ -2,7 +2,9 @@ package com.yaegar.yaegarrestservice.service;
 
 import com.yaegar.yaegarrestservice.model.Product;
 import com.yaegar.yaegarrestservice.model.PurchaseOrder;
+import com.yaegar.yaegarrestservice.model.PurchaseOrderEvent;
 import com.yaegar.yaegarrestservice.model.PurchaseOrderLineItem;
+import com.yaegar.yaegarrestservice.model.enums.PurchaseOrderEventType;
 import com.yaegar.yaegarrestservice.repository.ProductRepository;
 import com.yaegar.yaegarrestservice.repository.PurchaseOrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -63,5 +65,13 @@ public class PurchaseOrderService {
         return lineItems.stream()
                 .sorted(Comparator.comparing(PurchaseOrderLineItem::getEntry))
                 .collect(Collectors.toList());
+    }
+
+    public PurchaseOrder addEvent(PurchaseOrder purchaseOrder, String description, PurchaseOrderEventType orderEventType) {
+        final Set<PurchaseOrderEvent> purchaseOrderEvents = purchaseOrder.getPurchaseOrderEvents();
+        final PurchaseOrderEvent purchaseOrderEvent = new PurchaseOrderEvent(orderEventType, description);
+        purchaseOrderEvents.add(purchaseOrderEvent);
+        purchaseOrder.setPurchaseOrderEvents(purchaseOrderEvents);
+        return purchaseOrder;
     }
 }

@@ -1,9 +1,11 @@
 package com.yaegar.yaegarrestservice.service;
 
+import com.yaegar.yaegarrestservice.model.SalesOrderEvent;
 import com.yaegar.yaegarrestservice.model.SalesOrderLineItem;
 import com.yaegar.yaegarrestservice.model.Product;
 import com.yaegar.yaegarrestservice.model.SalesInvoiceLineItem;
 import com.yaegar.yaegarrestservice.model.SalesOrder;
+import com.yaegar.yaegarrestservice.model.enums.SalesOrderEventType;
 import com.yaegar.yaegarrestservice.repository.ProductRepository;
 import com.yaegar.yaegarrestservice.repository.SalesOrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -95,5 +97,13 @@ public class SalesOrderService {
         return lineItems.stream()
                 .sorted(Comparator.comparing(SalesInvoiceLineItem::getEntry))
                 .collect(Collectors.toList());
+    }
+
+    public SalesOrder addEvent(SalesOrder salesOrder, String description, SalesOrderEventType orderEventType) {
+        final Set<SalesOrderEvent> salesOrderEvents = salesOrder.getSalesOrderEvents();
+        final SalesOrderEvent salesOrderEvent = new SalesOrderEvent(orderEventType, description);
+        salesOrderEvents.add(salesOrderEvent);
+        salesOrder.setSalesOrderEvents(salesOrderEvents);
+        return salesOrder;
     }
 }

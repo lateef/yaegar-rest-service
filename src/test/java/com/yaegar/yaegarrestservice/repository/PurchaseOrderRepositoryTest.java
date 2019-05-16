@@ -10,7 +10,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
-import static com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState.PAID_IN_ADVANCE;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionType.PURCHASE_ORDER;
 import static org.junit.Assert.assertThat;
 
@@ -32,7 +31,6 @@ public class PurchaseOrderRepositoryTest {
         entityManager.flush();
 
         PurchaseOrder expectedPurchaseOrder = new PurchaseOrder();
-        expectedPurchaseOrder.setPurchaseOrderState(PAID_IN_ADVANCE);
         expectedPurchaseOrder.setTransaction(transaction);
         entityManager.persist(expectedPurchaseOrder);
         entityManager.flush();

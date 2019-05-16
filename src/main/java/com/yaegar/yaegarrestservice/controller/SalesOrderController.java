@@ -1,6 +1,12 @@
 package com.yaegar.yaegarrestservice.controller;
 
-import com.yaegar.yaegarrestservice.model.*;
+import com.yaegar.yaegarrestservice.model.Customer;
+import com.yaegar.yaegarrestservice.model.JournalEntry;
+import com.yaegar.yaegarrestservice.model.SalesInvoice;
+import com.yaegar.yaegarrestservice.model.SalesOrder;
+import com.yaegar.yaegarrestservice.model.SalesOrderEvent;
+import com.yaegar.yaegarrestservice.model.SalesOrderLineItem;
+import com.yaegar.yaegarrestservice.model.Transaction;
 import com.yaegar.yaegarrestservice.service.CustomerService;
 import com.yaegar.yaegarrestservice.service.SalesInvoiceService;
 import com.yaegar.yaegarrestservice.service.SalesOrderService;
@@ -9,7 +15,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -19,9 +29,11 @@ import java.util.Set;
 import java.util.UUID;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.CASH;
-import static com.yaegar.yaegarrestservice.model.enums.SalesOrderState.GOODS_DELIVERED;
-import static com.yaegar.yaegarrestservice.model.enums.SalesOrderState.PAID_IN_ADVANCE;
+import static com.yaegar.yaegarrestservice.model.enums.SalesOrderEventType.DELIVERY;
+import static com.yaegar.yaegarrestservice.model.enums.SalesOrderEventType.PAYMENT;
+import static com.yaegar.yaegarrestservice.model.enums.SalesOrderEventType.RAISE;
 import static java.math.BigDecimal.ZERO;
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 
 @Slf4j
@@ -47,6 +59,8 @@ public class SalesOrderController {
 
         salesOrder.setTotalPrice(salesOrderService.sumOrderLineItemsSubTotal(lineItems1));
         salesOrder.setPaid(ZERO);
+        final SalesOrderEvent salesOrderEvent = new SalesOrderEvent(RAISE, salesOrder.getDescription());
+        salesOrder.setSalesOrderEvents(singleton(salesOrderEvent));
         SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(salesOrder);
         return ResponseEntity.ok().body(singletonMap("success", salesOrder1));
     }
@@ -64,16 +78,15 @@ public class SalesOrderController {
                 .orElseThrow(NullPointerException::new);
 
         final Transaction transaction = transactionService.computeSalesOrderPaymentTransaction(salesOrder, savedSalesOrder);
-
-        // TODO get and set purchase order state
-        savedSalesOrder.setSalesOrderState(PAID_IN_ADVANCE);
         savedSalesOrder.setTransaction(transaction);
 
         final List<JournalEntry> journalEntries = transactionService.filterJournalEntriesByAccountCategory(transaction.getJournalEntries(), CASH);
         final BigDecimal totalDebitAmount = transactionService.sumJournalEntriesAmount(journalEntries);
         savedSalesOrder.setPaid(totalDebitAmount);
-        SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(savedSalesOrder);
-        return ResponseEntity.ok().body(singletonMap("success", salesOrder1));
+
+        final SalesOrder salesOrder1 = salesOrderService.addEvent(savedSalesOrder, salesOrder.getDescription(), PAYMENT);
+        SalesOrder salesOrder2 = salesOrderService.saveSalesOrder(salesOrder1);
+        return ResponseEntity.ok().body(singletonMap("success", salesOrder2));
     }
 
     @Transactional
@@ -86,16 +99,17 @@ public class SalesOrderController {
         savedSalesOrder.setInvoices(new HashSet<>(salesInvoices));
 
         final Transaction transaction = transactionService.computeSalesInvoicesTransaction(salesOrder, savedSalesOrder);
-        // TODO get and set sales order state
-        savedSalesOrder.setSalesOrderState(GOODS_DELIVERED);
         savedSalesOrder.setTransaction(transaction);
+
         final List<JournalEntry> journalEntries = transactionService.filterJournalEntriesByAccountCategory(transaction.getJournalEntries(), CASH);
         final BigDecimal totalDebitAmount = transactionService.sumJournalEntriesAmount(journalEntries);
         savedSalesOrder.setPaid(totalDebitAmount.abs());
-        SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(savedSalesOrder);
+
+        final SalesOrder salesOrder1 = salesOrderService.addEvent(savedSalesOrder, salesOrder.getDescription(), DELIVERY);
+        SalesOrder salesOrder2 = salesOrderService.saveSalesOrder(salesOrder1);
 
         //TODO this should factor in delivery note if available
         salesInvoiceService.computeInventory(savedSalesOrder.getInvoices());
-        return ResponseEntity.ok().body(singletonMap("success", salesOrder1));
+        return ResponseEntity.ok().body(singletonMap("success", salesOrder2));
     }
 }

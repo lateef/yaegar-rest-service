@@ -340,8 +340,7 @@ create table purchase_order
   transaction_id uuid null,
   total_price decimal(19,2) null,
   paid decimal(19,2) null,
-  description        varchar(1000) null,
-  purchase_order_state varchar(50) not null,
+  purchase_order_event_type varchar(50) not null,
   payment_due_datetime timestamp null,
   delivery_datetime timestamp null,
   created_by       uuid null,
@@ -383,8 +382,7 @@ create table sales_order
   total_price decimal(19,2) null,
   paid decimal(19,2) null,
   received_amount    decimal(19,2) null,
-  description        varchar(1000) null,
-  sales_order_state varchar(50) not null,
+  sales_order_event_type varchar(50) not null,
   payment_due_datetime timestamp null,
   delivery_datetime timestamp null,
   created_by       uuid null,
@@ -419,12 +417,14 @@ create table purchase_order_event
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
-  purchase_order_event_id uuid null,
-  purchase_order_state varchar(50) null,
+  purchase_order_id uuid null,
+  purchase_order_event_type varchar(50) null,
   description        varchar(1000) null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id)
+  primary key (id),
+  constraint FK_purchase_order_event_purchase_order
+    foreign key (purchase_order_id) references purchase_order (id)
 );
 
 create table sales_order_event
@@ -433,12 +433,14 @@ create table sales_order_event
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
-  sales_order_event_id uuid null,
-  sales_order_state varchar(50) null,
+  sales_order_id uuid null,
+  sales_order_event_type varchar(50) null,
   description        varchar(1000) null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id)
+  primary key (id),
+  constraint FK_sales_order_event_sales_order
+    foreign key (sales_order_id) references sales_order (id)
 );
 
 create table purchase_order_line_item
