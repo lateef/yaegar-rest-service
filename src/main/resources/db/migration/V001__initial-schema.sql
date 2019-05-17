@@ -1,15 +1,13 @@
 create table role
 (
-  id uuid not null,
-  authority         varchar(68) not null,
-  primary key (id),
-  constraint UK_role1
-    unique (authority)
+  id uuid not null primary key,
+  authority varchar(68) not null,
+  constraint UK_role1 unique (authority)
 );
 
 create table country
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -20,14 +18,24 @@ create table country
   iso3             varchar(3) not null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint UK_country
   unique (name)
 );
 
+create table configuration
+(
+  id uuid not null primary key,
+  configuration varchar not null,
+  created_datetime timestamp default current_timestamp,
+  updated_datetime timestamp null,
+  deleted_datetime timestamp null,
+  created_by       uuid null,
+  updated_by       uuid null
+);
+
 create table "user"
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -41,13 +49,15 @@ create table "user"
   first_name varchar(32) null,
   password varchar(128) null,
   country_id uuid null,
+  configuration_id uuid null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint UK_user
     unique (phone_number),
   constraint FK_user_country
-    foreign key (country_id) references country (id)
+    foreign key (country_id) references country (id),
+  constraint FK_user_configuration
+    foreign key (configuration_id) references configuration (id)
 );
 
 create table user_roles
@@ -63,7 +73,7 @@ create table user_roles
 
 create table phone
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -76,7 +86,6 @@ create table phone
   principal boolean null,
   confirmation_code varchar(6) null,
   confirmed boolean not null,
-  primary key (id),
   constraint UK_phone
     unique (number),
   constraint FK_phone_user
@@ -87,28 +96,29 @@ create table phone
 
 create table chart_of_accounts
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
   created_by       uuid null,
-  updated_by       uuid null,
-  primary key (id)
+  updated_by       uuid null
 );
 
 create table company
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
   name             varchar(256) not null,
   chart_of_accounts_id uuid not null,
+  configuration_id uuid null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint FK_company_chart_of_accounts
-  foreign key (chart_of_accounts_id) references chart_of_accounts (id)
+  foreign key (chart_of_accounts_id) references chart_of_accounts (id),
+  constraint FK_company_configuration
+    foreign key (configuration_id) references configuration (id)
 );
 
 create table company_owners
@@ -135,19 +145,18 @@ create table company_employees
 
 create table b2b_account
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
   balance       decimal(19,2) null,
   created_by       uuid null,
-  updated_by       uuid null,
-  primary key (id)
+  updated_by       uuid null
 );
 
 create table location
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -157,14 +166,13 @@ create table location
   location_company_id uuid null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint FK_location_company
   foreign key (location_company_id) references company (id)
 );
 
 create table account
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -186,7 +194,6 @@ create table account
   chart_of_accounts_id uuid not null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint UK_account1
     unique (chart_of_accounts_id, code),
   constraint UK_account2
@@ -197,19 +204,18 @@ create table account
 
 create table transaction
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,  transaction_type varchar(50) null,
   transaction_type_id uuid null,
   created_by       uuid null,
-  updated_by       uuid null,
-  primary key (id)
+  updated_by       uuid null
 );
 
 create table journal_entry
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -223,14 +229,13 @@ create table journal_entry
   transaction_side varchar(255) not null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint FK_journal_entry_transaction
     foreign key (transaction_id) references transaction (id)
 );
 
 create table supplier
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -240,7 +245,6 @@ create table supplier
   supplier_company_id  uuid null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint UK_supplier
     unique (name, principal_company_id),
   constraint FK_supplier_company1
@@ -253,7 +257,7 @@ create table supplier
 
 create table customer
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -263,7 +267,6 @@ create table customer
   b2b_account_id       uuid null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint UK_customer
     unique (name, principal_company_id),
   constraint FK_principal_company1
@@ -276,7 +279,7 @@ create table customer
 
 create table product
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -288,14 +291,13 @@ create table product
   gtin varchar(14) null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint FK_product_company
     foreign key (company_id) references company (id)
 );
 
 create table product_variant
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -303,8 +305,7 @@ create table product_variant
   attribute varchar(50) not null,
   value varchar(50) not null,
   created_by       uuid null,
-  updated_by       uuid null,
-  primary key (id)
+  updated_by       uuid null
 );
 
 create table product_product_variants
@@ -331,7 +332,7 @@ create table supplier_products
 
 create table purchase_order
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -345,7 +346,6 @@ create table purchase_order
   delivery_datetime timestamp null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint FK_purchase_order_supplier
     foreign key (supplier_id) references supplier (id),
   constraint FK_purchase_order_transaction
@@ -354,7 +354,7 @@ create table purchase_order
 
 create table purchase_invoice
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -365,13 +365,12 @@ create table purchase_invoice
   payment_due_datetime timestamp null,
   delivery_datetime timestamp null,
   created_by       uuid null,
-  updated_by       uuid null,
-  primary key (id)
+  updated_by       uuid null
 );
 
 create table sales_order
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -387,7 +386,6 @@ create table sales_order
   delivery_datetime timestamp null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint FK_sales_order_customer
     foreign key (customer_id) references customer (id),
   constraint FK_sales_order_transaction
@@ -396,7 +394,7 @@ create table sales_order
 
 create table sales_invoice
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -407,13 +405,12 @@ create table sales_invoice
   payment_due_datetime timestamp null,
   delivery_datetime timestamp null,
   created_by       uuid null,
-  updated_by       uuid null,
-  primary key (id)
+  updated_by       uuid null
 );
 
 create table purchase_order_event
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -422,14 +419,13 @@ create table purchase_order_event
   description        varchar(1000) null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint FK_purchase_order_event_purchase_order
     foreign key (purchase_order_id) references purchase_order (id)
 );
 
 create table sales_order_event
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -438,14 +434,13 @@ create table sales_order_event
   description        varchar(1000) null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint FK_sales_order_event_sales_order
     foreign key (sales_order_id) references sales_order (id)
 );
 
 create table purchase_order_line_item
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -457,14 +452,13 @@ create table purchase_order_line_item
   product_id uuid null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint FK_purchase_order_line_item_product
     foreign key (product_id) references product (id)
 );
 
 create table purchase_invoice_line_item
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -476,14 +470,13 @@ create table purchase_invoice_line_item
   product_id uuid null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint FK_purchase_invoice_line_item_product
     foreign key (product_id) references product (id)
 );
 
 create table sales_order_line_item
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -495,14 +488,13 @@ create table sales_order_line_item
   product_id uuid null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint FK_sales_order_line_item_product
     foreign key (product_id) references product (id)
 );
 
 create table sales_invoice_line_item
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -514,14 +506,13 @@ create table sales_invoice_line_item
   product_id uuid null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint FK_sales_invoice_line_item_product
     foreign key (product_id) references product (id)
 );
 
 create table stock
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -534,7 +525,6 @@ create table stock
   sell_price decimal(19,2) null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint UK_stock
     unique (sku, product_id, company_stock_id, location_id),
   constraint FK_stock_product
@@ -558,7 +548,7 @@ create table stock_accounts
 
 create table stock_transaction
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -569,14 +559,13 @@ create table stock_transaction
   quantity          double precision null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint FK_stock_transaction_location
     foreign key (location_id) references location (id)
 );
 
 create table subscription_plan
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -588,14 +577,13 @@ create table subscription_plan
   currency_code varchar(3) not null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint UK_subscription_plan
     unique (name, credits_per_month, duration, price_per_month, price_per_year, currency_code)
 );
 
 create table subscription
 (
-  id uuid not null,
+  id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
@@ -605,7 +593,6 @@ create table subscription
   subscription_end_datetime timestamp not null,
   created_by       uuid null,
   updated_by       uuid null,
-  primary key (id),
   constraint UK_subscription
     unique (user_id, subscription_plan_id, subscription_start_datetime, subscription_end_datetime),
   constraint FK_subscription_user

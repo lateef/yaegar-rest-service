@@ -67,4 +67,8 @@ public class Company extends AbstractEntity {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinColumn(name = "location_company_id", referencedColumnName = "id")
     private List<Location> locations;
+
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "configuration_id", referencedColumnName = "id")
+    private Configuration configuration;
 }

@@ -72,6 +72,10 @@ public class User extends AbstractEntity {
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     private Set<Role> roles;
 
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "configuration_id", referencedColumnName = "id")
+    private Configuration configuration;
+
     public void eraseCredentials() {
         password = null;
         phones = phones.stream().map(phone -> {
