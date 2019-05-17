@@ -1,6 +1,7 @@
 package com.yaegar.yaegarrestservice.repository;
 
 import com.yaegar.yaegarrestservice.model.Company;
+import com.yaegar.yaegarrestservice.model.Phone;
 import com.yaegar.yaegarrestservice.model.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,7 +11,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Set;
-import java.util.UUID;
 
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
 import static java.util.Collections.singleton;
@@ -53,6 +53,7 @@ public class CompanyRepositoryTest {
 
         Company expectedCompany = new Company("Yaegar");
         expectedCompany.setEmployees(employees);
+        expectedCompany.setPhones(singleton(new Phone("234", "8091444443", false, null)));
         entityManager.persist(expectedCompany);
         entityManager.flush();
 

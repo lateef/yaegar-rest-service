@@ -7,10 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import java.math.BigDecimal;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -18,11 +15,6 @@ import java.util.UUID;
 @Entity
 public class B2bAccount extends AbstractEntity {
     private static final long serialVersionUID = -3695774504615610563L;
-
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)")
-    private UUID id;
 
     @Column(name = "balance")
     private BigDecimal balance;

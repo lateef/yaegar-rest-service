@@ -24,8 +24,7 @@ public class RoleRepositoryTest {
     @Test
     public void whenFindByAuthority_thenReturnRole() {
         //given
-        Role expectedRole = new Role();
-        expectedRole.setAuthority(AUTHORITY_USER);
+        Role expectedRole = new Role(AUTHORITY_USER);
         entityManager.persist(expectedRole);
 
         //when

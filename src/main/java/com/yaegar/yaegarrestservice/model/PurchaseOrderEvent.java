@@ -4,27 +4,24 @@ import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
 import com.yaegar.yaegarrestservice.model.enums.PurchaseOrderEventType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.UUID;
 
 @Data
+@NoArgsConstructor(force = true)
+@RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table
 public class PurchaseOrderEvent extends AbstractEntity {
     private static final long serialVersionUID = 7720535667661027391L;
-
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)")
-    private UUID id;
 
     @Column(name = "purchase_order_id", columnDefinition = "BINARY(16)", nullable = false)
     private UUID purchaseOrderId;

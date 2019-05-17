@@ -10,8 +10,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -30,11 +28,6 @@ import java.util.UUID;
         uniqueConstraints = {@UniqueConstraint(columnNames = {"sku", "product_id", "company_stock_id", "location_id"})})
 public class Stock extends AbstractEntity {
     private static final long serialVersionUID = -8115458467683618041L;
-
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)")
-    private UUID id;
 
     //TODO not nullable
     @Length(max = 40)

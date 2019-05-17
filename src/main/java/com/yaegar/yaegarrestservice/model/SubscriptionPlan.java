@@ -4,63 +4,48 @@ import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import java.math.BigDecimal;
-import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
+@RequiredArgsConstructor
 @Entity
 @Table(name = "subscription_plan",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "credits_per_month", "duration", "price_per_month", "price_per_year", "currency_code"})})
 public class SubscriptionPlan extends AbstractEntity {
     private static final long serialVersionUID = 6096630639646459517L;
 
-    public SubscriptionPlan(@Length(max = 256) String name, int creditsPerMonth, int duration, BigDecimal pricePerMonth, BigDecimal pricePerYear, String currencyCode) {
-        this.name = name;
-        this.creditsPerMonth = creditsPerMonth;
-        this.duration = duration;
-        this.pricePerMonth = pricePerMonth;
-        this.pricePerYear = pricePerYear;
-        this.currencyCode = currencyCode;
-    }
-
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)")
-    private UUID id;
-
     @Length(max = 256)
     @Column(name = "name", nullable = false, length = 256)
-    private String name;
+    private final String name;
 
     /**
      * credits represent the number of users per plan
      */
     @Column(name = "credits_per_month", nullable = false)
-    private int creditsPerMonth;
+    private final int creditsPerMonth;
 
     /**
      * duration represent the number of months
      */
     @Column(name = "duration", nullable = false)
-    private int duration;
+    private final int duration;
 
     @Column(name = "price_per_month", nullable = false)
-    private BigDecimal pricePerMonth;
+    private final BigDecimal pricePerMonth;
 
     @Column(name = "price_per_year", nullable = false)
-    private BigDecimal pricePerYear;
+    private final BigDecimal pricePerYear;
 
     @Length(max = 3)
     @Column(name = "currency_code", nullable = false, length = 3)
-    private String currencyCode;
+    private final String currencyCode;
 }

@@ -37,21 +37,22 @@ public class CompanyService {
         if (company.getId() != null) {
             return company;
         }
-        company.setName(company.getName().trim());
-        company.setOwners(Collections.singleton(user));
-        company.setEmployees(Collections.singleton(user));
+        final Company company1 = new Company(company.getName().trim());
+        company1.setOwners(Collections.singleton(user));
+        company1.setEmployees(Collections.singleton(user));
         ChartOfAccounts chartOfAccounts = new ChartOfAccounts();
-        company.setChartOfAccounts(chartOfAccounts);
-        Company company1 = companyRepository.save(company);
+        company1.setChartOfAccounts(chartOfAccounts);
+        company1.setCountry(user.getCountry());
+        Company company2 = companyRepository.save(company1);
 
-        List<Account> primaryCompanyAccounts = accountRepository.saveAll(createPrimaryCompanyAccount(company1.getChartOfAccounts()));
-        List<Account> companyAccounts = createCompanyAccount(primaryCompanyAccounts, company1.getChartOfAccounts());
+        List<Account> primaryCompanyAccounts = accountRepository.saveAll(createPrimaryCompanyAccount(company2.getChartOfAccounts()));
+        List<Account> companyAccounts = createCompanyAccount(primaryCompanyAccounts, company2.getChartOfAccounts());
         List<Account> companyAccounts2 = accountRepository.saveAll(companyAccounts);
         primaryCompanyAccounts.addAll(companyAccounts2);
         chartOfAccounts.setAccounts(new HashSet<>(primaryCompanyAccounts));
 
-        setSuperUserRoleOnCompanyCreate(user, company1);
-        return company1;
+        setSuperUserRoleOnCompanyCreate(user, company2);
+        return company2;
     }
 
     public Optional<Company> findById(UUID id) {

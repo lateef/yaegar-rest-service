@@ -13,11 +13,14 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
@@ -26,6 +29,11 @@ import java.time.LocalDateTime;
 )
 @Data
 public abstract class AbstractEntity implements Serializable {
+    @Id
+    @GeneratedValue
+    @Column(name = "id", columnDefinition = "BINARY(16)")
+    private UUID id;
+
     @CreatedBy
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinColumn(name = "created_by", referencedColumnName = "id")

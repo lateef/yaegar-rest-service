@@ -9,11 +9,8 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -22,11 +19,6 @@ import java.util.UUID;
 @Table
 public class Country extends AbstractEntity {
     private static final long serialVersionUID = -120834228529468074L;
-
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)")
-    private UUID id;
 
     @Length(max = 55)
     @Column(name = "name", nullable = false, unique = true, length = 55)

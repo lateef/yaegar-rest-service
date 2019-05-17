@@ -2,7 +2,12 @@ create table role
 (
   id uuid not null primary key,
   authority varchar(68) not null,
-  constraint UK_role1 unique (authority)
+  constraint UK_role1 unique (authority),
+  created_datetime timestamp default current_timestamp,
+  updated_datetime timestamp null,
+  deleted_datetime timestamp null,
+  created_by       uuid null,
+  updated_by       uuid null
 );
 
 create table country
@@ -71,29 +76,6 @@ create table user_roles
     foreign key (roles_id) references role (id)
 );
 
-create table phone
-(
-  id uuid not null primary key,
-  created_datetime timestamp default current_timestamp,
-  updated_datetime timestamp null,
-  deleted_datetime timestamp null,
-  code varchar(3) not null,
-  number varchar(15) not null,
-  created_by       uuid null,
-  updated_by       uuid null,
-  phone_user_id uuid null,
-  country_id uuid null,
-  principal boolean null,
-  confirmation_code varchar(6) null,
-  confirmed boolean not null,
-  constraint UK_phone
-    unique (number),
-  constraint FK_phone_user
-    foreign key (phone_user_id) references "user" (id),
-  constraint FK_phone_country
-    foreign key (country_id) references country (id)
-);
-
 create table chart_of_accounts
 (
   id uuid not null primary key,
@@ -112,11 +94,14 @@ create table company
   deleted_datetime timestamp null,
   name             varchar(256) not null,
   chart_of_accounts_id uuid not null,
+  country_id uuid null,
   configuration_id uuid null,
   created_by       uuid null,
   updated_by       uuid null,
   constraint FK_company_chart_of_accounts
   foreign key (chart_of_accounts_id) references chart_of_accounts (id),
+  constraint FK_company_country
+    foreign key (country_id) references country (id),
   constraint FK_company_configuration
     foreign key (configuration_id) references configuration (id)
 );
@@ -141,6 +126,49 @@ create table company_employees
   foreign key (company_id) references company (id),
   constraint FK_company_employees_user
   foreign key (employees_id) references "user" (id)
+);
+
+create table phone
+(
+  id uuid not null primary key,
+  created_datetime timestamp default current_timestamp,
+  updated_datetime timestamp null,
+  deleted_datetime timestamp null,
+  code varchar(3) not null,
+  number varchar(15) not null,
+  created_by       uuid null,
+  updated_by       uuid null,
+  owner_id uuid null,
+  country_id uuid null,
+  principal boolean null,
+  confirmation_code varchar(6) null,
+  confirmed boolean not null,
+  constraint UK_phone
+    unique (number),
+  constraint FK_phone_country
+    foreign key (country_id) references country (id)
+);
+
+create table user_phones
+(
+  user_id uuid not null,
+  phones_id uuid not null,
+  primary key (user_id, phones_id),
+  constraint FK_user_phones_user
+    foreign key (user_id) references "user" (id),
+  constraint FK_user_phones_phone
+    foreign key (phones_id) references phone (id)
+);
+
+create table company_phones
+(
+  company_id uuid not null,
+  phones_id uuid not null,
+  primary key (company_id, phones_id),
+  constraint FK_company_phones_company
+    foreign key (company_id) references company (id),
+  constraint FK_company_phones_phone
+    foreign key (phones_id) references phone (id)
 );
 
 create table b2b_account

@@ -12,8 +12,6 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import java.util.Set;
 import java.util.UUID;
@@ -23,11 +21,6 @@ import java.util.UUID;
 @Entity
 public class Product extends AbstractEntity {
     private static final long serialVersionUID = 9131433206492217756L;
-
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)")
-    private UUID id;
 
     @Length(max = 128)
     @Column(name = "name", nullable = false, length = 128)

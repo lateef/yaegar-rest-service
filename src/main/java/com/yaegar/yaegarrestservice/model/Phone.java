@@ -11,14 +11,11 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 import java.util.Objects;
-import java.util.UUID;
 
 @ToString
 @Getter
@@ -28,11 +25,6 @@ import java.util.UUID;
 @Table
 public class Phone extends AbstractEntity {
     private static final long serialVersionUID = -7901958678943948605L;
-
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)")
-    private UUID id;
 
     @NotEmpty
     @JsonProperty("callingCode")

@@ -8,9 +8,6 @@ import lombok.RequiredArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor(force = true)
@@ -18,11 +15,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 public class Configuration extends AbstractEntity {
-
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)")
-    private UUID id;
+    private static final long serialVersionUID = 7664241320041534753L;
 
     @Column(name = "configuration")
     private final String configuration;
