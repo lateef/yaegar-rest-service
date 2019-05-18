@@ -8,13 +8,13 @@ services:
     ports:
       - "8888:8080"
     depends_on:
-      - postgresdb
+      - postgres
     environment:
       - app.db.host=postgres
 
-  postgresdb:
+  postgres:
     image: "postgres"
-    container_name: "postgresdb"
+    container_name: "postgres"
     restart: always
     ports:
       - "5432:5432"
