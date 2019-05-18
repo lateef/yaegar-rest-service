@@ -40,9 +40,6 @@ public class JournalEntry extends AbstractEntity {
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;
 
-    @Column(name = "entry")
-    private int entry;
-
     @Column(name = "transaction_datetime", nullable = false)
     private LocalDateTime transactionDatetime;
 

@@ -23,8 +23,7 @@ create table country
   iso3             varchar(3) not null,
   created_by       uuid null,
   updated_by       uuid null,
-  constraint UK_country
-  unique (name)
+  constraint UK_country unique (name)
 );
 
 create table configuration
@@ -235,7 +234,8 @@ create table transaction
   id uuid not null primary key,
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
-  deleted_datetime timestamp null,  transaction_type varchar(50) null,
+  deleted_datetime timestamp null,
+  transaction_type varchar(50) null,
   transaction_type_id uuid null,
   created_by       uuid null,
   updated_by       uuid null
@@ -251,7 +251,6 @@ create table journal_entry
   account_id        uuid not null,
   amount           decimal(19,2) null,
   transaction_datetime timestamp not null,
-  entry            int not null,
   short_description  varchar(16) not null,
   description        varchar(1000) null,
   transaction_side varchar(255) not null,
@@ -317,10 +316,12 @@ create table product
   company_id uuid null,
   gtin_type varchar(7) null,
   gtin varchar(14) null,
+  product_tracking_id uuid null,
   created_by       uuid null,
   updated_by       uuid null,
   constraint FK_product_company
-    foreign key (company_id) references company (id)
+    foreign key (company_id) references company (id),
+  constraint UK_product unique (product_tracking_id)
 );
 
 create table product_variant
@@ -369,7 +370,6 @@ create table purchase_order
   transaction_id uuid null,
   total_price decimal(19,2) null,
   paid decimal(19,2) null,
-  purchase_order_event_type varchar(50) not null,
   payment_due_datetime timestamp null,
   delivery_datetime timestamp null,
   created_by       uuid null,
@@ -393,7 +393,9 @@ create table purchase_invoice
   payment_due_datetime timestamp null,
   delivery_datetime timestamp null,
   created_by       uuid null,
-  updated_by       uuid null
+  updated_by       uuid null,
+  constraint FK_purchase_invoice_purchase_order
+    foreign key (purchase_order_id) references purchase_order (id)
 );
 
 create table sales_order
@@ -409,7 +411,6 @@ create table sales_order
   total_price decimal(19,2) null,
   paid decimal(19,2) null,
   received_amount    decimal(19,2) null,
-  sales_order_event_type varchar(50) not null,
   payment_due_datetime timestamp null,
   delivery_datetime timestamp null,
   created_by       uuid null,
@@ -433,7 +434,9 @@ create table sales_invoice
   payment_due_datetime timestamp null,
   delivery_datetime timestamp null,
   created_by       uuid null,
-  updated_by       uuid null
+  updated_by       uuid null,
+  constraint FK_sales_invoice_sales_order
+    foreign key (sales_order_id) references sales_order (id)
 );
 
 create table purchase_order_event

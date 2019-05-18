@@ -46,4 +46,7 @@ public class Product extends AbstractEntity {
 
     @Column(name = "gtin", length = 14)
     private String globalTradeItemNumber;
+
+    @Column(name = "product_tracking_id", unique = true)
+    private UUID productTrackingId;
 }
