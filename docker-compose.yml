@@ -10,7 +10,7 @@ services:
     depends_on:
       - postgresdb
     environment:
-      - app.db.host=postgresdb
+      - app.db.host=postgres
 
   postgresdb:
     image: "postgres"
