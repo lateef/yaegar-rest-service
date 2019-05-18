@@ -27,7 +27,7 @@ import java.util.Set;
 @NoArgsConstructor(force = true)
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = true, exclude = {"owners", "employees", "chartOfAccounts", "stock", "locations"})
-@ToString(of = {"name", "country_id"})
+@ToString(of = {"name", "country"})
 @Entity
 public class Company extends AbstractEntity {
     private static final long serialVersionUID = -2248566160300140508L;
