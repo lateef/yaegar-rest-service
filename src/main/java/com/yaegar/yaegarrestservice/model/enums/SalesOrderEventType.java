@@ -1,20 +1,20 @@
 package com.yaegar.yaegarrestservice.model.enums;
 
-public enum SalesOrderState {
-    RAISED("Raised"),
+public enum SalesOrderEventType {
+    RAISE("Raise"),
+    PAYMENT("Payment"),
+    DELIVERY("Delivery"),
     FLAGGED("Flagged"),
     APPROVED("Approved"),
-    PAID_IN_ADVANCE("Paid in advance"),
     SENT("Sent"),
     CUSTOMER_FLAGGED("Customer flagged"),
     CUSTOMER_ACCEPTED("Customer accepted"),
-    GOODS_DELIVERED("Goods delivered"),
     INVOICE_ISSUED("Invoice issued"),
     CUSTOMER_INDEBTED("Customer indebted");
 
-    private final String salesOrderState;
+    private final String salesOrderEventType;
 
-    SalesOrderState(String salesOrderState) {
-        this.salesOrderState = salesOrderState;
+    SalesOrderEventType(String salesOrderEventType) {
+        this.salesOrderEventType = salesOrderEventType;
     }
 }

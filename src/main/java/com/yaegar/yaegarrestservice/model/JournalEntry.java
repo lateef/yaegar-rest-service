@@ -7,7 +7,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -17,11 +24,6 @@ import java.time.LocalDateTime;
 @Entity
 public class JournalEntry extends AbstractEntity {
     private static final long serialVersionUID = 6340589739131199534L;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
@@ -37,9 +39,6 @@ public class JournalEntry extends AbstractEntity {
 
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;
-
-    @Column(name = "entry")
-    private int entry;
 
     @Column(name = "transaction_datetime", nullable = false)
     private LocalDateTime transactionDatetime;

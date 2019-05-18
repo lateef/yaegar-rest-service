@@ -8,13 +8,14 @@ import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @MappedSuperclass
 @Data
 @EqualsAndHashCode(callSuper = true)
 public abstract class AbstractInvoice extends AbstractEntity {
-    @Column(name = "number")
-    private Long number;
+    @Column(name = "number", columnDefinition = "BINARY(16)")
+    private UUID number;
 
     @Column(name = "total_price")
     private BigDecimal totalPrice;

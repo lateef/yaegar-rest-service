@@ -1,11 +1,15 @@
 package com.yaegar.yaegarrestservice.service;
 
+import com.yaegar.yaegarrestservice.model.SalesOrderEvent;
 import com.yaegar.yaegarrestservice.model.SalesOrderLineItem;
 import com.yaegar.yaegarrestservice.model.Product;
 import com.yaegar.yaegarrestservice.model.SalesInvoiceLineItem;
 import com.yaegar.yaegarrestservice.model.SalesOrder;
+import com.yaegar.yaegarrestservice.model.enums.SalesOrderEventType;
 import com.yaegar.yaegarrestservice.repository.ProductRepository;
 import com.yaegar.yaegarrestservice.repository.SalesOrderRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -15,26 +19,23 @@ import java.util.stream.IntStream;
 
 import static java.math.BigDecimal.ZERO;
 
+@Slf4j
+@RequiredArgsConstructor
 @Service
 public class SalesOrderService {
 
     private final ProductRepository productRepository;
     private final SalesOrderRepository salesOrderRepository;
 
-    public SalesOrderService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository) {
-        this.productRepository = productRepository;
-        this.salesOrderRepository = salesOrderRepository;
-    }
-
     public SalesOrder saveSalesOrder(SalesOrder savedSalesOrder) {
         return salesOrderRepository.save(savedSalesOrder);
     }
 
-    public Optional<SalesOrder> getSalesOrder(Long id) {
+    public Optional<SalesOrder> getSalesOrder(UUID id) {
         return salesOrderRepository.findById(id);
     }
 
-    public List<SalesOrder> getSalesOrders(Long companyId) {
+    public List<SalesOrder> getSalesOrders(UUID companyId) {
         return salesOrderRepository.findAllByCustomerPrincipalCompanyId(companyId);
     }
 
@@ -96,5 +97,13 @@ public class SalesOrderService {
         return lineItems.stream()
                 .sorted(Comparator.comparing(SalesInvoiceLineItem::getEntry))
                 .collect(Collectors.toList());
+    }
+
+    public SalesOrder addEvent(SalesOrder salesOrder, String description, SalesOrderEventType orderEventType) {
+        final Set<SalesOrderEvent> salesOrderEvents = salesOrder.getSalesOrderEvents();
+        final SalesOrderEvent salesOrderEvent = new SalesOrderEvent(orderEventType, description);
+        salesOrderEvents.add(salesOrderEvent);
+        salesOrder.setSalesOrderEvents(salesOrderEvents);
+        return salesOrder;
     }
 }

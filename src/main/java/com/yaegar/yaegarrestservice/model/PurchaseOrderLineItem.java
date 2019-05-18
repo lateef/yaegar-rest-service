@@ -3,7 +3,8 @@ package com.yaegar.yaegarrestservice.model;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -11,9 +12,4 @@ import javax.persistence.*;
 @Table
 public class PurchaseOrderLineItem extends AbstractLineItem {
     private static final long serialVersionUID = 7301006936594728643L;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private long id;
 }

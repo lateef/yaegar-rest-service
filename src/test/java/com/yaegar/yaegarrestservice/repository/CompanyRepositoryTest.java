@@ -1,6 +1,7 @@
 package com.yaegar.yaegarrestservice.repository;
 
 import com.yaegar.yaegarrestservice.model.Company;
+import com.yaegar.yaegarrestservice.model.Phone;
 import com.yaegar.yaegarrestservice.model.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +34,7 @@ public class CompanyRepositoryTest {
         entityManager.flush();
 
         //when
-        Company actualCompany = companyRepository.findById(1L).get();
+        Company actualCompany = companyRepository.findById(expectedCompany.getId()).get();
 
         //then
         assertThat(actualCompany, sameBeanAs(expectedCompany));
@@ -52,6 +53,7 @@ public class CompanyRepositoryTest {
 
         Company expectedCompany = new Company("Yaegar");
         expectedCompany.setEmployees(employees);
+        expectedCompany.setPhones(singleton(new Phone("234", "8091444443", false, null)));
         entityManager.persist(expectedCompany);
         entityManager.flush();
 

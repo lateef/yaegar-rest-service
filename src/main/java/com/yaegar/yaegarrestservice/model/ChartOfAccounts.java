@@ -5,7 +5,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 import java.util.Set;
 
 @Data
@@ -14,11 +17,6 @@ import java.util.Set;
 @Entity
 public class ChartOfAccounts extends AbstractEntity {
     private static final long serialVersionUID = -6037621583103591891L;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
 
     @OneToMany(mappedBy = "chartOfAccounts", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Account> accounts;

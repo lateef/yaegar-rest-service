@@ -6,7 +6,16 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import java.util.Set;
 
 @ToString(exclude = {"principalCompany"})
@@ -17,11 +26,6 @@ import java.util.Set;
         uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "principal_company_id"})})
 public class Supplier extends AbstractEntity {
     private static final long serialVersionUID = 4695495638941520513L;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
 
     @Length(max = 256)
     @Column(name = "name", nullable = false, length = 256)

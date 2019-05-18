@@ -1,9 +1,12 @@
 package com.yaegar.yaegarrestservice.service;
 
-import com.yaegar.yaegarrestservice.model.*;
+import com.yaegar.yaegarrestservice.model.Account;
+import com.yaegar.yaegarrestservice.model.Location;
+import com.yaegar.yaegarrestservice.model.Product;
+import com.yaegar.yaegarrestservice.model.Stock;
 import com.yaegar.yaegarrestservice.repository.StockRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,35 +14,22 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
+@Slf4j
+@RequiredArgsConstructor
 @Service
 public class StockService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(StockService.class);
-
     private final AccountService accountService;
     private final StockRepository stockRepository;
 
-    public StockService(AccountService accountService, StockRepository stockRepository) {
-        this.accountService = accountService;
-        this.stockRepository = stockRepository;
-    }
-
     @Transactional
     public Stock addStock(Stock stock) {
-        return addStock(
-                stock.getProduct(),
-                stock.getCompanyStockId(),
-                stock.getCostPrice(),
-                stock.getSellPrice(),
-                stock.getSku(),
-                stock.getQuantity(),
-                stock.getLocation()
-        );
+        return addStock(stock.getProduct(), stock.getCompanyStockId(), stock.getCostPrice(), stock.getSellPrice(), stock.getSku(), stock.getQuantity(), stock.getLocation());
     }
 
     @Transactional
-    public Stock addStock(Product product, Long companyStockId, BigDecimal costPrice, BigDecimal sellPrice, String sku, Double quantity, Location location
-    ) {
+    public Stock addStock(Product product, UUID companyStockId, BigDecimal costPrice, BigDecimal sellPrice, String sku, Double quantity, Location location) {
         findByProductAndCompanyStockId(product, companyStockId)
                 .ifPresent(e -> {
                     throw new IllegalStateException("Exception:: Stock already exists");
@@ -64,11 +54,11 @@ public class StockService {
         return stockRepository.findByAccountsIn(accounts);
     }
 
-    public List<Stock> findByCompanyStockId(Long companyStockId) {
+    public List<Stock> findByCompanyStockId(UUID companyStockId) {
         return stockRepository.findByCompanyStockId(companyStockId);
     }
 
-    public Optional<Stock> findByProductAndCompanyStockId(Product product, Long companyStockId) {
+    public Optional<Stock> findByProductAndCompanyStockId(Product product, UUID companyStockId) {
         return stockRepository.findByProductAndCompanyStockId(product, companyStockId);
     }
 }

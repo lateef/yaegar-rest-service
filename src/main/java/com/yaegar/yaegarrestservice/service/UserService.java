@@ -9,40 +9,32 @@ import com.yaegar.yaegarrestservice.repository.CountryRepository;
 import com.yaegar.yaegarrestservice.repository.RoleRepository;
 import com.yaegar.yaegarrestservice.repository.UserRepository;
 import com.yaegar.yaegarrestservice.resource.PhoneValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
 
 import static com.yaegar.yaegarrestservice.model.Role.AUTHORITY_USER;
 import static java.time.Duration.between;
 import static java.util.Collections.singletonMap;
 
+@Slf4j
+@RequiredArgsConstructor
 @Service
 public class UserService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
-
     private final CountryRepository countryRepository;
     private final DateTimeProvider dateTimeProvider;
     private final PhoneValidator phoneValidator;
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
-
-    public UserService(
-            CountryRepository countryRepository,
-            DateTimeProvider dateTimeProvider,
-            PhoneValidator phoneValidator,
-            RoleRepository roleRepository,
-            UserRepository userRepository
-    ) {
-        this.countryRepository = countryRepository;
-        this.dateTimeProvider = dateTimeProvider;
-        this.phoneValidator = phoneValidator;
-        this.roleRepository = roleRepository;
-        this.userRepository = userRepository;
-    }
 
     public Map<String, User> createAccount(User user) {
         if (Objects.nonNull(user.getId())) {
@@ -96,7 +88,7 @@ public class UserService {
             if (existingUserOptional.isPresent()) {
                 User existingUser = existingUserOptional.get();
                 Phone existingPrincipalPhone = getPrincipalPhone(existingUser);
-                final Duration duration = between(existingPrincipalPhone.getUpdatedDatetime(), dateTimeProvider.now());
+                final Duration duration = between(existingPrincipalPhone.getUpdatedDateTime(), dateTimeProvider.now());
                 if (existingPrincipalPhone.getConfirmationCode() == null || duration.toMinutes() > 5L) {
                     setPhoneConfirmationCode(existingPrincipalPhone);
                 }
@@ -160,7 +152,7 @@ public class UserService {
         }
     }
 
-    public Optional<User> findById(Long id) {
+    public Optional<User> findById(UUID id) {
         return userRepository.findById(id);
     }
 

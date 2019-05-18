@@ -6,20 +6,21 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 
-import javax.persistence.*;
-import java.time.LocalDateTime;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.ManyToMany;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
 public class Product extends AbstractEntity {
     private static final long serialVersionUID = 9131433206492217756L;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
 
     @Length(max = 128)
     @Column(name = "name", nullable = false, length = 128)
@@ -37,7 +38,7 @@ public class Product extends AbstractEntity {
     private Set<ProductVariant> productVariants;
 
     @Column(name = "company_id")
-    private Long companyId;
+    private UUID companyId;
 
     @Column(name = "gtin_type", length = 7)
     @Enumerated(value = EnumType.STRING)
@@ -46,6 +47,6 @@ public class Product extends AbstractEntity {
     @Column(name = "gtin", length = 14)
     private String globalTradeItemNumber;
 
-    @Column(name = "deleted_datetime")
-    private LocalDateTime deletedDateTime;
+    @Column(name = "product_tracking_id", unique = true)
+    private UUID productTrackingId;
 }

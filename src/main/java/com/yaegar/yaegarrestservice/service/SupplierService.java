@@ -2,25 +2,22 @@ package com.yaegar.yaegarrestservice.service;
 
 import com.yaegar.yaegarrestservice.model.Supplier;
 import com.yaegar.yaegarrestservice.repository.SupplierRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
+@Slf4j
+@RequiredArgsConstructor
 @Service
 public class SupplierService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SupplierService.class);
+    private final SupplierRepository supplierRepository;
 
-    private SupplierRepository supplierRepository;
-
-    public SupplierService(SupplierRepository supplierRepository) {
-        this.supplierRepository = supplierRepository;
-    }
-
-    public Optional<Supplier> findById(Long id) {
+    public Optional<Supplier> findById(UUID id) {
         return supplierRepository.findById(id);
     }
 
@@ -31,11 +28,11 @@ public class SupplierService {
         return supplierRepository.save(supplier);
     }
 
-    public List<Supplier> getSuppliersByPrincipalCompanyId(Long principalCompanyId) {
+    public List<Supplier> getSuppliersByPrincipalCompanyId(UUID principalCompanyId) {
         return supplierRepository.findByPrincipalCompanyId(principalCompanyId);
     }
 
-    public Supplier getSupplierProductsById(Long supplierId) {
+    public Supplier getSupplierProductsById(UUID supplierId) {
         return supplierRepository.findOneWithProductsById(supplierId);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static java.util.Collections.singletonMap;
 
@@ -26,7 +27,7 @@ public class TransactionController {
     }
 
     @RequestMapping(value = "/get-account-transactions", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, List<Transaction>>> getAccountTransactions(@RequestParam final Long accountId) {
+    public ResponseEntity<Map<String, List<Transaction>>> getAccountTransactions(@RequestParam final UUID accountId) {
         List<Transaction> transactions = transactionService.getAccountTransactions(accountId);
         return ResponseEntity.ok().body(singletonMap("success", transactions));
     }

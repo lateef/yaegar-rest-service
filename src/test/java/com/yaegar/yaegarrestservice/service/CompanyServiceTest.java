@@ -15,6 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,9 +50,10 @@ public class CompanyServiceTest {
         //given
         Company company = new Company("Yaegar");
         Company expectedCompany = new Company("Yaegar");
-        expectedCompany.setId(1L);
+        final UUID id = UUID.randomUUID();
+        expectedCompany.setId(id);
         ChartOfAccounts expectedChartOfAccounts = new ChartOfAccounts();
-        expectedChartOfAccounts.setId(1L);
+        expectedChartOfAccounts.setId(id);
         expectedCompany.setChartOfAccounts(expectedChartOfAccounts);
         when(companyRepository.save(company)).thenReturn(expectedCompany);
 
@@ -70,9 +72,10 @@ public class CompanyServiceTest {
         .collect(Collectors.toList()));
         when(roleRepository.save(ArgumentMatchers.any())).thenReturn(new Role());
 
-        //when
         User user = new User();
         user.setRoles(new HashSet<>());
+
+        //when
         Company actualCompany = companyService.addCompany(company, user);
 
         //then

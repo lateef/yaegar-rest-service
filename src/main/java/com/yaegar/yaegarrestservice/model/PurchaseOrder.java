@@ -1,26 +1,22 @@
 package com.yaegar.yaegarrestservice.model;
 
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
-import com.yaegar.yaegarrestservice.model.enums.PurchaseOrderState;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.math.BigDecimal;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true, exclude = {"supplier", "lineItems", "transaction", "invoices"})
@@ -29,13 +25,8 @@ import java.util.Set;
 public class PurchaseOrder extends AbstractEntity {
     private static final long serialVersionUID = -5218638929994847147L;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
-
-    @Column(name = "number")
-    private Long number;
+    @Column(name = "number", columnDefinition = "BINARY(16)")
+    private UUID number;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "supplier_id", referencedColumnName = "id")
@@ -60,15 +51,11 @@ public class PurchaseOrder extends AbstractEntity {
     private Set<PurchaseInvoice> invoices;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "purchase_order_event_id", referencedColumnName = "id")
+    @JoinColumn(name = "purchase_order_id", referencedColumnName = "id")
     private Set<PurchaseOrderEvent> purchaseOrderEvents;
 
-    @Column(name = "description", length = 1000)
+    @Transient
     private String description;
-
-    @Column(name = "purchase_order_state", nullable = false, length = 50)
-    @Enumerated(value = EnumType.STRING)
-    private PurchaseOrderState purchaseOrderState;
 
     //TODO Payment terms
 }

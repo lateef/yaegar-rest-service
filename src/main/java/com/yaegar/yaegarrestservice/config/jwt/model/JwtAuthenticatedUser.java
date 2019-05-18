@@ -5,6 +5,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.UUID;
 
 /**
  * Holds the info for a authenticated user (Principal)
@@ -13,14 +14,14 @@ import java.util.Collection;
  */
 public class JwtAuthenticatedUser implements UserDetails {
 
-    private final Long id;
+    private final UUID id;
     private final String username;
     private final String firstName;
     private final String token;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public JwtAuthenticatedUser(
-            Long id,
+            UUID id,
             String username,
             String firstName,
             String token,
@@ -33,7 +34,7 @@ public class JwtAuthenticatedUser implements UserDetails {
         this.authorities = authorities;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 

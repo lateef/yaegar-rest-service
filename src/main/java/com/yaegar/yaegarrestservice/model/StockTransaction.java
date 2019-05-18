@@ -4,18 +4,18 @@ import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
 public class StockTransaction extends AbstractEntity {
     private static final long serialVersionUID = -7576476879020788149L;
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "purchase_invoice_id", referencedColumnName = "id")

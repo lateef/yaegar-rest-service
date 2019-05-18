@@ -1,34 +1,30 @@
 package com.yaegar.yaegarrestservice.service;
 
 import com.yaegar.yaegarrestservice.model.Product;
-import com.yaegar.yaegarrestservice.model.User;
 import com.yaegar.yaegarrestservice.repository.ProductRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
+@RequiredArgsConstructor
 @Service
 public class ProductService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
-
-    private ProductRepository productRepository;
-
-    public ProductService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
+    private final ProductRepository productRepository;
 
     public Product saveProduct(Product product) {
         //TODO check variant does not already exist
         return productRepository.save(product);
     }
 
-    public Optional<Product> findById(Long id) {
+    public Optional<Product> findById(UUID id) {
         return productRepository.findById(id);
     }
 
@@ -36,7 +32,7 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    public List<Product> findByCompanyId(Long companyId) {
+    public List<Product> findByCompanyId(UUID companyId) {
         return productRepository.findByCompanyId(companyId);
     }
 

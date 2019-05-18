@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.singletonMap;
@@ -51,13 +52,13 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/get-company-products/{companyId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, List<Product>>> getCompanyProducts(@PathVariable Long companyId) {
+    public ResponseEntity<Map<String, List<Product>>> getCompanyProducts(@PathVariable UUID companyId) {
         final List<Product> products = productService.findByCompanyId(companyId);
         return ResponseEntity.ok().body(singletonMap("success", products));
     }
 
     @RequestMapping(value = "/get-supplier-products/{supplierId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, List<Product>>> getSupplierProducts(@PathVariable Long supplierId) {
+    public ResponseEntity<Map<String, List<Product>>> getSupplierProducts(@PathVariable UUID supplierId) {
         final Set<Product> products = supplierService.getSupplierProductsById(supplierId).getProducts();
         final List<Product> products1 = productService.sortProducts(products);
         return ResponseEntity.ok().body(singletonMap("success", products1));

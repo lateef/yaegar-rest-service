@@ -1,6 +1,7 @@
 package com.yaegar.yaegarrestservice.config.jwt.dto;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Simple placeholder for info extracted from the JWT
@@ -9,7 +10,7 @@ import java.time.LocalDateTime;
  */
 public class JwtUserDto {
 
-    private Long id;
+    private UUID id;
 
     private String username;
 
@@ -19,11 +20,11 @@ public class JwtUserDto {
 
     private LocalDateTime expireToken;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
