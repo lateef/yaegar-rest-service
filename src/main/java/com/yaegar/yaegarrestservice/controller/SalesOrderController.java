@@ -53,11 +53,10 @@ public class SalesOrderController {
                 .orElseThrow(NullPointerException::new);
         salesOrder.setCustomer(customer);
 
-        final List<SalesOrderLineItem> lineItems = salesOrderService.sortOrderLineItemsIntoOrderedList(salesOrder.getLineItems());
-        final Set<SalesOrderLineItem> lineItems1 = salesOrderService.validateOrderLineItems(lineItems);
-        salesOrder.setLineItems(lineItems1);
+        final Set<SalesOrderLineItem> lineItems = salesOrderService.validateOrderLineItems(salesOrder.getLineItems());
+        salesOrder.setLineItems(lineItems);
 
-        salesOrder.setTotalPrice(salesOrderService.sumOrderLineItemsSubTotal(lineItems1));
+        salesOrder.setTotalPrice(salesOrderService.sumOrderLineItemsSubTotal(lineItems));
         salesOrder.setPaid(ZERO);
         final SalesOrderEvent salesOrderEvent = new SalesOrderEvent(RAISE, salesOrder.getDescription());
         salesOrder.setSalesOrderEvents(singleton(salesOrderEvent));

@@ -3,6 +3,7 @@ package com.yaegar.yaegarrestservice.model;
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.CascadeType;
@@ -16,6 +17,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 @Data
+@ToString(exclude = {"principalCompany"})
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "customer", uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "principal_company_id"})})
@@ -27,7 +29,7 @@ public class Customer extends AbstractEntity {
     private String name;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "principal_company_id", referencedColumnName = "id")
+    @JoinColumn(name = "principal_company_id", referencedColumnName = "id", nullable = false)
     private Company principalCompany;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)

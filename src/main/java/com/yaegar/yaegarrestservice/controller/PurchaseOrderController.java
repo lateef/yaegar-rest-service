@@ -53,11 +53,10 @@ public class PurchaseOrderController {
                 .orElseThrow(NullPointerException::new);
         purchaseOrder.setSupplier(supplier);
 
-        final List<PurchaseOrderLineItem> lineItems = purchaseOrderService.sortOrderLineItemsIntoOrderedList(purchaseOrder.getLineItems());
-        final Set<PurchaseOrderLineItem> lineItems1 = purchaseOrderService.validateOrderLineItems(lineItems);
-        purchaseOrder.setLineItems(lineItems1);
+        final Set<PurchaseOrderLineItem> lineItems = purchaseOrderService.validateOrderLineItems(purchaseOrder.getLineItems());
+        purchaseOrder.setLineItems(lineItems);
 
-        purchaseOrder.setTotalPrice(purchaseOrderService.sumLineOrderItemsSubTotal(lineItems1));
+        purchaseOrder.setTotalPrice(purchaseOrderService.sumLineOrderItemsSubTotal(lineItems));
         purchaseOrder.setPaid(ZERO);
         final PurchaseOrderEvent purchaseOrderEvent = new PurchaseOrderEvent(RAISE, purchaseOrder.getDescription());
         purchaseOrder.setPurchaseOrderEvents(singleton(purchaseOrderEvent));

@@ -107,19 +107,15 @@ public class PurchaseInvoiceService {
     }
 
     private PurchaseInvoice sortValidateAndSumSubTotal(PurchaseInvoice invoice) {
-        final List<PurchaseInvoiceLineItem> lineItems = sortInvoiceLineItemsIntoOrderedList(invoice.getLineItems());
-        final Set<PurchaseInvoiceLineItem> lineItems1 = validateInvoiceLineItems(lineItems);
-        invoice.setLineItems(lineItems1);
-        invoice.setTotalPrice(sumLineInvoiceItemsSubTotal(lineItems1));
+        final Set<PurchaseInvoiceLineItem> lineItems = validateInvoiceLineItems(invoice.getLineItems());
+        invoice.setLineItems(lineItems);
+        invoice.setTotalPrice(sumLineInvoiceItemsSubTotal(lineItems));
         return invoice;
     }
 
-    public Set<PurchaseInvoiceLineItem> validateInvoiceLineItems(List<PurchaseInvoiceLineItem> lineItems) {
-        IntStream.range(0, lineItems.size())
-                .forEach(idx -> {
-                    final PurchaseInvoiceLineItem lineItem = lineItems.get(idx);
-                    lineItem.setEntry(idx + 1);
-
+    public Set<PurchaseInvoiceLineItem> validateInvoiceLineItems(Set<PurchaseInvoiceLineItem> lineItems) {
+        lineItems.stream()
+                .forEach(lineItem -> {
                     Product product = productRepository
                             .findById(lineItem
                                     .getProduct()
@@ -136,12 +132,6 @@ public class PurchaseInvoiceService {
         return lineItems.stream()
                 .map(PurchaseInvoiceLineItem::getSubTotal)
                 .reduce(ZERO, BigDecimal::add);
-    }
-
-    public List<PurchaseInvoiceLineItem> sortInvoiceLineItemsIntoOrderedList(Set<PurchaseInvoiceLineItem> lineItems) {
-        return lineItems.stream()
-                .sorted(Comparator.comparing(PurchaseInvoiceLineItem::getEntry))
-                .collect(Collectors.toList());
     }
 
     public List<PurchaseInvoice> filterSavedInvoices(Set<PurchaseInvoice> invoices) {

@@ -85,19 +85,15 @@ public class SalesInvoiceService {
     }
 
     private SalesInvoice sortValidateAndSumSubTotal(SalesInvoice invoice) {
-        final List<SalesInvoiceLineItem> lineItems = sortInvoiceLineItemsIntoOrderedList(invoice.getLineItems());
-        final Set<SalesInvoiceLineItem> lineItems1 = validateInvoiceLineItems(lineItems);
-        invoice.setLineItems(lineItems1);
-        invoice.setTotalPrice(sumLineInvoiceItemsSubTotal(lineItems1));
+        final Set<SalesInvoiceLineItem> lineItems = validateInvoiceLineItems(invoice.getLineItems());
+        invoice.setLineItems(lineItems);
+        invoice.setTotalPrice(sumLineInvoiceItemsSubTotal(lineItems));
         return invoice;
     }
 
-    public Set<SalesInvoiceLineItem> validateInvoiceLineItems(List<SalesInvoiceLineItem> lineItems) {
-        IntStream.range(0, lineItems.size())
-                .forEach(idx -> {
-                    final SalesInvoiceLineItem lineItem = lineItems.get(idx);
-                    lineItem.setEntry(idx + 1);
-
+    public Set<SalesInvoiceLineItem> validateInvoiceLineItems(Set<SalesInvoiceLineItem> lineItems) {
+        lineItems.stream()
+                .forEach(lineItem -> {
                     Product product = productRepository
                             .findById(lineItem
                                     .getProduct()
@@ -114,11 +110,5 @@ public class SalesInvoiceService {
         return lineItems.stream()
                 .map(SalesInvoiceLineItem::getSubTotal)
                 .reduce(ZERO, BigDecimal::add);
-    }
-
-    public List<SalesInvoiceLineItem> sortInvoiceLineItemsIntoOrderedList(Set<SalesInvoiceLineItem> lineItems) {
-        return lineItems.stream()
-                .sorted(Comparator.comparing(SalesInvoiceLineItem::getEntry))
-                .collect(Collectors.toList());
     }
 }
