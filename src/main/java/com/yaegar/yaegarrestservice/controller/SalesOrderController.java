@@ -94,6 +94,16 @@ public class SalesOrderController {
         SalesOrder savedSalesOrder = salesOrderService.getSalesOrder(salesOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
+        final String confirmationMessage = salesInvoiceService.confirmValidInvoice(salesOrder, savedSalesOrder);
+        if (!"".equals(confirmationMessage)) {
+            return ResponseEntity.ok().body(singletonMap(confirmationMessage, salesOrder));
+        }
+
+        final String stockAvailabilityMessage = salesInvoiceService.confirmStockAvailability(salesOrder, savedSalesOrder);
+        if (!"".equals(stockAvailabilityMessage)) {
+            return ResponseEntity.ok().body(singletonMap(stockAvailabilityMessage, salesOrder));
+        }
+
         final List<SalesInvoice> salesInvoices = salesInvoiceService.processInvoices(salesOrder.getInvoices());
         savedSalesOrder.setInvoices(new HashSet<>(salesInvoices));
 

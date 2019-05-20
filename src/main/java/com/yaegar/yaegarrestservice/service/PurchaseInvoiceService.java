@@ -22,7 +22,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static java.math.BigDecimal.ZERO;
 import static java.util.Comparator.comparing;
@@ -102,11 +101,11 @@ public class PurchaseInvoiceService {
                 })
                 .collect(toCollection(() -> new TreeSet<>(comparing(PurchaseInvoice::getCreatedDateTime))))
                 .stream()
-                .map(this::sortValidateAndSumSubTotal)
+                .map(this::validateAndSumSubTotal)
                 .collect(Collectors.toList());
     }
 
-    private PurchaseInvoice sortValidateAndSumSubTotal(PurchaseInvoice invoice) {
+    private PurchaseInvoice validateAndSumSubTotal(PurchaseInvoice invoice) {
         final Set<PurchaseInvoiceLineItem> lineItems = validateInvoiceLineItems(invoice.getLineItems());
         invoice.setLineItems(lineItems);
         invoice.setTotalPrice(sumLineInvoiceItemsSubTotal(lineItems));

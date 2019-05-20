@@ -1,6 +1,13 @@
 package com.yaegar.yaegarrestservice.service;
 
-import com.yaegar.yaegarrestservice.model.*;
+import com.yaegar.yaegarrestservice.model.AbstractLineItem;
+import com.yaegar.yaegarrestservice.model.Location;
+import com.yaegar.yaegarrestservice.model.Product;
+import com.yaegar.yaegarrestservice.model.SalesInvoice;
+import com.yaegar.yaegarrestservice.model.SalesInvoiceLineItem;
+import com.yaegar.yaegarrestservice.model.SalesOrder;
+import com.yaegar.yaegarrestservice.model.Stock;
+import com.yaegar.yaegarrestservice.model.StockTransaction;
 import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
 import com.yaegar.yaegarrestservice.repository.ProductRepository;
 import com.yaegar.yaegarrestservice.repository.StockRepository;
@@ -9,13 +16,22 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static java.math.BigDecimal.ZERO;
 import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toCollection;
 
 @Slf4j
@@ -80,11 +96,11 @@ public class SalesInvoiceService {
                 })
                 .collect(toCollection(() -> new TreeSet<>(comparing(SalesInvoice::getCreatedDateTime))))
                 .stream()
-                .map(this::sortValidateAndSumSubTotal)
+                .map(this::validateAndSumSubTotal)
                 .collect(Collectors.toList());
     }
 
-    private SalesInvoice sortValidateAndSumSubTotal(SalesInvoice invoice) {
+    private SalesInvoice validateAndSumSubTotal(SalesInvoice invoice) {
         final Set<SalesInvoiceLineItem> lineItems = validateInvoiceLineItems(invoice.getLineItems());
         invoice.setLineItems(lineItems);
         invoice.setTotalPrice(sumLineInvoiceItemsSubTotal(lineItems));
@@ -110,5 +126,64 @@ public class SalesInvoiceService {
         return lineItems.stream()
                 .map(SalesInvoiceLineItem::getSubTotal)
                 .reduce(ZERO, BigDecimal::add);
+    }
+
+    public String confirmValidInvoice(SalesOrder salesOrder, SalesOrder savedSalesOrder) {
+        final SalesInvoice newSalesInvoice = getNewSalesInvoice(salesOrder);
+
+        final Map<UUID, Double> lineItemTotalsGroupedBySalesOrderLineItemId = savedSalesOrder.getInvoices().stream()
+                .flatMap(invoice -> invoice.getLineItems().stream())
+                .collect(groupingBy(
+                        SalesInvoiceLineItem::getSalesOrderLineItemId,
+                        mapping(AbstractLineItem::getQuantity, Collectors.summingDouble(Double::valueOf))));
+
+        List<String> confirmMessages = new ArrayList<>();
+
+        newSalesInvoice.getLineItems()
+                .forEach(lineItem -> {
+                    final UUID salesOrderLineItemId = lineItem.getSalesOrderLineItemId();
+                    final Double quantityDelivered = lineItemTotalsGroupedBySalesOrderLineItemId.get(salesOrderLineItemId);
+                    final @NotNull double salesInvoiceQuantity = lineItem.getQuantity();
+
+                    final Double totalQuantityOrdered = savedSalesOrder.getLineItems().stream()
+                            .filter(lineItem1 -> lineItem1.getId().equals(salesOrderLineItemId))
+                            .map(AbstractLineItem::getQuantity)
+                            .findFirst()
+                            .orElseThrow(NullPointerException::new);
+
+                    if ((quantityDelivered + salesInvoiceQuantity) > totalQuantityOrdered) {
+                        confirmMessages.add(lineItem.getProduct().getTitle() + " exceeds request by " + ((quantityDelivered + salesInvoiceQuantity) - totalQuantityOrdered));
+                    }
+                });
+
+        return String.join(", ", confirmMessages);
+    }
+
+    public String confirmStockAvailability(SalesOrder salesOrder, SalesOrder savedSalesOrder) {
+        final SalesInvoice newSalesInvoice = getNewSalesInvoice(salesOrder);
+
+        List<String> availabilityMessages = new ArrayList<>();
+
+        newSalesInvoice.getLineItems()
+                .forEach(lineItem -> {
+                    final Location location = savedSalesOrder.getCustomer().getPrincipalCompany().getLocations().stream()
+                            .findAny().orElseThrow(NullPointerException::new);
+                    final Double quantityInStock = stockRepository.findByProductAndLocation(lineItem.getProduct(), location)
+                            .orElseThrow(NullPointerException::new).getQuantity();
+                    final @NotNull double salesInvoiceQuantity = lineItem.getQuantity();
+
+                    if (salesInvoiceQuantity > quantityInStock) {
+                        availabilityMessages.add(lineItem.getProduct().getTitle() + " insufficient stock quantity");
+                    }
+                });
+
+        return String.join(", ", availabilityMessages);
+    }
+
+    private SalesInvoice getNewSalesInvoice(SalesOrder salesOrder) {
+        return salesOrder.getInvoices().stream()
+                .filter(invoice -> Objects.isNull(invoice.getCreatedDateTime()))
+                .findFirst()
+                .orElseThrow(NullPointerException::new);
     }
 }
