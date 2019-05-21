@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.CASH;
+import static com.yaegar.yaegarrestservice.model.enums.PaymentTerm.NONE;
 import static com.yaegar.yaegarrestservice.model.enums.SalesOrderEventType.DELIVERY;
 import static com.yaegar.yaegarrestservice.model.enums.SalesOrderEventType.PAYMENT;
 import static com.yaegar.yaegarrestservice.model.enums.SalesOrderEventType.RAISE;
@@ -57,7 +58,8 @@ public class SalesOrderController {
         salesOrder.setLineItems(lineItems);
 
         salesOrder.setTotalPrice(salesOrderService.sumOrderLineItemsSubTotal(lineItems));
-        salesOrder.setPaid(ZERO);
+        salesOrder.setNumber(UUID.randomUUID());
+        salesOrder.setPaymentTerm(NONE);salesOrder.setPaid(ZERO);
         final SalesOrderEvent salesOrderEvent = new SalesOrderEvent(RAISE, salesOrder.getDescription());
         salesOrder.setSalesOrderEvents(singleton(salesOrderEvent));
         SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(salesOrder);

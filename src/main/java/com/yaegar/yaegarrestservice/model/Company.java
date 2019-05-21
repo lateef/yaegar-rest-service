@@ -62,8 +62,8 @@ public class Company extends AbstractEntity {
     private Country country;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
-    @JoinColumn(name = "location_company_id", referencedColumnName = "id")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "company_id", referencedColumnName = "id")
     private List<Location> locations;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)

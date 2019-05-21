@@ -18,14 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.math.BigDecimal.ZERO;
@@ -142,10 +135,12 @@ public class SalesInvoiceService {
         newSalesInvoice.getLineItems()
                 .forEach(lineItem -> {
                     final UUID salesOrderLineItemId = lineItem.getSalesOrderLineItemId();
-                    final Double quantityDelivered = lineItemTotalsGroupedBySalesOrderLineItemId.get(salesOrderLineItemId);
+                    final double quantityDelivered = Optional.ofNullable(
+                            lineItemTotalsGroupedBySalesOrderLineItemId.get(salesOrderLineItemId))
+                            .orElse(new Double("0"));
                     final @NotNull double salesInvoiceQuantity = lineItem.getQuantity();
 
-                    final Double totalQuantityOrdered = savedSalesOrder.getLineItems().stream()
+                    final double totalQuantityOrdered = savedSalesOrder.getLineItems().stream()
                             .filter(lineItem1 -> lineItem1.getId().equals(salesOrderLineItemId))
                             .map(AbstractLineItem::getQuantity)
                             .findFirst()

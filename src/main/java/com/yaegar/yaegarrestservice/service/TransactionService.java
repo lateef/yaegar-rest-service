@@ -91,7 +91,7 @@ public class TransactionService {
             transaction.setTransactionTypeId(purchaseOrder.getId());
             transaction.setJournalEntries(new HashSet<>());
         } else {
-            transaction = purchaseOrder.getTransaction();
+            transaction = savedTransaction;
         }
 
         final PurchaseInvoice unsavedPurchaseInvoice = filterUnsavedPurchaseInvoices(purchaseOrder).get(0);
@@ -99,6 +99,7 @@ public class TransactionService {
         unsavedPurchaseInvoice.setTotalPrice(totalPurchases);
         final Account purchasesAccount = getAccount(chartOfAccounts, PURCHASES.getType(), EXPENSES);
         final JournalEntry purchasesJournalEntry = createJournalEntry(purchasesAccount, totalPurchases, DEBIT, "positive");
+        purchasesJournalEntry.setShortDescription(purchasesAccount.getName());
         transaction.getJournalEntries().add(purchasesJournalEntry);
 
         transaction.setTransactionTypeId(savedPurchaseOrder.getId());
@@ -119,6 +120,7 @@ public class TransactionService {
 
                 JournalEntry prepaymentJournalEntry = createJournalEntry(prepaymentAccount, tradeCreditors, DEBIT, "positive");
                 transaction.getJournalEntries().add(prepaymentJournalEntry);
+                prepaymentJournalEntry.setShortDescription(prepaymentAccount.getName());
             } else if (prepayment.compareTo(tradeCreditors) > 0) {
                 redeemAdvancePaymentForGoods = tradeCreditors;
             } else {
@@ -127,9 +129,11 @@ public class TransactionService {
 
             JournalEntry tradeCreditorsJournalEntry = createJournalEntry(tradeCreditorsAccount, redeemAdvancePaymentForGoods, DEBIT, "negative");
             transaction.getJournalEntries().add(tradeCreditorsJournalEntry);
+            tradeCreditorsJournalEntry.setShortDescription(tradeCreditorsAccount.getName());
         } else {
             JournalEntry tradeCreditorsJournalEntry = createJournalEntry(tradeCreditorsAccount, tradeCreditors, DEBIT, "positive");
             transaction.getJournalEntries().add(tradeCreditorsJournalEntry);
+            tradeCreditorsJournalEntry.setShortDescription(tradeCreditorsAccount.getName());
         }
 
         return saveTransaction(transaction);
@@ -408,7 +412,7 @@ public class TransactionService {
 
     private List<SalesInvoice> filterUnsavedSalesInvoices(SalesOrder salesOrder) {
         return salesOrder.getInvoices().stream()
-                .filter(invoice -> invoice.getId() == null)
+                .filter(invoice -> invoice.getCreatedDateTime() == null)
                 .collect(toList());
     }
 
