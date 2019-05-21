@@ -2,11 +2,7 @@ package com.yaegar.yaegarrestservice.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yaegar.yaegarrestservice.model.Account;
-import com.yaegar.yaegarrestservice.model.ChartOfAccounts;
-import com.yaegar.yaegarrestservice.model.Company;
-import com.yaegar.yaegarrestservice.model.Role;
-import com.yaegar.yaegarrestservice.model.User;
+import com.yaegar.yaegarrestservice.model.*;
 import com.yaegar.yaegarrestservice.repository.AccountRepository;
 import com.yaegar.yaegarrestservice.repository.CompanyRepository;
 import com.yaegar.yaegarrestservice.repository.RoleRepository;
@@ -17,12 +13,12 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.yaegar.yaegarrestservice.model.enums.LocationType.STORE;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -38,11 +34,17 @@ public class CompanyService {
             return company;
         }
         final Company company1 = new Company(company.getName().trim());
-        company1.setOwners(Collections.singleton(user));
-        company1.setEmployees(Collections.singleton(user));
+        company1.setOwners(singleton(user));
+        company1.setEmployees(singleton(user));
         ChartOfAccounts chartOfAccounts = new ChartOfAccounts();
         company1.setChartOfAccounts(chartOfAccounts);
         company1.setCountry(user.getCountry());
+
+        final Location location = new Location();
+        location.setLocationType(STORE);
+        location.setName(String.join(" ", company1.getName(), STORE.name()));
+        location.setCode(UUID.randomUUID().toString());
+        company1.setLocations(singletonList(location));
         Company company2 = companyRepository.save(company1);
 
         List<Account> primaryCompanyAccounts = accountRepository.saveAll(createPrimaryCompanyAccount(company2.getChartOfAccounts()));

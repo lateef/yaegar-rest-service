@@ -5,25 +5,27 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 @MappedSuperclass
 @Data
 @EqualsAndHashCode(callSuper = true)
 public abstract class AbstractLineItem extends AbstractEntity {
-    @Column(name = "entry")
-    private int entry;
-
+    @NotNull
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
     private Product product;
 
-    @Column(name = "unit_price")
+    @NotNull
+    @Column(name = "unit_price", nullable = false)
     private BigDecimal unitPrice;
 
-    @Column(name = "quantity")
+    @NotNull
+    @Column(name = "quantity", nullable = false)
     private double quantity;
 
-    @Column(name = "sub_total")
+    @NotNull
+    @Column(name = "sub_total", nullable = false)
     private BigDecimal subTotal;
 }

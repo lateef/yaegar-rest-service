@@ -39,12 +39,9 @@ public class SalesOrderService {
         return salesOrderRepository.findAllByCustomerPrincipalCompanyId(companyId);
     }
 
-    public Set<SalesOrderLineItem> validateOrderLineItems(List<SalesOrderLineItem> lineItems) {
-        IntStream.range(0, lineItems.size())
-                .forEach(idx -> {
-                    final SalesOrderLineItem lineItem = lineItems.get(idx);
-                    lineItem.setEntry(idx + 1);
-
+    public Set<SalesOrderLineItem> validateOrderLineItems(Set<SalesOrderLineItem> lineItems) {
+        lineItems.stream()
+                .forEach(lineItem -> {
                     Product product = productRepository
                             .findById(lineItem
                                     .getProduct()
@@ -58,11 +55,8 @@ public class SalesOrderService {
     }
 
     public Set<SalesInvoiceLineItem> validateInvoiceLineItems(List<SalesInvoiceLineItem> lineItems) {
-        IntStream.range(0, lineItems.size())
-                .forEach(idx -> {
-                    final SalesInvoiceLineItem lineItem = lineItems.get(idx);
-                    lineItem.setEntry(idx + 1);
-
+        lineItems.stream()
+                .forEach(lineItem -> {
                     Product product = productRepository
                             .findById(lineItem
                                     .getProduct()
@@ -85,18 +79,6 @@ public class SalesOrderService {
         return lineItems.stream()
                 .map(SalesInvoiceLineItem::getSubTotal)
                 .reduce(ZERO, BigDecimal::add);
-    }
-
-    public List<SalesOrderLineItem> sortOrderLineItemsIntoOrderedList(Set<SalesOrderLineItem> lineItems) {
-        return lineItems.stream()
-                .sorted(Comparator.comparing(SalesOrderLineItem::getEntry))
-                .collect(Collectors.toList());
-    }
-
-    public List<SalesInvoiceLineItem> sortInvoiceLineItemsIntoOrderedList(Set<SalesInvoiceLineItem> lineItems) {
-        return lineItems.stream()
-                .sorted(Comparator.comparing(SalesInvoiceLineItem::getEntry))
-                .collect(Collectors.toList());
     }
 
     public SalesOrder addEvent(SalesOrder salesOrder, String description, SalesOrderEventType orderEventType) {

@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.CASH;
+import static com.yaegar.yaegarrestservice.model.enums.PaymentTerm.NONE;
 import static com.yaegar.yaegarrestservice.model.enums.SalesOrderEventType.DELIVERY;
 import static com.yaegar.yaegarrestservice.model.enums.SalesOrderEventType.PAYMENT;
 import static com.yaegar.yaegarrestservice.model.enums.SalesOrderEventType.RAISE;
@@ -53,12 +54,12 @@ public class SalesOrderController {
                 .orElseThrow(NullPointerException::new);
         salesOrder.setCustomer(customer);
 
-        final List<SalesOrderLineItem> lineItems = salesOrderService.sortOrderLineItemsIntoOrderedList(salesOrder.getLineItems());
-        final Set<SalesOrderLineItem> lineItems1 = salesOrderService.validateOrderLineItems(lineItems);
-        salesOrder.setLineItems(lineItems1);
+        final Set<SalesOrderLineItem> lineItems = salesOrderService.validateOrderLineItems(salesOrder.getLineItems());
+        salesOrder.setLineItems(lineItems);
 
-        salesOrder.setTotalPrice(salesOrderService.sumOrderLineItemsSubTotal(lineItems1));
-        salesOrder.setPaid(ZERO);
+        salesOrder.setTotalPrice(salesOrderService.sumOrderLineItemsSubTotal(lineItems));
+        salesOrder.setNumber(UUID.randomUUID());
+        salesOrder.setPaymentTerm(NONE);salesOrder.setPaid(ZERO);
         final SalesOrderEvent salesOrderEvent = new SalesOrderEvent(RAISE, salesOrder.getDescription());
         salesOrder.setSalesOrderEvents(singleton(salesOrderEvent));
         SalesOrder salesOrder1 = salesOrderService.saveSalesOrder(salesOrder);
@@ -94,6 +95,16 @@ public class SalesOrderController {
     public ResponseEntity<Map<String, SalesOrder>> saveInvoices(@RequestBody SalesOrder salesOrder) {
         SalesOrder savedSalesOrder = salesOrderService.getSalesOrder(salesOrder.getId())
                 .orElseThrow(NullPointerException::new);
+
+        final String confirmationMessage = salesInvoiceService.confirmValidInvoice(salesOrder, savedSalesOrder);
+        if (!"".equals(confirmationMessage)) {
+            return ResponseEntity.ok().body(singletonMap(confirmationMessage, salesOrder));
+        }
+
+        final String stockAvailabilityMessage = salesInvoiceService.confirmStockAvailability(salesOrder, savedSalesOrder);
+        if (!"".equals(stockAvailabilityMessage)) {
+            return ResponseEntity.ok().body(singletonMap(stockAvailabilityMessage, salesOrder));
+        }
 
         final List<SalesInvoice> salesInvoices = salesInvoiceService.processInvoices(salesOrder.getInvoices());
         savedSalesOrder.setInvoices(new HashSet<>(salesInvoices));

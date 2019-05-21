@@ -26,7 +26,7 @@ public class SalesOrderEvent extends AbstractEntity {
     @Column(name = "sales_order_id", columnDefinition = "BINARY(16)", nullable = false)
     private UUID salesOrderId;
 
-    @Column(name = "sales_order_event_type")
+    @Column(name = "sales_order_event_type", nullable = false)
     @Enumerated(value = EnumType.STRING)
     private final SalesOrderEventType salesOrderEventType;
 

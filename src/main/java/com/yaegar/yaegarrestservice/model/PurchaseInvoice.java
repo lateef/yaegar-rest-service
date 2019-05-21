@@ -19,6 +19,6 @@ public class PurchaseInvoice extends AbstractInvoice {
     private static final long serialVersionUID = -7193612821895434354L;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "line_item_id", referencedColumnName = "id")
+    @JoinColumn(name = "purchase_invoice_id", referencedColumnName = "id")
     private Set<PurchaseInvoiceLineItem> lineItems;
 }

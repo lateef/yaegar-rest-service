@@ -3,6 +3,8 @@ package com.yaegar.yaegarrestservice.model;
 import com.yaegar.yaegarrestservice.audit.entity.AbstractEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
 
@@ -18,12 +20,11 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import java.util.Set;
 
-@ToString(exclude = {"principalCompany"})
 @Data
+@ToString(exclude = {"principalCompany"})
 @EqualsAndHashCode(callSuper = true, exclude = {"principalCompany", "supplierCompany", "products", "b2BAccount"})
 @Entity
-@Table(name = "supplier",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "principal_company_id"})})
+@Table(name = "supplier", uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "principal_company_id"})})
 public class Supplier extends AbstractEntity {
     private static final long serialVersionUID = 4695495638941520513L;
 
@@ -32,7 +33,7 @@ public class Supplier extends AbstractEntity {
     private String name;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
-    @JoinColumn(name = "principal_company_id", referencedColumnName = "id")
+    @JoinColumn(name = "principal_company_id", referencedColumnName = "id", nullable = false)
     private Company principalCompany;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)

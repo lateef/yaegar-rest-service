@@ -37,12 +37,9 @@ public class PurchaseOrderService {
         return purchaseOrderRepository.findAllBySupplierPrincipalCompanyId(companyId);
     }
 
-    public Set<PurchaseOrderLineItem> validateOrderLineItems(List<PurchaseOrderLineItem> lineItems) {
-        IntStream.range(0, lineItems.size())
-                .forEach(idx -> {
-                    final PurchaseOrderLineItem lineItem = lineItems.get(idx);
-                    lineItem.setEntry(idx + 1);
-
+    public Set<PurchaseOrderLineItem> validateOrderLineItems(Set<PurchaseOrderLineItem> lineItems) {
+        lineItems.stream()
+                .forEach(lineItem -> {
                     Product product = productRepository
                             .findById(lineItem
                                     .getProduct()
@@ -59,12 +56,6 @@ public class PurchaseOrderService {
         return lineItems.stream()
                 .map(PurchaseOrderLineItem::getSubTotal)
                 .reduce(ZERO, BigDecimal::add);
-    }
-
-    public List<PurchaseOrderLineItem> sortOrderLineItemsIntoOrderedList(Set<PurchaseOrderLineItem> lineItems) {
-        return lineItems.stream()
-                .sorted(Comparator.comparing(PurchaseOrderLineItem::getEntry))
-                .collect(Collectors.toList());
     }
 
     public PurchaseOrder addEvent(PurchaseOrder purchaseOrder, String description, PurchaseOrderEventType orderEventType) {
