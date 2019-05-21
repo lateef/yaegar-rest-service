@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -273,6 +274,40 @@ public class TransactionService {
         return transactionRepository.save(transaction1);
     }
 
+    public List<JournalEntry> filterJournalEntriesByAccountCategory(Set<JournalEntry> journalEntries, AccountCategory accountCategory) {
+        return journalEntries
+                .stream()
+                .filter(journalEntry -> Objects.nonNull(journalEntry.getAccount().getAccountCategory()))
+                .filter(journalEntry -> journalEntry.getAccount().getAccountCategory().equals(accountCategory))
+                .collect(toList());
+    }
+
+    public BigDecimal sumJournalEntriesAmount(List<JournalEntry> journalEntries) {
+        return journalEntries
+                .stream()
+                .map(JournalEntry::getAmount)
+                .reduce(ZERO, BigDecimal::add);
+    }
+
+    public String confirmSufficientFundsOrOverdraft(PurchaseOrder purchaseOrder) {
+        final List<JournalEntry> unsavedJournalEntries = filterUnsavedJournalEntries(purchaseOrder.getTransaction());
+
+        List<String> availabilityMessages = new ArrayList<>();
+        BigDecimal prepayment = getJournalEntriesTotalForTransactionSide(unsavedJournalEntries, CREDIT);
+
+        unsavedJournalEntries
+                .forEach(unsavedJournalEntry -> {
+                    final Account account = accountService.findById(unsavedJournalEntry.getAccount().getId())
+                            .orElseThrow(NullPointerException::new);
+
+                    if ((account.getYearToDateTotal().compareTo(prepayment) < 0) && (account.getOverDraftLimit().abs().compareTo(prepayment) < 0)) {
+                        availabilityMessages.add(account.getName() + " has insufficient funds or overdraft");
+                    }
+                });
+
+        return String.join(", ", availabilityMessages);
+    }
+
     private void validateAndSetDescription(JournalEntry journalEntry, String description) {
         if (journalEntry.getDescription() == null) {
             journalEntry.setDescription(
@@ -282,6 +317,14 @@ public class TransactionService {
                     (journalEntry.getDescription().length() < 999)
                             ? journalEntry.getDescription().length() : 999));
         }
+    }
+
+    private BigDecimal getJournalEntriesTotalForTransactionSide(List<JournalEntry> journalEntries, TransactionSide transactionSide) {
+        return journalEntries
+                .stream()
+                .filter(journalEntry -> journalEntry.getTransactionSide().equals(transactionSide))
+                .map(JournalEntry::getAmount)
+                .reduce(ZERO, BigDecimal::add);
     }
 
     private void validateAndSetShortDescription(JournalEntry journalEntry, String description) {
@@ -361,33 +404,10 @@ public class TransactionService {
         return refJournalEntry.getAccount().getName() + " *** " + String.join(" *** ", uniqueAccountNames);
     }
 
-    public List<JournalEntry> filterJournalEntriesByAccountCategory(Set<JournalEntry> journalEntries, AccountCategory accountCategory) {
-        return journalEntries
-                .stream()
-                .filter(journalEntry -> Objects.nonNull(journalEntry.getAccount().getAccountCategory()))
-                .filter(journalEntry -> journalEntry.getAccount().getAccountCategory().equals(accountCategory))
-                .collect(toList());
-    }
-
-    public BigDecimal sumJournalEntriesAmount(List<JournalEntry> journalEntries) {
-        return journalEntries
-                .stream()
-                .map(JournalEntry::getAmount)
-                .reduce(ZERO, BigDecimal::add);
-    }
-
     private BigDecimal getJournalEntriesTotalForAccount(Set<JournalEntry> journalEntries, Account account) {
         return journalEntries
                 .stream()
                 .filter(journalEntry -> journalEntry.getAccount().getId().equals(account.getId()))
-                .map(JournalEntry::getAmount)
-                .reduce(ZERO, BigDecimal::add);
-    }
-
-    public BigDecimal getJournalEntriesTotalForTransactionSide(List<JournalEntry> journalEntries, TransactionSide transactionSide) {
-        return journalEntries
-                .stream()
-                .filter(journalEntry -> journalEntry.getTransactionSide().equals(transactionSide))
                 .map(JournalEntry::getAmount)
                 .reduce(ZERO, BigDecimal::add);
     }
