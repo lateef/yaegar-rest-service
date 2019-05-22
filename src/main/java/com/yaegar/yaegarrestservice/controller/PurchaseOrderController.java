@@ -63,6 +63,11 @@ public class PurchaseOrderController {
         PurchaseOrder savedPurchaseOrder = purchaseOrderService.getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
+        final String confirmationMessage = transactionService.confirmSufficientFundsOrOverdraft(purchaseOrder);
+        if (!"".equals(confirmationMessage)) {
+            return ResponseEntity.ok().body(singletonMap(confirmationMessage, purchaseOrder));
+        }
+
         final Transaction transaction = transactionService.computePurchaseOrderPaymentTransaction(purchaseOrder,
                 savedPurchaseOrder);
         savedPurchaseOrder.setTransaction(transaction);

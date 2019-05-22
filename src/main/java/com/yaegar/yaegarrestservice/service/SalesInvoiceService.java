@@ -1,13 +1,6 @@
 package com.yaegar.yaegarrestservice.service;
 
-import com.yaegar.yaegarrestservice.model.AbstractLineItem;
-import com.yaegar.yaegarrestservice.model.Location;
-import com.yaegar.yaegarrestservice.model.Product;
-import com.yaegar.yaegarrestservice.model.SalesInvoice;
-import com.yaegar.yaegarrestservice.model.SalesInvoiceLineItem;
-import com.yaegar.yaegarrestservice.model.SalesOrder;
-import com.yaegar.yaegarrestservice.model.Stock;
-import com.yaegar.yaegarrestservice.model.StockTransaction;
+import com.yaegar.yaegarrestservice.model.*;
 import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
 import com.yaegar.yaegarrestservice.repository.ProductRepository;
 import com.yaegar.yaegarrestservice.repository.StockRepository;
@@ -23,9 +16,7 @@ import java.util.stream.Collectors;
 
 import static java.math.BigDecimal.ZERO;
 import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.*;
 
 @Slf4j
 @Service
@@ -81,14 +72,6 @@ public class SalesInvoiceService {
 
     public List<SalesInvoice> processInvoices(Set<SalesInvoice> invoices) {
         return invoices.stream()
-                .map(invoice -> {
-                    if (Objects.isNull(invoice.getCreatedDateTime())) {
-                        invoice.setCreatedDateTime(dateTimeProvider.now());
-                    }
-                    return invoice;
-                })
-                .collect(toCollection(() -> new TreeSet<>(comparing(SalesInvoice::getCreatedDateTime))))
-                .stream()
                 .map(this::validateAndSumSubTotal)
                 .collect(Collectors.toList());
     }
@@ -151,7 +134,8 @@ public class SalesInvoiceService {
                     }
                 });
 
-        return String.join(", ", confirmMessages);
+        return (confirmMessages.size() > 0) ? confirmMessages.stream()
+                .collect(joining(", ", "error:", "")) : "";
     }
 
     public String confirmStockAvailability(SalesOrder salesOrder, SalesOrder savedSalesOrder) {
@@ -172,7 +156,8 @@ public class SalesInvoiceService {
                     }
                 });
 
-        return String.join(", ", availabilityMessages);
+        return (availabilityMessages.size() > 0) ? availabilityMessages.stream()
+                .collect(joining(", ", "error:", "")) : "";
     }
 
     private SalesInvoice getNewSalesInvoice(SalesOrder salesOrder) {
