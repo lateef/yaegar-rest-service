@@ -1,7 +1,6 @@
 package com.yaegar.yaegarrestservice.service;
 
 import com.yaegar.yaegarrestservice.model.*;
-import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
 import com.yaegar.yaegarrestservice.repository.ProductRepository;
 import com.yaegar.yaegarrestservice.repository.StockRepository;
 import com.yaegar.yaegarrestservice.repository.StockTransactionRepository;
@@ -15,20 +14,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.math.BigDecimal.ZERO;
-import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SalesInvoiceService {
-    private final DateTimeProvider dateTimeProvider;
     private final ProductRepository productRepository;
     private final StockRepository stockRepository;
     private final StockTransactionRepository stockTransactionRepository;
 
-    public void computeInventory(Set<SalesInvoice> invoices) {
-        invoices
+    public void computeInventory(SalesOrder salesOrder) {
+        salesOrder.getInvoices()
                 .forEach(salesInvoice -> {
                     final List<StockTransaction> stockTransactions1 = salesInvoice.getLineItems()
                             .stream()
@@ -37,7 +34,7 @@ public class SalesInvoiceService {
                                 stockTransaction.setSalesInvoice(salesInvoice);
                                 stockTransaction.setProduct(lineItem.getProduct());
                                 stockTransaction.setQuantity(-1 * lineItem.getQuantity());
-                                stockTransaction.setLocation(null);
+                                stockTransaction.setLocation(salesOrder.getCustomer().getPrincipalCompany().getLocations().get(0));
                                 return stockTransaction;
                             })
                             .collect(Collectors.toList());
@@ -49,19 +46,13 @@ public class SalesInvoiceService {
                                 final Stock stock = stockRepository
                                         .findByProductAndLocation(stockTransaction.getProduct(),
                                                 stockTransaction.getLocation())
-                                        .orElse(new Stock());
+                                        .orElseThrow(NullPointerException::new);
 
-                                if (stock.getId() != null) {
-                                    final double quantity = stockTransactionRepository.findByProduct(stockTransaction.getProduct())
-                                            .stream()
-                                            .mapToDouble(StockTransaction::getQuantity)
-                                            .sum();
-                                    stock.setQuantity(quantity);
-                                } else {
-                                    stock.setProduct(stockTransaction.getProduct());
-                                    stock.setLocation(stockTransaction.getLocation());
-                                    stock.setQuantity(stockTransaction.getQuantity());
-                                }
+                                final double quantity = stockTransactionRepository.findByProduct(stockTransaction.getProduct())
+                                        .stream()
+                                        .mapToDouble(StockTransaction::getQuantity)
+                                        .sum();
+                                stock.setQuantity(quantity);
                                 return stock;
                             })
                             .collect(Collectors.toList());
@@ -70,10 +61,36 @@ public class SalesInvoiceService {
                 });
     }
 
-    public List<SalesInvoice> processInvoices(Set<SalesInvoice> invoices) {
+    public Set<SalesInvoice> processInvoices(Set<SalesInvoice> invoices, Set<SalesInvoice> savedInvoices) {
         return invoices.stream()
+                .map(invoice -> {
+                    final SalesInvoice savedSalesInvoice = savedInvoices.stream()
+                            .filter(salesInvoice -> salesInvoice.getId().equals(invoice.getId()))
+                            .findFirst()
+                            .orElse(null);
+                    if (Objects.nonNull(savedSalesInvoice)) {
+                        invoice.setCreatedBy(savedSalesInvoice.getCreatedBy());
+                        invoice.setUpdatedBy(savedSalesInvoice.getUpdatedBy());
+
+                        final Set<SalesInvoiceLineItem> salesInvoiceLineItems = invoice.getLineItems().stream()
+                                .map(lineItem -> {
+                                    final SalesInvoiceLineItem savedSalesInvoiceLineItem = savedSalesInvoice.getLineItems().stream()
+                                            .filter(savedLineItem -> savedLineItem.getId().equals(lineItem.getId()))
+                                            .findFirst()
+                                            .orElse(null);
+                                    if (Objects.nonNull(savedSalesInvoiceLineItem)) {
+                                        lineItem.setCreatedBy(savedSalesInvoiceLineItem.getCreatedBy());
+                                        lineItem.setUpdatedBy(savedSalesInvoiceLineItem.getUpdatedBy());
+                                    }
+                                    return lineItem;
+                                })
+                                .collect(toSet());
+                        invoice.setLineItems(salesInvoiceLineItems);
+                    }
+                    return invoice;
+                })
                 .map(this::validateAndSumSubTotal)
-                .collect(Collectors.toList());
+                .collect(toSet());
     }
 
     private SalesInvoice validateAndSumSubTotal(SalesInvoice invoice) {
