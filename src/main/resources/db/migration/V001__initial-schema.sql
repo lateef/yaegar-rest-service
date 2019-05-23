@@ -565,7 +565,7 @@ create table stock
   location_id       uuid null,
   quantity double precision not null,
   cost_price decimal(19,2) not null,
-  sell_price decimal(19,2) not null,
+  sell_price decimal(19,2) null,
   created_by       uuid not null,
   updated_by       uuid not null,
   constraint UK_stock

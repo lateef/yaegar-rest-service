@@ -1,12 +1,6 @@
 package com.yaegar.yaegarrestservice.controller;
 
-import com.yaegar.yaegarrestservice.model.Customer;
-import com.yaegar.yaegarrestservice.model.JournalEntry;
-import com.yaegar.yaegarrestservice.model.SalesInvoice;
-import com.yaegar.yaegarrestservice.model.SalesOrder;
-import com.yaegar.yaegarrestservice.model.SalesOrderEvent;
-import com.yaegar.yaegarrestservice.model.SalesOrderLineItem;
-import com.yaegar.yaegarrestservice.model.Transaction;
+import com.yaegar.yaegarrestservice.model.*;
 import com.yaegar.yaegarrestservice.service.CustomerService;
 import com.yaegar.yaegarrestservice.service.SalesInvoiceService;
 import com.yaegar.yaegarrestservice.service.SalesOrderService;
@@ -15,14 +9,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,9 +19,7 @@ import java.util.UUID;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountCategory.CASH;
 import static com.yaegar.yaegarrestservice.model.enums.PaymentTerm.NONE;
-import static com.yaegar.yaegarrestservice.model.enums.SalesOrderEventType.DELIVERY;
-import static com.yaegar.yaegarrestservice.model.enums.SalesOrderEventType.PAYMENT;
-import static com.yaegar.yaegarrestservice.model.enums.SalesOrderEventType.RAISE;
+import static com.yaegar.yaegarrestservice.model.enums.SalesOrderEventType.*;
 import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
@@ -106,10 +93,11 @@ public class SalesOrderController {
             return ResponseEntity.ok().body(singletonMap(stockAvailabilityMessage, salesOrder));
         }
 
-        final List<SalesInvoice> salesInvoices = salesInvoiceService.processInvoices(salesOrder.getInvoices());
-        savedSalesOrder.setInvoices(new HashSet<>(salesInvoices));
+        final Set<SalesInvoice> salesInvoices = salesInvoiceService.processInvoices(salesOrder.getInvoices(), savedSalesOrder.getInvoices());
 
         final Transaction transaction = transactionService.computeSalesInvoicesTransaction(salesOrder, savedSalesOrder);
+
+        savedSalesOrder.setInvoices(salesInvoices);
         savedSalesOrder.setTransaction(transaction);
 
         final List<JournalEntry> journalEntries = transactionService.filterJournalEntriesByAccountCategory(transaction.getJournalEntries(), CASH);
@@ -120,7 +108,7 @@ public class SalesOrderController {
         SalesOrder salesOrder2 = salesOrderService.saveSalesOrder(salesOrder1);
 
         //TODO this should factor in delivery note if available
-        salesInvoiceService.computeInventory(savedSalesOrder.getInvoices());
+        salesInvoiceService.computeInventory(savedSalesOrder);
         return ResponseEntity.ok().body(singletonMap("success", salesOrder2));
     }
 }

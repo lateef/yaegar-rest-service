@@ -146,13 +146,14 @@ public class TransactionService {
             transaction.setTransactionTypeId(salesOrder.getId());
             transaction.setJournalEntries(new HashSet<>());
         } else {
-            transaction = salesOrder.getTransaction();
+            transaction = savedTransaction;
         }
 
         final List<SalesInvoice> unsavedSalesInvoice = filterUnsavedSalesInvoices(salesOrder);
         final BigDecimal totalSales = sumTotalSales(unsavedSalesInvoice.get(0));
         final Account salesIncomeAccount = getAccount(chartOfAccounts, SALES_INCOME.getType(), INCOME_REVENUE);
         final JournalEntry salesIncomeJournalEntry = createJournalEntry(salesIncomeAccount, totalSales, CREDIT, "negative");
+        salesIncomeJournalEntry.setShortDescription(salesIncomeAccount.getName());
         transaction.getJournalEntries().add(salesIncomeJournalEntry);
 
         transaction.setTransactionTypeId(savedSalesOrder.getId());
@@ -172,6 +173,7 @@ public class TransactionService {
                 tradeCreditors = tradeCreditors.subtract(prepayment);
 
                 JournalEntry prepaymentJournalEntry = createJournalEntry(prepaymentAccount, tradeCreditors, DEBIT, "positive");
+                prepaymentJournalEntry.setShortDescription(prepaymentAccount.getName());
                 transaction.getJournalEntries().add(prepaymentJournalEntry);
             } else if (prepayment.compareTo(tradeCreditors) > 0) {
                 redeemAdvancePaymentForGoods = tradeCreditors;
@@ -180,9 +182,11 @@ public class TransactionService {
             }
 
             JournalEntry tradeCreditorsJournalEntry = createJournalEntry(tradeCreditorsAccount, redeemAdvancePaymentForGoods, DEBIT, "negative");
+            tradeCreditorsJournalEntry.setShortDescription(tradeCreditorsAccount.getName());
             transaction.getJournalEntries().add(tradeCreditorsJournalEntry);
         } else {
             JournalEntry tradeCreditorsJournalEntry = createJournalEntry(tradeCreditorsAccount, tradeCreditors, DEBIT, "positive");
+            tradeCreditorsJournalEntry.setShortDescription(tradeCreditorsAccount.getName());
             transaction.getJournalEntries().add(tradeCreditorsJournalEntry);
         }
 
