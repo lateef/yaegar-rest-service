@@ -44,6 +44,25 @@ public class TransactionService {
         final ChartOfAccounts chartOfAccounts = savedPurchaseOrder.getSupplier().getPrincipalCompany().getChartOfAccounts();
         final Transaction transaction = purchaseOrder.getTransaction();
         transaction.setTransactionTypeId(savedPurchaseOrder.getId());
+        if (Objects.nonNull(savedTransaction)) {
+            transaction.setCreatedBy(savedTransaction.getCreatedBy());
+            transaction.setUpdatedBy(savedTransaction.getUpdatedBy());
+            final Set<JournalEntry> journalEntries = transaction.getJournalEntries().stream()
+                    .map(journalEntry -> {
+                        final JournalEntry journalEntry1 = savedPurchaseOrder.getTransaction().getJournalEntries().stream()
+                                .filter(journalEntry2 -> journalEntry2.getId().equals(journalEntry.getId()))
+                                .findAny()
+                                .orElse(null);
+                        if (Objects.nonNull(journalEntry1)) {
+                            journalEntry.setCreatedBy(journalEntry1.getCreatedBy());
+                            journalEntry.setUpdatedBy(journalEntry1.getUpdatedBy());
+                        }
+                        return journalEntry;
+                    })
+                    .collect(toSet());
+            transaction.setJournalEntries(journalEntries);
+        }
+
         final Account tradeCreditorsAccount = getAccount(chartOfAccounts, TRADE_CREDITORS.getType(), CURRENT_LIABILITIES);
         final Account prepaymentAccount = getAccount(chartOfAccounts, PREPAYMENT.getType(), CASH_AND_CASH_EQUIVALENTS);
 
