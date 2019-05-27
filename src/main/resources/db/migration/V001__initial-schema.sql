@@ -334,6 +334,7 @@ create table product_variant
   deleted_datetime timestamp null,
   type varchar(50) not null,
   attribute varchar(50) not null,
+  company_id uuid null,
   value varchar(50) not null,
   created_by       uuid not null,
   updated_by       uuid not null

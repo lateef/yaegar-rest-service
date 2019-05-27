@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -21,4 +22,7 @@ public class ProductVariant extends AbstractEntity {
 
     @Column(name = "value", nullable = false)
     private String value;
+
+    @Column(name = "company_id")
+    private UUID companyId;
 }
