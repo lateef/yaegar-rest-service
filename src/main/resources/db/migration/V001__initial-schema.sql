@@ -6,8 +6,8 @@ create table role
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
-  created_by       uuid null,
-  updated_by       uuid null
+  created_by uuid null,
+  updated_by uuid null
 );
 
 create table country
