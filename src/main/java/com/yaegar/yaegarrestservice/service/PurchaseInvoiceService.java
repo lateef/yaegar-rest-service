@@ -1,36 +1,29 @@
 package com.yaegar.yaegarrestservice.service;
 
 import com.yaegar.yaegarrestservice.model.*;
-import com.yaegar.yaegarrestservice.provider.DateTimeProvider;
 import com.yaegar.yaegarrestservice.repository.ProductRepository;
-import com.yaegar.yaegarrestservice.repository.PurchaseInvoiceRepository;
 import com.yaegar.yaegarrestservice.repository.StockRepository;
 import com.yaegar.yaegarrestservice.repository.StockTransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.math.BigDecimal.ZERO;
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.joining;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PurchaseInvoiceService {
-    private final DateTimeProvider dateTimeProvider;
     private final ProductRepository productRepository;
-    private final PurchaseInvoiceRepository purchaseInvoiceRepository;
     private final StockRepository stockRepository;
     private final StockTransactionRepository stockTransactionRepository;
-
-    public List<PurchaseInvoice> saveAll(List<PurchaseInvoice> invoices) {
-        return purchaseInvoiceRepository.saveAll(invoices);
-    }
 
     public void computeInventory(PurchaseOrder purchaseOrder) {
         purchaseOrder.getInvoices()
@@ -84,33 +77,70 @@ public class PurchaseInvoiceService {
                 });
     }
 
-    public List<PurchaseInvoice> sortInvoicesByDate(Set<PurchaseInvoice> purchaseInvoices) {
-        return purchaseInvoices
-                .stream()
-                .sorted(Comparator.comparing(PurchaseInvoice::getCreatedDateTime))
-                .collect(Collectors.toList());
-    }
-
-    public List<PurchaseInvoice> processInvoices(Set<PurchaseInvoice> invoices) {
+    public Set<PurchaseInvoice> processInvoices(Set<PurchaseInvoice> invoices, Set<PurchaseInvoice> savedInvoices) {
         return invoices.stream()
                 .map(invoice -> {
-                    if (Objects.isNull(invoice.getCreatedDateTime())) {
-                        invoice.setCreatedDateTime(dateTimeProvider.now());
-                        invoice.setNumber(UUID.randomUUID());
+                    final PurchaseInvoice savedPurchaseInvoice = savedInvoices.stream()
+                            .filter(purchaseInvoice -> purchaseInvoice.getId().equals(invoice.getId()))
+                            .findFirst()
+                            .orElse(null);
+                    if (Objects.nonNull(savedPurchaseInvoice)) {
+                        invoice.setCreatedBy(savedPurchaseInvoice.getCreatedBy());
+                        invoice.setUpdatedBy(savedPurchaseInvoice.getUpdatedBy());
+
+                        final Set<PurchaseInvoiceLineItem> purchaseInvoiceLineItems = invoice.getLineItems().stream()
+                                .map(lineItem -> {
+                                    final PurchaseInvoiceLineItem savedPurchaseInvoiceLineItem = savedPurchaseInvoice.getLineItems().stream()
+                                            .filter(savedLineItem -> savedLineItem.getId().equals(lineItem.getId()))
+                                            .findFirst()
+                                            .orElse(null);
+                                    if (Objects.nonNull(savedPurchaseInvoiceLineItem)) {
+                                        lineItem.setCreatedBy(savedPurchaseInvoiceLineItem.getCreatedBy());
+                                        lineItem.setUpdatedBy(savedPurchaseInvoiceLineItem.getUpdatedBy());
+                                    }
+                                    return lineItem;
+                                })
+                                .collect(toSet());
+                        invoice.setLineItems(purchaseInvoiceLineItems);
                     }
                     return invoice;
                 })
-                .collect(toCollection(() -> new TreeSet<>(comparing(PurchaseInvoice::getCreatedDateTime))))
-                .stream()
                 .map(this::validateAndSumSubTotal)
-                .collect(Collectors.toList());
+                .collect(toSet());
     }
 
-    private PurchaseInvoice validateAndSumSubTotal(PurchaseInvoice invoice) {
-        final Set<PurchaseInvoiceLineItem> lineItems = validateInvoiceLineItems(invoice.getLineItems());
-        invoice.setLineItems(lineItems);
-        invoice.setTotalPrice(sumLineInvoiceItemsSubTotal(lineItems));
-        return invoice;
+    public String confirmValidInvoice(PurchaseOrder purchaseOrder, PurchaseOrder savedPurchaseOrder) {
+        final PurchaseInvoice newPurchaseInvoice = getNewPurchaseInvoice(purchaseOrder);
+
+        final Map<UUID, Double> lineItemTotalsGroupedByPurchaseOrderLineItemId = savedPurchaseOrder.getInvoices().stream()
+                .flatMap(invoice -> invoice.getLineItems().stream())
+                .collect(groupingBy(
+                        PurchaseInvoiceLineItem::getPurchaseOrderLineItemId,
+                        mapping(AbstractLineItem::getQuantity, Collectors.summingDouble(Double::valueOf))));
+
+        List<String> confirmMessages = new ArrayList<>();
+
+        newPurchaseInvoice.getLineItems()
+                .forEach(lineItem -> {
+                    final UUID purchaseOrderLineItemId = lineItem.getPurchaseOrderLineItemId();
+                    final double quantityDelivered = Optional.ofNullable(
+                            lineItemTotalsGroupedByPurchaseOrderLineItemId.get(purchaseOrderLineItemId))
+                            .orElse(new Double("0"));
+                    final @NotNull double purchaseInvoiceQuantity = lineItem.getQuantity();
+
+                    final double totalQuantityOrdered = savedPurchaseOrder.getLineItems().stream()
+                            .filter(lineItem1 -> lineItem1.getId().equals(purchaseOrderLineItemId))
+                            .map(AbstractLineItem::getQuantity)
+                            .findFirst()
+                            .orElseThrow(NullPointerException::new);
+
+                    if ((quantityDelivered + purchaseInvoiceQuantity) > totalQuantityOrdered) {
+                        confirmMessages.add(lineItem.getProduct().getTitle() + " exceeds request by " + ((quantityDelivered + purchaseInvoiceQuantity) - totalQuantityOrdered));
+                    }
+                });
+
+        return (confirmMessages.size() > 0) ? confirmMessages.stream()
+                .collect(joining(", ", "error:", "")) : "";
     }
 
     public Set<PurchaseInvoiceLineItem> validateInvoiceLineItems(Set<PurchaseInvoiceLineItem> lineItems) {
@@ -134,22 +164,17 @@ public class PurchaseInvoiceService {
                 .reduce(ZERO, BigDecimal::add);
     }
 
-    public List<PurchaseInvoice> filterSavedInvoices(Set<PurchaseInvoice> invoices) {
-        return invoices.stream()
-                .filter(invoice -> invoice.getId() != null)
-                .collect(Collectors.toList());
+    private PurchaseInvoice getNewPurchaseInvoice(PurchaseOrder purchaseOrder) {
+        return purchaseOrder.getInvoices().stream()
+                .filter(invoice -> Objects.isNull(invoice.getCreatedDateTime()))
+                .findFirst()
+                .orElseThrow(NullPointerException::new);
     }
 
-    public List<PurchaseInvoice> filterUnsavedInvoices(Set<PurchaseInvoice> invoices) {
-        return invoices.stream()
-                .filter(invoice -> invoice.getId() == null)
-                .collect(Collectors.toList());
-    }
-
-    public BigDecimal sumTotal(List<PurchaseInvoice> purchaseInvoices) {
-        return purchaseInvoices.stream()
-                .flatMap(purchaseInvoice -> purchaseInvoice.getLineItems().stream())
-                .map(PurchaseInvoiceLineItem::getSubTotal)
-                .reduce(ZERO, BigDecimal::add);
+    private PurchaseInvoice validateAndSumSubTotal(PurchaseInvoice invoice) {
+        final Set<PurchaseInvoiceLineItem> lineItems = validateInvoiceLineItems(invoice.getLineItems());
+        invoice.setLineItems(lineItems);
+        invoice.setTotalPrice(sumLineInvoiceItemsSubTotal(lineItems));
+        return invoice;
     }
 }

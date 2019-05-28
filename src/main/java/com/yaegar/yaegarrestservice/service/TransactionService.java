@@ -110,9 +110,8 @@ public class TransactionService {
             transaction = savedTransaction;
         }
 
-        final PurchaseInvoice unsavedPurchaseInvoice = filterUnsavedPurchaseInvoices(purchaseOrder).get(0);
-        final BigDecimal totalPurchases = sumTotalPurchases(unsavedPurchaseInvoice);
-        unsavedPurchaseInvoice.setTotalPrice(totalPurchases);
+        final List<PurchaseInvoice> unsavedPurchaseInvoices = filterUnsavedPurchaseInvoices(purchaseOrder);
+        final BigDecimal totalPurchases = sumTotalPurchases(unsavedPurchaseInvoices.get(0));
         final Account purchasesAccount = getAccount(chartOfAccounts, PURCHASES.getType(), EXPENSES);
         final JournalEntry purchasesJournalEntry = createJournalEntry(purchasesAccount, totalPurchases, DEBIT, "positive");
         purchasesJournalEntry.setShortDescription(purchasesAccount.getName());
@@ -168,8 +167,8 @@ public class TransactionService {
             transaction = savedTransaction;
         }
 
-        final List<SalesInvoice> unsavedSalesInvoice = filterUnsavedSalesInvoices(salesOrder);
-        final BigDecimal totalSales = sumTotalSales(unsavedSalesInvoice.get(0));
+        final List<SalesInvoice> unsavedSalesInvoices = filterUnsavedSalesInvoices(salesOrder);
+        final BigDecimal totalSales = sumTotalSales(unsavedSalesInvoices.get(0));
         final Account salesIncomeAccount = getAccount(chartOfAccounts, SALES_INCOME.getType(), INCOME_REVENUE);
         final JournalEntry salesIncomeJournalEntry = createJournalEntry(salesIncomeAccount, totalSales, CREDIT, "negative");
         salesIncomeJournalEntry.setShortDescription(salesIncomeAccount.getName());
@@ -462,7 +461,7 @@ public class TransactionService {
 
     private List<PurchaseInvoice> filterUnsavedPurchaseInvoices(PurchaseOrder purchaseOrder) {
         return purchaseOrder.getInvoices().stream()
-                .filter(invoice -> invoice.getId() == null)
+                .filter(invoice -> invoice.getCreatedDateTime() == null)
                 .collect(toList());
     }
 
