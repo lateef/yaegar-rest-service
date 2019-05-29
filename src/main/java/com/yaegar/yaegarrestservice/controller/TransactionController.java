@@ -3,6 +3,7 @@ package com.yaegar.yaegarrestservice.controller;
 import com.yaegar.yaegarrestservice.model.Transaction;
 import com.yaegar.yaegarrestservice.service.TransactionService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
+    @Transactional
     @RequestMapping(value = "/add-transaction", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Transaction>> addTransaction(@RequestBody final Transaction transaction) {
         Transaction transaction1 = transactionService.saveTransaction(transaction);

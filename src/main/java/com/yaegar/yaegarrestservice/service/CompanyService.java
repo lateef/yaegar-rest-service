@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yaegar.yaegarrestservice.model.enums.LocationType.STORE;
+import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
@@ -90,6 +91,12 @@ public class CompanyService {
                 .filter(companyAccount -> (companyAccount.getCode() % 1000000) == 0)
                 .map(companyAccount -> {
                     companyAccount.setChartOfAccounts(chartOfAccounts);
+                    companyAccount.setDayTotal(ZERO);
+                    companyAccount.setWeekToDateTotal(ZERO);
+                    companyAccount.setMonthToDateTotal(ZERO);
+                    companyAccount.setYearToDateTotal(ZERO);
+                    companyAccount.setLastOneYearTotal(ZERO);
+                    companyAccount.setOverDraftLimit(ZERO);
                     return companyAccount;
                 })
                 .collect(Collectors.toList());
@@ -109,6 +116,12 @@ public class CompanyService {
 
                     companyAccount.setParentId(primaryAccount.getId());
                     companyAccount.setChartOfAccounts(chartOfAccounts);
+                    companyAccount.setDayTotal(ZERO);
+                    companyAccount.setWeekToDateTotal(ZERO);
+                    companyAccount.setMonthToDateTotal(ZERO);
+                    companyAccount.setYearToDateTotal(ZERO);
+                    companyAccount.setLastOneYearTotal(ZERO);
+                    companyAccount.setOverDraftLimit(ZERO);
                     return companyAccount;
                 })
                 .collect(Collectors.toList());

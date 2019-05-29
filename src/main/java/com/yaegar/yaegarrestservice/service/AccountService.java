@@ -89,6 +89,12 @@ public class AccountService {
         account.setAccountType(accountTypeFromParentAccount);
         account.setAccountCategory(accountCategory);
         account.setEnable(true);
+        account.setDayTotal(ZERO);
+        account.setWeekToDateTotal(ZERO);
+        account.setMonthToDateTotal(ZERO);
+        account.setYearToDateTotal(ZERO);
+        account.setLastOneYearTotal(ZERO);
+        account.setOverDraftLimit(ZERO);
         final Integer maxCode = findByParentId(parentAccount.getId())
                 .stream()
                 .map(Account::getCode)
