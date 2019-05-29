@@ -87,11 +87,17 @@ public class PurchaseOrderController {
         PurchaseOrder savedPurchaseOrder = purchaseOrderService.getPurchaseOrder(purchaseOrder.getId())
                 .orElseThrow(NullPointerException::new);
 
-        final List<PurchaseInvoice> purchaseInvoices = purchaseInvoiceService.processInvoices(purchaseOrder.getInvoices());
-        savedPurchaseOrder.setInvoices(new HashSet<>(purchaseInvoices));
+        final String confirmationMessage = purchaseInvoiceService.confirmValidInvoice(purchaseOrder, savedPurchaseOrder);
+        if (!"".equals(confirmationMessage)) {
+            return ResponseEntity.ok().body(singletonMap(confirmationMessage, purchaseOrder));
+        }
+
+        final Set<PurchaseInvoice> purchaseInvoices = purchaseInvoiceService.processInvoices(purchaseOrder.getInvoices(), savedPurchaseOrder.getInvoices());
 
         final Transaction transaction = transactionService.computePurchaseInvoicesTransaction(purchaseOrder,
                 savedPurchaseOrder);
+
+        savedPurchaseOrder.setInvoices(purchaseInvoices);
         savedPurchaseOrder.setTransaction(transaction);
 
         final List<JournalEntry> journalEntries = transactionService.filterJournalEntriesByAccountCategory(transaction.getJournalEntries(), CASH);

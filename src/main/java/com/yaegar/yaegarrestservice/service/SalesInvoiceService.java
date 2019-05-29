@@ -93,13 +93,6 @@ public class SalesInvoiceService {
                 .collect(toSet());
     }
 
-    private SalesInvoice validateAndSumSubTotal(SalesInvoice invoice) {
-        final Set<SalesInvoiceLineItem> lineItems = validateInvoiceLineItems(invoice.getLineItems());
-        invoice.setLineItems(lineItems);
-        invoice.setTotalPrice(sumLineInvoiceItemsSubTotal(lineItems));
-        return invoice;
-    }
-
     public Set<SalesInvoiceLineItem> validateInvoiceLineItems(Set<SalesInvoiceLineItem> lineItems) {
         lineItems.stream()
                 .forEach(lineItem -> {
@@ -182,5 +175,12 @@ public class SalesInvoiceService {
                 .filter(invoice -> Objects.isNull(invoice.getCreatedDateTime()))
                 .findFirst()
                 .orElseThrow(NullPointerException::new);
+    }
+
+    private SalesInvoice validateAndSumSubTotal(SalesInvoice invoice) {
+        final Set<SalesInvoiceLineItem> lineItems = validateInvoiceLineItems(invoice.getLineItems());
+        invoice.setLineItems(lineItems);
+        invoice.setTotalPrice(sumLineInvoiceItemsSubTotal(lineItems));
+        return invoice;
     }
 }

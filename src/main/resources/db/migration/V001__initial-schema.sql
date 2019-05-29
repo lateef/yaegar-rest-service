@@ -6,8 +6,8 @@ create table role
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
-  created_by       uuid null,
-  updated_by       uuid null
+  created_by uuid null,
+  updated_by uuid null
 );
 
 create table country
@@ -142,8 +142,7 @@ create table phone
   principal boolean null,
   confirmation_code varchar(6) null,
   confirmed boolean not null,
-  constraint UK_phone
-    unique (number),
+  constraint UK_phone unique (number),
   constraint FK_phone_country
     foreign key (country_id) references country (id)
 );

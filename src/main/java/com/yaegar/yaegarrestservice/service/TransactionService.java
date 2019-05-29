@@ -10,11 +10,9 @@ import com.yaegar.yaegarrestservice.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.*;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.CREDIT;
@@ -23,8 +21,7 @@ import static com.yaegar.yaegarrestservice.model.enums.TransactionType.PURCHASE_
 import static com.yaegar.yaegarrestservice.model.enums.TransactionType.SALES_ORDER;
 import static com.yaegar.yaegarrestservice.service.AccountService.ROOT_ACCOUNT_TYPES;
 import static java.math.BigDecimal.ZERO;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.*;
 
 @Slf4j
 @Service
@@ -94,7 +91,23 @@ public class TransactionService {
             transaction.getJournalEntries().add(prepaymentJournalEntry);
         }
 
-        return saveTransaction(transaction);
+        final Transaction transaction1 = saveTransaction(transaction);
+        computeYearToDateTotalForTransaction(transaction1);
+        return transaction1;
+    }
+
+    private void computeYearToDateTotalForTransaction(Transaction transaction) {
+        //TODO this should find by year to date
+        transaction.getJournalEntries().stream()
+                .map(JournalEntry::getAccount)
+                .forEach(account -> {
+                    final BigDecimal yearToDateTotal = journalEntryRepository.findByAccount(account).stream()
+                            .map(JournalEntry::getAmount)
+                            .reduce(ZERO, BigDecimal::add);
+                    account.setYearToDateTotal(yearToDateTotal);
+
+                    accountService.save(account);
+                });
     }
 
     public Transaction computePurchaseInvoicesTransaction(PurchaseOrder purchaseOrder, PurchaseOrder savedPurchaseOrder) {
@@ -110,9 +123,8 @@ public class TransactionService {
             transaction = savedTransaction;
         }
 
-        final PurchaseInvoice unsavedPurchaseInvoice = filterUnsavedPurchaseInvoices(purchaseOrder).get(0);
-        final BigDecimal totalPurchases = sumTotalPurchases(unsavedPurchaseInvoice);
-        unsavedPurchaseInvoice.setTotalPrice(totalPurchases);
+        final List<PurchaseInvoice> unsavedPurchaseInvoices = filterUnsavedPurchaseInvoices(purchaseOrder);
+        final BigDecimal totalPurchases = sumTotalPurchases(unsavedPurchaseInvoices.get(0));
         final Account purchasesAccount = getAccount(chartOfAccounts, PURCHASES.getType(), EXPENSES);
         final JournalEntry purchasesJournalEntry = createJournalEntry(purchasesAccount, totalPurchases, DEBIT, "positive");
         purchasesJournalEntry.setShortDescription(purchasesAccount.getName());
@@ -168,8 +180,8 @@ public class TransactionService {
             transaction = savedTransaction;
         }
 
-        final List<SalesInvoice> unsavedSalesInvoice = filterUnsavedSalesInvoices(salesOrder);
-        final BigDecimal totalSales = sumTotalSales(unsavedSalesInvoice.get(0));
+        final List<SalesInvoice> unsavedSalesInvoices = filterUnsavedSalesInvoices(salesOrder);
+        final BigDecimal totalSales = sumTotalSales(unsavedSalesInvoices.get(0));
         final Account salesIncomeAccount = getAccount(chartOfAccounts, SALES_INCOME.getType(), INCOME_REVENUE);
         final JournalEntry salesIncomeJournalEntry = createJournalEntry(salesIncomeAccount, totalSales, CREDIT, "negative");
         salesIncomeJournalEntry.setShortDescription(salesIncomeAccount.getName());
@@ -273,7 +285,6 @@ public class TransactionService {
         return transactionRepository.findByJournalEntriesAccountId(accountId);
     }
 
-    @Transactional
     public Transaction saveTransaction(Transaction transaction) {
         final Set<JournalEntry> journalEntries = transaction.getJournalEntries()
                 .stream()
@@ -336,12 +347,13 @@ public class TransactionService {
                     final Account account = accountService.findById(unsavedJournalEntry.getAccount().getId())
                             .orElseThrow(NullPointerException::new);
 
-                    if ((account.getYearToDateTotal().compareTo(prepayment) < 0) && (account.getOverDraftLimit().abs().compareTo(prepayment) < 0)) {
+                    if (!(account.getYearToDateTotal().compareTo(prepayment.abs()) >= 0 || account.getOverDraftLimit().compareTo(prepayment.abs()) >= 0)) {
                         availabilityMessages.add(account.getName() + " has insufficient funds or overdraft");
                     }
                 });
 
-        return String.join(", ", availabilityMessages);
+        return (availabilityMessages.size() > 0) ? availabilityMessages.stream()
+                .collect(joining(", ", "error:", "")) : "";
     }
 
     private void validateAndSetDescription(JournalEntry journalEntry, String description) {
@@ -456,13 +468,13 @@ public class TransactionService {
 
     private List<JournalEntry> filterUnsavedJournalEntries(Transaction transaction) {
         return transaction.getJournalEntries().stream()
-                .filter(journalEntry -> journalEntry.getId() == null)
+                .filter(journalEntry -> journalEntry.getCreatedDateTime() == null)
                 .collect(toList());
     }
 
     private List<PurchaseInvoice> filterUnsavedPurchaseInvoices(PurchaseOrder purchaseOrder) {
         return purchaseOrder.getInvoices().stream()
-                .filter(invoice -> invoice.getId() == null)
+                .filter(invoice -> invoice.getCreatedDateTime() == null)
                 .collect(toList());
     }
 
