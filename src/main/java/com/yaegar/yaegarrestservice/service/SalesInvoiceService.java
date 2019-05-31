@@ -27,35 +27,43 @@ public class SalesInvoiceService {
     public void computeInventory(SalesOrder salesOrder) {
         salesOrder.getInvoices()
                 .forEach(salesInvoice -> {
-                    final List<StockTransaction> stockTransactions1 = salesInvoice.getLineItems()
+                    final List<StockTransaction> stockTransactions = salesInvoice.getLineItems()
                             .stream()
                             .map(lineItem -> {
-                                final StockTransaction stockTransaction = new StockTransaction();
-                                stockTransaction.setSalesInvoice(salesInvoice);
-                                stockTransaction.setProduct(lineItem.getProduct());
-                                stockTransaction.setQuantity(-1 * lineItem.getQuantity());
-                                stockTransaction.setLocation(salesOrder.getCustomer().getPrincipalCompany().getLocations().get(0));
-                                return stockTransaction;
+                                final Optional<StockTransaction> optionalStockTransaction = stockTransactionRepository.findBySalesInvoiceLineItem(lineItem);
+
+                                if (!optionalStockTransaction.isPresent()) {
+                                    final StockTransaction stockTransaction = new StockTransaction();
+                                    stockTransaction.setSalesInvoiceLineItem(lineItem);
+                                    stockTransaction.setLocation(salesOrder.getCustomer().getPrincipalCompany().getLocations().get(0));
+                                    return stockTransactionRepository.save(stockTransaction);
+                                } else {
+                                    return null;
+                                }
                             })
-                            .collect(Collectors.toList());
+                            .filter(Objects::nonNull)
+                            .collect(toList());
 
-                    final List<StockTransaction> stockTransactions2 = stockTransactionRepository.saveAll(stockTransactions1);
-
-                    final List<Stock> stocks = stockTransactions2.stream()
+                    final List<Stock> stocks = stockTransactions.stream()
                             .map(stockTransaction -> {
                                 final Stock stock = stockRepository
-                                        .findByProductAndLocation(stockTransaction.getProduct(),
+                                        .findByProductAndLocation(stockTransaction.getSalesInvoiceLineItem().getProduct(),
                                                 stockTransaction.getLocation())
                                         .orElseThrow(NullPointerException::new);
 
-                                final double quantity = stockTransactionRepository.findByProduct(stockTransaction.getProduct())
+                                final double purchaseQuantity = stockTransactionRepository.findByPurchaseInvoiceLineItemProduct(stockTransaction.getPurchaseInvoiceLineItem().getProduct())
                                         .stream()
-                                        .mapToDouble(StockTransaction::getQuantity)
+                                        .mapToDouble(stockTransaction1 -> stockTransaction1.getPurchaseInvoiceLineItem().getQuantity())
                                         .sum();
-                                stock.setQuantity(quantity);
+
+                                final double salesQuantity = stockTransactionRepository.findBySalesInvoiceLineItemProduct(stockTransaction.getSalesInvoiceLineItem().getProduct())
+                                        .stream()
+                                        .mapToDouble(stockTransaction1 -> stockTransaction1.getSalesInvoiceLineItem().getQuantity())
+                                        .sum();
+                                stock.setQuantity(purchaseQuantity - salesQuantity);
                                 return stock;
                             })
-                            .collect(Collectors.toList());
+                            .collect(toList());
 
                     stockRepository.saveAll(stocks);
                 });
@@ -93,27 +101,6 @@ public class SalesInvoiceService {
                 .collect(toSet());
     }
 
-    public Set<SalesInvoiceLineItem> validateInvoiceLineItems(Set<SalesInvoiceLineItem> lineItems) {
-        lineItems.stream()
-                .forEach(lineItem -> {
-                    Product product = productRepository
-                            .findById(lineItem
-                                    .getProduct()
-                                    .getId())
-                            .orElseThrow(NullPointerException::new);
-
-                    lineItem.setProduct(product);
-                    lineItem.setSubTotal(lineItem.getUnitPrice().multiply(BigDecimal.valueOf(lineItem.getQuantity())));
-                });
-        return new HashSet<>(lineItems);
-    }
-
-    public BigDecimal sumLineInvoiceItemsSubTotal(Set<SalesInvoiceLineItem> lineItems) {
-        return lineItems.stream()
-                .map(SalesInvoiceLineItem::getSubTotal)
-                .reduce(ZERO, BigDecimal::add);
-    }
-
     public String confirmValidInvoice(SalesOrder salesOrder, SalesOrder savedSalesOrder) {
         final SalesInvoice newSalesInvoice = getNewSalesInvoice(salesOrder);
 
@@ -146,6 +133,27 @@ public class SalesInvoiceService {
 
         return (confirmMessages.size() > 0) ? confirmMessages.stream()
                 .collect(joining(", ", "error:", "")) : "";
+    }
+
+    public Set<SalesInvoiceLineItem> validateInvoiceLineItems(Set<SalesInvoiceLineItem> lineItems) {
+        lineItems.stream()
+                .forEach(lineItem -> {
+                    Product product = productRepository
+                            .findById(lineItem
+                                    .getProduct()
+                                    .getId())
+                            .orElseThrow(NullPointerException::new);
+
+                    lineItem.setProduct(product);
+                    lineItem.setSubTotal(lineItem.getUnitPrice().multiply(BigDecimal.valueOf(lineItem.getQuantity())));
+                });
+        return new HashSet<>(lineItems);
+    }
+
+    public BigDecimal sumLineInvoiceItemsSubTotal(Set<SalesInvoiceLineItem> lineItems) {
+        return lineItems.stream()
+                .map(SalesInvoiceLineItem::getSubTotal)
+                .reduce(ZERO, BigDecimal::add);
     }
 
     public String confirmStockAvailability(SalesOrder salesOrder, SalesOrder savedSalesOrder) {

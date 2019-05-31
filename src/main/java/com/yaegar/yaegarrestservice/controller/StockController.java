@@ -36,7 +36,7 @@ public class StockController {
 
     @RequestMapping(value = "/get-company-stock/{companyId}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, List<Stock>>> getStocks(@PathVariable UUID companyId) {
-        List<Stock> stock = stockService.findByCompanyStockId(companyId);
+        List<Stock> stock = stockService.findByCompanyId(companyId);
         return ResponseEntity.ok().body(singletonMap("success", stock));
     }
 }

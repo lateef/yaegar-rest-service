@@ -51,7 +51,7 @@ public class Company extends AbstractEntity {
 
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
-    @JoinColumn(name = "company_stock_id", referencedColumnName = "id")
+    @JoinColumn(name = "company_id", referencedColumnName = "id")
     private Set<Stock> stock;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)

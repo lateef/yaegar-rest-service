@@ -150,7 +150,7 @@ public class AccountService {
     }
 
     public Set<Account> createStockAccounts(Stock stock) {
-        final Company company = companyService.findById(stock.getCompanyStockId())
+        final Company company = companyService.findById(stock.getCompanyId())
                 .orElseThrow(NullPointerException::new);
         final List<Account> companyAccounts = findByChartOfAccounts(company.getChartOfAccounts());
 
