@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 import static java.math.BigDecimal.ZERO;
 import static java.util.stream.Collectors.*;
-import static java.util.stream.Collectors.joining;
 
 @Slf4j
 @Service
@@ -31,47 +30,52 @@ public class PurchaseInvoiceService {
                     final List<StockTransaction> stockTransactions = purchaseInvoice.getLineItems()
                             .stream()
                             .map(lineItem -> {
-                                final StockTransaction stockTransaction = new StockTransaction();
-                                stockTransaction.setPurchaseInvoice(purchaseInvoice);
-                                stockTransaction.setProduct(lineItem.getProduct());
-                                stockTransaction.setQuantity(lineItem.getQuantity());
-                                stockTransaction.setLocation(purchaseOrder.getSupplier().getPrincipalCompany().getLocations().get(0));
-                                return stockTransactionRepository.save(stockTransaction);
+                                final Optional<StockTransaction> optionalStockTransaction = stockTransactionRepository.findByPurchaseInvoiceLineItem(lineItem);
+
+                                if (!optionalStockTransaction.isPresent()) {
+                                    final StockTransaction stockTransaction = new StockTransaction();
+                                    stockTransaction.setPurchaseInvoiceLineItem(lineItem);
+                                    stockTransaction.setLocation(purchaseOrder.getSupplier().getPrincipalCompany().getLocations().get(0));
+                                    return stockTransactionRepository.save(stockTransaction);
+                                } else {
+                                    return null;
+                                }
                             })
-                            .collect(Collectors.toList());
+                            .filter(Objects::nonNull)
+                            .collect(toList());
 
                     final List<Stock> stocks = stockTransactions.stream()
                             .map(stockTransaction -> {
                                 final Stock stock = stockRepository
-                                        .findByProductAndLocation(stockTransaction.getProduct(),
+                                        .findByProductAndLocation(stockTransaction.getPurchaseInvoiceLineItem().getProduct(),
                                                 stockTransaction.getLocation())
                                         .orElse(new Stock());
 
                                 if (stock.getId() != null) {
-                                    final double quantity = stockTransactionRepository.findByProduct(stockTransaction.getProduct())
+                                    final double purchaseQuantity = stockTransactionRepository.findByPurchaseInvoiceLineItemProduct(stockTransaction.getPurchaseInvoiceLineItem().getProduct())
                                             .stream()
-                                            .mapToDouble(StockTransaction::getQuantity)
+                                            .mapToDouble(stockTransaction1 -> stockTransaction1.getPurchaseInvoiceLineItem().getQuantity())
                                             .sum();
-                                    stock.setQuantity(quantity);
+
+                                    final double salesQuantity = stockTransactionRepository.findBySalesInvoiceLineItemProduct(stockTransaction.getSalesInvoiceLineItem().getProduct())
+                                            .stream()
+                                            .mapToDouble(stockTransaction1 -> stockTransaction1.getSalesInvoiceLineItem().getQuantity())
+                                            .sum();
+                                    stock.setQuantity(purchaseQuantity - salesQuantity);
                                 } else {
-                                    final Product product = stockTransaction.getProduct();
+                                    final Product product = stockTransaction.getPurchaseInvoiceLineItem().getProduct();
+                                    stock.setSku(purchaseOrder.getId());
                                     stock.setProduct(product);
                                     stock.setLocation(stockTransaction.getLocation());
-                                    stock.setQuantity(stockTransaction.getQuantity());
+                                    stock.setQuantity(stockTransaction.getPurchaseInvoiceLineItem().getQuantity());
                                     final Company principalCompany = purchaseOrder.getSupplier().getPrincipalCompany();
-                                    stock.setCompanyStockId(principalCompany.getId());
+                                    stock.setCompanyId(principalCompany.getId());
                                     stock.setLocation(principalCompany.getLocations().get(0));
-
-                                    final BigDecimal costPrice = stockTransaction.getPurchaseInvoice().getLineItems().stream()
-                                            .filter(lineItem -> lineItem.getProduct().getId().equals(product.getId()))
-                                            .map(AbstractLineItem::getUnitPrice)
-                                            .findAny()
-                                            .orElseThrow(NullPointerException::new);
-                                    stock.setCostPrice(costPrice);
+                                    stock.setCostPrice(stockTransaction.getPurchaseInvoiceLineItem().getUnitPrice());
                                 }
                                 return stock;
                             })
-                            .collect(Collectors.toList());
+                            .collect(toList());
 
                     stockRepository.saveAll(stocks);
                 });

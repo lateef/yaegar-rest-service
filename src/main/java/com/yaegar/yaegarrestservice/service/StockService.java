@@ -25,19 +25,19 @@ public class StockService {
 
     @Transactional
     public Stock addStock(Stock stock) {
-        return addStock(stock.getProduct(), stock.getCompanyStockId(), stock.getCostPrice(), stock.getSellPrice(), stock.getSku(), stock.getQuantity(), stock.getLocation());
+        return addStock(stock.getProduct(), stock.getCompanyId(), stock.getCostPrice(), stock.getSellPrice(), stock.getSku(), stock.getQuantity(), stock.getLocation());
     }
 
     @Transactional
-    public Stock addStock(Product product, UUID companyStockId, BigDecimal costPrice, BigDecimal sellPrice, String sku, Double quantity, Location location) {
-        findByProductAndCompanyStockId(product, companyStockId)
+    public Stock addStock(Product product, UUID companyStockId, BigDecimal costPrice, BigDecimal sellPrice, UUID sku, Double quantity, Location location) {
+        findByProductAndCompanyId(product, companyStockId)
                 .ifPresent(e -> {
                     throw new IllegalStateException("Exception:: Stock already exists");
                 });
 
         Stock stock = new Stock();
         stock.setProduct(product);
-        stock.setCompanyStockId(companyStockId);
+        stock.setCompanyId(companyStockId);
         stock.setLocation(location);
         stock.setCostPrice(costPrice);
         stock.setSellPrice(sellPrice);
@@ -54,11 +54,11 @@ public class StockService {
         return stockRepository.findByAccountsIn(accounts);
     }
 
-    public List<Stock> findByCompanyStockId(UUID companyStockId) {
-        return stockRepository.findByCompanyStockId(companyStockId);
+    public List<Stock> findByCompanyId(UUID companyId) {
+        return stockRepository.findByCompanyId(companyId);
     }
 
-    public Optional<Stock> findByProductAndCompanyStockId(Product product, UUID companyStockId) {
-        return stockRepository.findByProductAndCompanyStockId(product, companyStockId);
+    public Optional<Stock> findByProductAndCompanyId(Product product, UUID companyId) {
+        return stockRepository.findByProductAndCompanyId(product, companyId);
     }
 }

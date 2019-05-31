@@ -2,12 +2,12 @@ create table role
 (
   id uuid not null primary key,
   authority varchar(68) not null,
-  constraint UK_role1 unique (authority),
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
   created_by uuid null,
-  updated_by uuid null
+  updated_by uuid null,
+  constraint UK_role1 unique (authority)
 );
 
 create table country
@@ -559,9 +559,9 @@ create table stock
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
-  sku             varchar(256) null,
-  product_id       uuid null,
-  company_stock_id   uuid null,
+  sku uuid null,
+  product_id uuid null,
+  company_id uuid null,
   location_id       uuid null,
   quantity double precision not null,
   cost_price decimal(19,2) not null,
@@ -569,7 +569,7 @@ create table stock
   created_by       uuid not null,
   updated_by       uuid not null,
   constraint UK_stock
-    unique (sku, product_id, company_stock_id, location_id),
+    unique (sku, product_id, company_id, location_id),
   constraint FK_stock_product
     foreign key (product_id) references product (id),
   constraint FK_stock_location
@@ -595,15 +595,19 @@ create table stock_transaction
   created_datetime timestamp default current_timestamp,
   updated_datetime timestamp null,
   deleted_datetime timestamp null,
-  purchase_invoice_id       uuid null,
-  sales_invoice_id       uuid null,
-  product_id           uuid null,
+  purchase_invoice_line_item_id uuid null,
+  sales_invoice_line_item_id uuid null,
   location_id       uuid null,
-  quantity          double precision not null,
   created_by       uuid not null,
   updated_by       uuid not null,
+  constraint UK_stock_transaction1 unique (purchase_invoice_line_item_id),
+  constraint UK_stock_transaction2 unique (sales_invoice_line_item_id),
   constraint FK_stock_transaction_location
-    foreign key (location_id) references location (id)
+    foreign key (location_id) references location (id),
+  constraint FK_stock_transaction_purchase_invoice_line_item
+    foreign key (purchase_invoice_line_item_id) references purchase_invoice_line_item (id),
+  constraint FK_stock_transaction_sales_invoice_line_item
+    foreign key (sales_invoice_line_item_id) references sales_invoice_line_item (id)
 );
 
 create table subscription_plan
