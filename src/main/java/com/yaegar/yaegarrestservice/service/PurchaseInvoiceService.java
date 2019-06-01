@@ -57,11 +57,15 @@ public class PurchaseInvoiceService {
                                             .mapToDouble(stockTransaction1 -> stockTransaction1.getPurchaseInvoiceLineItem().getQuantity())
                                             .sum();
 
-                                    final double salesQuantity = stockTransactionRepository.findBySalesInvoiceLineItemProduct(stockTransaction.getSalesInvoiceLineItem().getProduct())
-                                            .stream()
-                                            .mapToDouble(stockTransaction1 -> stockTransaction1.getSalesInvoiceLineItem().getQuantity())
-                                            .sum();
-                                    stock.setQuantity(purchaseQuantity - salesQuantity);
+                                    if (Objects.nonNull(stockTransaction.getSalesInvoiceLineItem())) {
+                                        final double salesQuantity = stockTransactionRepository.findBySalesInvoiceLineItemProduct(stockTransaction.getSalesInvoiceLineItem().getProduct())
+                                                .stream()
+                                                .mapToDouble(stockTransaction1 -> stockTransaction1.getSalesInvoiceLineItem().getQuantity())
+                                                .sum();
+                                        stock.setQuantity(purchaseQuantity - salesQuantity);
+                                    } else {
+                                        stock.setQuantity(purchaseQuantity);
+                                    }
                                 } else {
                                     final Product product = stockTransaction.getPurchaseInvoiceLineItem().getProduct();
                                     stock.setSku(purchaseOrder.getId());
