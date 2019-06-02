@@ -51,12 +51,16 @@ public class SalesInvoiceService {
                                                 stockTransaction.getLocation())
                                         .orElseThrow(NullPointerException::new);
 
-                                final double purchaseQuantity = stockTransactionRepository.findByPurchaseInvoiceLineItemProduct(stockTransaction.getPurchaseInvoiceLineItem().getProduct())
+                                final double purchaseQuantity = stockTransactionRepository
+                                        .findByLocationAndPurchaseInvoiceLineItemProduct(stock.getLocation(),
+                                                stockTransaction.getSalesInvoiceLineItem().getProduct())
                                         .stream()
                                         .mapToDouble(stockTransaction1 -> stockTransaction1.getPurchaseInvoiceLineItem().getQuantity())
                                         .sum();
 
-                                final double salesQuantity = stockTransactionRepository.findBySalesInvoiceLineItemProduct(stockTransaction.getSalesInvoiceLineItem().getProduct())
+                                final double salesQuantity = stockTransactionRepository
+                                        .findByLocationAndSalesInvoiceLineItemProduct(stock.getLocation(),
+                                                stockTransaction.getSalesInvoiceLineItem().getProduct())
                                         .stream()
                                         .mapToDouble(stockTransaction1 -> stockTransaction1.getSalesInvoiceLineItem().getQuantity())
                                         .sum();
