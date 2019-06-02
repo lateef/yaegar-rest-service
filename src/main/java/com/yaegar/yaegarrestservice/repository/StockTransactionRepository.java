@@ -1,9 +1,6 @@
 package com.yaegar.yaegarrestservice.repository;
 
-import com.yaegar.yaegarrestservice.model.Product;
-import com.yaegar.yaegarrestservice.model.PurchaseInvoiceLineItem;
-import com.yaegar.yaegarrestservice.model.SalesInvoiceLineItem;
-import com.yaegar.yaegarrestservice.model.StockTransaction;
+import com.yaegar.yaegarrestservice.model.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -14,6 +11,10 @@ public interface StockTransactionRepository extends JpaRepository<StockTransacti
     List<StockTransaction> findByPurchaseInvoiceLineItemProduct(Product product);
 
     List<StockTransaction> findBySalesInvoiceLineItemProduct(Product product);
+
+    List<StockTransaction> findByLocationAndPurchaseInvoiceLineItemProduct(Location location, Product product);
+
+    List<StockTransaction> findByLocationAndSalesInvoiceLineItemProduct(Location location, Product product);
 
     Optional<StockTransaction> findByPurchaseInvoiceLineItem(PurchaseInvoiceLineItem purchaseInvoiceLineItem);
 

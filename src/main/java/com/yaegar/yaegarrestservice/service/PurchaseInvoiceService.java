@@ -52,20 +52,20 @@ public class PurchaseInvoiceService {
                                         .orElse(new Stock());
 
                                 if (stock.getId() != null) {
-                                    final double purchaseQuantity = stockTransactionRepository.findByPurchaseInvoiceLineItemProduct(stockTransaction.getPurchaseInvoiceLineItem().getProduct())
+                                    final double purchaseQuantity = stockTransactionRepository
+                                            .findByLocationAndPurchaseInvoiceLineItemProduct(stock.getLocation(),
+                                                    stockTransaction.getPurchaseInvoiceLineItem().getProduct())
                                             .stream()
                                             .mapToDouble(stockTransaction1 -> stockTransaction1.getPurchaseInvoiceLineItem().getQuantity())
                                             .sum();
 
-                                    if (Objects.nonNull(stockTransaction.getSalesInvoiceLineItem())) {
-                                        final double salesQuantity = stockTransactionRepository.findBySalesInvoiceLineItemProduct(stockTransaction.getSalesInvoiceLineItem().getProduct())
-                                                .stream()
-                                                .mapToDouble(stockTransaction1 -> stockTransaction1.getSalesInvoiceLineItem().getQuantity())
-                                                .sum();
-                                        stock.setQuantity(purchaseQuantity - salesQuantity);
-                                    } else {
-                                        stock.setQuantity(purchaseQuantity);
-                                    }
+                                    final double salesQuantity = stockTransactionRepository
+                                            .findByLocationAndSalesInvoiceLineItemProduct(stock.getLocation(),
+                                                    stockTransaction.getPurchaseInvoiceLineItem().getProduct())
+                                            .stream()
+                                            .mapToDouble(stockTransaction1 -> stockTransaction1.getSalesInvoiceLineItem().getQuantity())
+                                            .sum();
+                                    stock.setQuantity(purchaseQuantity - salesQuantity);
                                 } else {
                                     final Product product = stockTransaction.getPurchaseInvoiceLineItem().getProduct();
                                     stock.setSku(purchaseOrder.getId());
