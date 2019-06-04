@@ -18,7 +18,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotEmpty;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,7 +40,7 @@ public class Company extends AbstractEntity {
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     private Set<User> employees = new HashSet<>();
 
-    @NotNull
+    @NotEmpty
     @Length(max = 256)
     @Column(name = "name", nullable = false, length = 256)
     private final String name;

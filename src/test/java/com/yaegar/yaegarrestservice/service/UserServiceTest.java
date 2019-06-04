@@ -45,13 +45,13 @@ public class UserServiceTest {
     @MockBean
     private UserRepository userRepository;
 
-    private UserService userService;
+    private UserService sut;
 
     private String countryCode = "GB";
 
     @Before
     public void setUp() {
-        userService = new UserService(countryRepository, dateTimeProvider, phoneValidator, roleRepository, userRepository);
+        sut = new UserService(countryRepository, dateTimeProvider, phoneValidator, roleRepository, userRepository);
     }
 
     @Test
@@ -64,7 +64,7 @@ public class UserServiceTest {
         expectedUser.setPhones(emptySet());
 
         //when
-        Map<String, User> account = userService.createAccount(expectedUser);
+        Map<String, User> account = sut.createAccount(expectedUser);
 
         //then
         Map expectedAccount = singletonMap("No phone number supplied", expectedUser);
@@ -84,7 +84,7 @@ public class UserServiceTest {
         expectedUser.setPhones(singleton(phone));
 
         //when
-        Map<String, User> account = userService.createAccount(expectedUser);
+        Map<String, User> account = sut.createAccount(expectedUser);
 
         //then
         Map expectedAccount = singletonMap("Not a valid number", expectedUser);
@@ -103,7 +103,7 @@ public class UserServiceTest {
         Map expectedAccount = singletonMap("Not a valid number", expectedUser);
 
         //when
-        Map<String, User> account = userService.createAccount(expectedUser);
+        Map<String, User> account = sut.createAccount(expectedUser);
 
         //then
         assertThat(account, is(sameBeanAs(expectedAccount)));
@@ -124,7 +124,7 @@ public class UserServiceTest {
         when(phoneValidator.isValidNumber(phoneNumber, countryCode)).thenReturn(true);
 
         //when
-        Map<String, User> account = userService.createAccount(expectedUser);
+        Map<String, User> account = sut.createAccount(expectedUser);
 
         //then
         assertThat(account, is(sameBeanAs(expectedAccount)));
@@ -150,7 +150,7 @@ public class UserServiceTest {
         when(phoneValidator.isValidNumber(phoneNumber, countryCode)).thenReturn(true);
 
         //when
-        Map<String, User> account = userService.createAccount(user);
+        Map<String, User> account = sut.createAccount(user);
 
         //then
         assertThat(account.get("Phone already registered"),
@@ -175,7 +175,7 @@ public class UserServiceTest {
         when(userRepository.save(expectedUser)).thenReturn(expectedUser);
 
         //when
-        Map<String, User> account = userService.createAccount(expectedUser);
+        Map<String, User> account = sut.createAccount(expectedUser);
 
         //then
         assertThat(account, is(sameBeanAs(expectedAccount)));

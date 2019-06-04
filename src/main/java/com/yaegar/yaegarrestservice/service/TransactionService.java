@@ -187,8 +187,7 @@ public class TransactionService {
         salesIncomeJournalEntry.setShortDescription(salesIncomeAccount.getName());
         transaction.getJournalEntries().add(salesIncomeJournalEntry);
 
-        transaction.setTransactionTypeId(savedSalesOrder.getId());
-        final Account prepaymentAccount = getAccount(chartOfAccounts, PREPAYMENT.getType(), CASH_AND_CASH_EQUIVALENTS);
+            final Account prepaymentAccount = getAccount(chartOfAccounts, PREPAYMENT.getType(), CASH_AND_CASH_EQUIVALENTS);
         final Account tradeCreditorsAccount = getAccount(chartOfAccounts, TRADE_DEBTORS.getType(), CURRENT_ASSETS);
 
         final List<JournalEntry> unsavedJournalEntries = filterUnsavedJournalEntries(transaction);

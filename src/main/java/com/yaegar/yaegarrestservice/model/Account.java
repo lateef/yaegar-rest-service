@@ -6,6 +6,8 @@ import com.yaegar.yaegarrestservice.model.enums.AccountCategory;
 import com.yaegar.yaegarrestservice.model.enums.AccountType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.CascadeType;
@@ -28,6 +30,8 @@ import java.util.UUID;
                 @UniqueConstraint(columnNames = {"chart_of_accounts_id", "name", "account_type", "account_category"})
         })
 @Data
+@NoArgsConstructor(force = true)
+@RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = true, exclude = {"chartOfAccounts", "accountCategory"})
 @ToString(exclude = "chartOfAccounts")
 public class Account extends AbstractEntity {
@@ -38,7 +42,7 @@ public class Account extends AbstractEntity {
 
     @NotEmpty
     @Column(name = "name", nullable = false, length = 150)
-    private String name;
+    private final String name;
 
     @Column(name = "account_type", nullable = false)
     @Enumerated(value = EnumType.STRING)
