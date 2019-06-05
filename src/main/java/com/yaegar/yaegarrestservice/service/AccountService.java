@@ -81,9 +81,8 @@ public class AccountService {
         Account parentAccount = findById(parentAccountId)
                 .orElseThrow(NullPointerException::new);
         final AccountType accountTypeFromParentAccount = getAccountTypeFromParentAccount(parentAccount);
-        Account account = new Account();
+        Account account = new Account(name.trim());
         account.setParentId(parentAccount.getId());
-        account.setName(name.trim());
         account.setDescription(name.trim());
         account.setChartOfAccounts(parentAccount.getChartOfAccounts());
         account.setAccountType(accountTypeFromParentAccount);
