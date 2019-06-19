@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.ASSETS;
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.CASH_AND_CASH_EQUIVALENTS;
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.CURRENT_ASSETS;
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.INCOME_REVENUE;
@@ -116,10 +117,12 @@ public class TransactionServiceTest {
         final Transaction expectedTransaction = new Transaction();
         expectedTransaction.setTransactionType(SALES_ORDER);
         expectedTransaction.setTransactionTypeId(salesOrderId);
+        expectedTransaction.setJournalEntries(emptySet());
 
         when(accountService.findByChartOfAccountsAndNameAndAccountTypeAndAccountCategory(chartOfAccounts,
                 SALES_INCOME.getType(),
                 INCOME_REVENUE,
+
                 null))
                 .thenReturn(Optional.of(salesIncomeAccount));
 
@@ -134,6 +137,22 @@ public class TransactionServiceTest {
                 CURRENT_ASSETS,
                 null))
                 .thenReturn(Optional.of(tradeCreditorsAccount));
+
+        when(accountService.findById(null))
+                .thenReturn(Optional.of(new Account("Account")));
+
+        final Account rootAccount = new Account("Root Account");
+        rootAccount.setAccountType(ASSETS);
+
+        when(accountService.getRootAccount(new Account("Account")))
+                .thenReturn(rootAccount);
+
+        final Transaction transaction1 = new Transaction();
+        transaction1.setJournalEntries(emptySet());
+        transaction1.setTransactionType(SALES_ORDER);
+        transaction1.setTransactionTypeId(salesOrderId);
+
+        when(transactionRepository.save(transaction1)).thenReturn(transaction1);
 
         when(dateTimeProvider.now()).thenReturn(LocalDateTime.now(Clock.fixed(LocalDateTime
                 .of(2019, 3, 14, 12, 28, 5)
@@ -164,6 +183,7 @@ public class TransactionServiceTest {
         savedSalesOrder.setCustomer(customer);
 
         final Transaction transaction1 = new Transaction();
+        transaction1.setJournalEntries(emptySet());
         transaction1.setTransactionType(SALES_ORDER);
 
         final Transaction expectedTransaction = new Transaction();
@@ -181,8 +201,6 @@ public class TransactionServiceTest {
         when(accountService.findByChartOfAccountsAndNameAndAccountTypeAndAccountCategory(
                 chartOfAccounts, TRADE_DEBTORS.getType(), CURRENT_ASSETS, null))
                 .thenReturn(Optional.of(new Account()));
-
-        when(transactionRepository.save(transaction1)).thenReturn(transaction1);
 
         when(transactionRepository.save(transaction1)).thenReturn(transaction1);
 

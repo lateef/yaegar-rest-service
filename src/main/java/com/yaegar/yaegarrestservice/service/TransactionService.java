@@ -322,7 +322,7 @@ public class TransactionService {
                 })
                 .collect(toSet());
 
-        transaction.setJournalEntries(null);
+        transaction.setJournalEntries(new HashSet<>());
         final Transaction transaction1 = transactionRepository.save(transaction);
 
         final List<JournalEntry> journalEntries1 = journalEntries
