@@ -1,6 +1,14 @@
 package com.yaegar.yaegarrestservice.service;
 
-import com.yaegar.yaegarrestservice.model.*;
+import com.yaegar.yaegarrestservice.model.AbstractLineItem;
+import com.yaegar.yaegarrestservice.model.Account;
+import com.yaegar.yaegarrestservice.model.ChartOfAccounts;
+import com.yaegar.yaegarrestservice.model.JournalEntry;
+import com.yaegar.yaegarrestservice.model.PurchaseInvoice;
+import com.yaegar.yaegarrestservice.model.PurchaseOrder;
+import com.yaegar.yaegarrestservice.model.SalesInvoice;
+import com.yaegar.yaegarrestservice.model.SalesOrder;
+import com.yaegar.yaegarrestservice.model.Transaction;
 import com.yaegar.yaegarrestservice.model.enums.AccountCategory;
 import com.yaegar.yaegarrestservice.model.enums.AccountType;
 import com.yaegar.yaegarrestservice.model.enums.TransactionSide;
@@ -12,16 +20,32 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
-import static com.yaegar.yaegarrestservice.model.enums.AccountType.*;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.CASH_AND_CASH_EQUIVALENTS;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.CURRENT_ASSETS;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.CURRENT_LIABILITIES;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.EXPENSES;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.INCOME_REVENUE;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.PREPAYMENT;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.PURCHASES;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.SALES_INCOME;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.TRADE_CREDITORS;
+import static com.yaegar.yaegarrestservice.model.enums.AccountType.TRADE_DEBTORS;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.CREDIT;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionSide.DEBIT;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionType.PURCHASE_ORDER;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionType.SALES_ORDER;
 import static com.yaegar.yaegarrestservice.service.AccountService.ROOT_ACCOUNT_TYPES;
 import static java.math.BigDecimal.ZERO;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @Service
@@ -181,13 +205,13 @@ public class TransactionService {
         }
 
         final List<SalesInvoice> unsavedSalesInvoices = filterUnsavedSalesInvoices(salesOrder);
-        final BigDecimal totalSales = sumTotalSales(unsavedSalesInvoices.get(0));
+        final BigDecimal totalSales = unsavedSalesInvoices.isEmpty() ? ZERO : sumTotalSales(unsavedSalesInvoices.get(0));
         final Account salesIncomeAccount = getAccount(chartOfAccounts, SALES_INCOME.getType(), INCOME_REVENUE);
         final JournalEntry salesIncomeJournalEntry = createJournalEntry(salesIncomeAccount, totalSales, CREDIT, "negative");
         salesIncomeJournalEntry.setShortDescription(salesIncomeAccount.getName());
         transaction.getJournalEntries().add(salesIncomeJournalEntry);
 
-            final Account prepaymentAccount = getAccount(chartOfAccounts, PREPAYMENT.getType(), CASH_AND_CASH_EQUIVALENTS);
+        final Account prepaymentAccount = getAccount(chartOfAccounts, PREPAYMENT.getType(), CASH_AND_CASH_EQUIVALENTS);
         final Account tradeCreditorsAccount = getAccount(chartOfAccounts, TRADE_DEBTORS.getType(), CURRENT_ASSETS);
 
         final List<JournalEntry> unsavedJournalEntries = filterUnsavedJournalEntries(transaction);

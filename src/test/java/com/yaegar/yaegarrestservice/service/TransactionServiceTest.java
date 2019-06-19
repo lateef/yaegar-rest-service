@@ -33,6 +33,7 @@ import static com.yaegar.yaegarrestservice.model.enums.AccountType.SALES_INCOME;
 import static com.yaegar.yaegarrestservice.model.enums.AccountType.TRADE_DEBTORS;
 import static com.yaegar.yaegarrestservice.model.enums.TransactionType.SALES_ORDER;
 import static java.math.BigDecimal.TEN;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -150,6 +151,7 @@ public class TransactionServiceTest {
     public void computeSalesInvoicesTransactionForExistingSalesOrder() {
         //arrange
         final SalesOrder salesOrder = new SalesOrder();
+        salesOrder.setInvoices(emptySet());
         final SalesOrder savedSalesOrder = new SalesOrder();
 
         final ChartOfAccounts chartOfAccounts = new ChartOfAccounts();
@@ -161,7 +163,28 @@ public class TransactionServiceTest {
 
         savedSalesOrder.setCustomer(customer);
 
+        final Transaction transaction1 = new Transaction();
+        transaction1.setTransactionType(SALES_ORDER);
+
         final Transaction expectedTransaction = new Transaction();
+        expectedTransaction.setJournalEntries(emptySet());
+        expectedTransaction.setTransactionType(SALES_ORDER);
+
+        when(accountService.findByChartOfAccountsAndNameAndAccountTypeAndAccountCategory(
+                chartOfAccounts, SALES_INCOME.getType(), INCOME_REVENUE, null))
+                .thenReturn(Optional.of(new Account()));
+
+        when(accountService.findByChartOfAccountsAndNameAndAccountTypeAndAccountCategory(
+                chartOfAccounts, PREPAYMENT.getType(), CASH_AND_CASH_EQUIVALENTS, null))
+                .thenReturn(Optional.of(new Account()));
+
+        when(accountService.findByChartOfAccountsAndNameAndAccountTypeAndAccountCategory(
+                chartOfAccounts, TRADE_DEBTORS.getType(), CURRENT_ASSETS, null))
+                .thenReturn(Optional.of(new Account()));
+
+        when(transactionRepository.save(transaction1)).thenReturn(transaction1);
+
+        when(transactionRepository.save(transaction1)).thenReturn(transaction1);
 
         //act
         final Transaction transaction = sut.computeSalesInvoicesTransaction(salesOrder, savedSalesOrder);
